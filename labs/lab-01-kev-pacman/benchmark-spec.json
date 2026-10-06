@@ -1,0 +1,19 @@
+{
+  "version": "pacman-gameplay-v1",
+  "engine_revision": "7407174c1d6a38be8cd230577489e39e0873145b",
+  "action_semantics": "legacy-v1-frame-centre; known multi-tile and stationary reversals",
+  "observation_schema": "legacy-v1",
+  "seeds": [50021, 50023, 50033, 50047, 50051],
+  "levels": [1],
+  "max_decisions": 512,
+  "max_simulation_frames": 10800,
+  "stop": "first cleared level, native game-over, decision cap or active simulation-frame cap; continue after deaths",
+  "maximum_paired_model_requests": 5120,
+  "loop_definition": "repeated position sequence of period 2..64 with at least 3 distinct tiles, within one life and without consuming a pellet",
+  "avoidable_death_definition": "chosen action loses a life before its next legacy decision boundary, while another legal action from identical native state and RNG does not; no claim of eventual survival",
+  "primary_metrics": ["level clears", "pellets collected", "avoidable immediate deaths", "no-pellet cycles", "longest no-pellet interval", "post-respawn progress"],
+  "secondary_metrics": ["score", "first-life progress", "power pellets", "ghosts eaten", "fruit eaten", "heading bias", "action geometry", "256 snapshot teacher agreement and safety strata"],
+  "censoring": "caps are unresolved episodes, never wins or game-overs; report raw counts and per-seed paired differences",
+  "split_rule": "seeds reserved for evaluation, disjoint from every packaged v1 data split; never use their trajectories for new training",
+  "generalization_scope": "same classic maze, starting level 1, five seeds; no held-out-layout or higher-level claim"
+}

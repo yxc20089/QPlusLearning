@@ -1,0 +1,92 @@
+{
+  "version": "pacman-v2-plan-2026-10-05",
+  "status": "Diagnosis and v1 benchmark implemented. New action semantics, observation schema, teacher and training data are planned, not yet implemented or generated.",
+  "dependency_order": [
+    "freeze_baseline",
+    "action_contract",
+    "observable_state",
+    "teacher_quality",
+    "policy_visited_data",
+    "training_pilot",
+    "paired_evaluation"
+  ],
+  "phases": [
+    {
+      "id": "freeze_baseline",
+      "work": [
+        "Preserve completed skills/Pac-Man checkpoints and hashes. Run the new five-seed all-life comparison on the RTX GPU.",
+        "Keep 256-snapshot agreement secondary, with safety, power, junction, revisit, late-maze and respawn denominators. Mark missing strata unavailable."
+      ],
+      "gate": "Both models use identical pinned v1 controller/observation/protocol and verified identities. Preserve per-seed traces and cap reasons."
+    },
+    {
+      "id": "action_contract",
+      "work": [
+        "Implement a separately versioned v2 decision boundary at the requested adjacent tile centre, checking native movement substeps so two-pixel frames cannot skip the centre.",
+        "Make immediate reversals reach the requested adjacent tile; handle off-centre spawn alignment explicitly rather than labelling it as a one-tile decision.",
+        "Preserve native speed, collisions, consumption, frightened pauses and tunnel wrapping. Benchmark records the native duration of every move.",
+        "Carry the complete ghost-release rewind fix into v2 teacher search. Never silently reinterpret v1 replay records."
+      ],
+      "gate": "CPU/browser parity for centre crossing, reverse, corner turn, tunnel, all level speed phases, pellet pause, ghost-eating pause, death/respawn and release-counter transition. A nonterminal one-tile action has the declared adjacent endpoint."
+    },
+    {
+      "id": "observable_state",
+      "work": [
+        "Keep full maze/pellet coordinates and named ghosts. Add explicitly versioned pixel offsets, speed-cycle phase, pending ghost heading/reversal, eat-pause state, life epoch, release counters and exact phase/power clocks obtained from native current state.",
+        "Expose elapsed moves/frames since last pellet and recent history sufficient for 24+ move cycles, plus candidate-destination visit counts or a compact coverage map.",
+        "Add auditable current-state summaries for each legal move: destination pellet/power pellet, maze distance to remaining pellets and dangerous ghosts. These are current-state features, not teacher future plans.",
+        "Bound token count and test identical formatting in training, snapshot evaluation and live inference. Keep RNG state, replay seed, label and future teacher sequence private."
+      ],
+      "gate": "No differing preferred label solely due to hidden current timers/pixel state within audited observation-equivalent groups. Otherwise expand observable state or use a belief-aware teacher with a documented ambiguity target. Do not call the observation fully Markov without this test."
+    },
+    {
+      "id": "teacher_quality",
+      "work": [
+        "Use safety before progress: reject immediately fatal actions whenever a nonfatal action exists, then rank time-to-death/survival, pellet progress, coverage and action duration.",
+        "Replace indiscriminate lifetime visit penalties with a no-progress cycle penalty; allow necessary transit through already cleared corridors.",
+        "Add a long-range remaining-pellet route objective for maze cleanup. Replan through multiple lives, ghost release transitions and power expiry.",
+        "Retain exact native ghost mechanics, approximate search provenance and independent frightened RNG scenarios. Record ties and all-horizon-die cases explicitly; do not force arbitrary exact ties into one hard label.",
+        "Compare revised teacher with old planner and heuristic on separate development episodes. Inspect fatalities, stalls, missing pellets, ghost hunts and level clears manually."
+      ],
+      "gate": "Predeclare development caps and safety thresholds. At minimum, obtain actual level clears and eliminate the observed multi-tile/rewind failures and reproducible long no-pellet cycles. A higher mean score with zero clears/four caps is rejected as sufficient teacher validation. Publish distributions and remaining failures before large generation."
+    },
+    {
+      "id": "policy_visited_data",
+      "work": [
+        "Collect full trajectories of the current Kev and revised teacher on training-only seeds, including errors and respawns. Label learner-visited states with the validated teacher, then aggregate in rounds (DAgger-style).",
+        "Use the supplied seed-7 failure as a training/regression case if desired; thereafter exclude it from held-out reporting.",
+        "Balance survival-critical ghost encounters, turns out of empty corridors, junction pellet branches, maze cleanup, power acquisition/expiry/hunting and post-death release behavior. Preserve ordinary play so corrections do not become a new shortcut.",
+        "Split complete games and related native state forks together; enforce seed/episode and observable-hash separation. Reserve benchmark seeds permanently; print coverage denominators in all splits.",
+        "Generate a reviewed pilot of at most 2048 boards only after earlier gates. Grow to 8192-16384 task examples if coverage and timing justify it; count alone is not a quality gate."
+      ],
+      "gate": "Human inspection plus automated replay of danger, progress, power, tie and respawn examples. Reject malformed actions, unobservable labels and all-dead hard labels. Development/evaluation must contain late-maze, respawn and genuine power-expiry/ghost-eating cases."
+    },
+    {
+      "id": "training_pilot",
+      "work": [
+        "Warm-start from the completed learner Skills checkpoint, keeping the faithful rank-16 all-target LoRA plus 256-dimension pointer head and decision-v7 replay architecture.",
+        "Keep published one-epoch learning-rate scale (2e-5), BF16 optimized kernels, checkpointing and effective batch eight as the reference; tune only on development data.",
+        "Measure warm training throughput, compilation/loading and maximum memory before choosing the lab dataset size. 8192+2000 replay gives 1274 updates; 16384+2000 gives 2298 updates at batch eight. Neither is claimed to fit 30 minutes without a timed GPU run.",
+        "Train independent controlled pilots to separate controller fixes, representation changes and teacher/data quality. Compare tied-target handling and critical-state weighting only with recorded development evidence."
+      ],
+      "gate": "No dropped/truncated records; full recipe and recovery/Drive receipts. Publish measured cost and wall time, not estimated hardware utilization as performance evidence."
+    },
+    {
+      "id": "paired_evaluation",
+      "work": [
+        "Define a new v2 protocol for the corrected action/state semantics and evaluate BOTH the old and new checkpoint under that same version, explicitly noting the old model observation shift.",
+        "Report level clears and unresolved caps, pellet coverage, avoidable immediate deaths, no-progress cycles, first-life and post-respawn behavior, power/ghost metrics and native action geometry per seed/level.",
+        "Keep a separate expanded instructor evaluation across levels 1,2,3,5 and more seeds. Five classroom seeds on one maze do not establish broad generalization.",
+        "Use old/new snapshots only within their own version; never compare aggregate v1/v2 scores as if the task were unchanged."
+      ],
+      "gate": "Predeclared paired safety and progress improvement without counting censored games as wins. Inspect new failures; hold the model back if score rises while survival/progress regress."
+    }
+  ],
+  "causal_probes_before_claiming_a_shortcut": [
+    "Run the same valid recorded states against the checkpoint with legal option order permuted; check action/probability stability.",
+    "Use native-valid paired trajectories/forks to isolate heading, ghost danger, pellet placement, power expiry and visit history; arbitrary inconsistent field edits are not training examples.",
+    "Compare current maze-only reasoning with an explicitly derived-feature schema on development pilots. Keep controller and labels fixed for each ablation."
+  ],
+  "method_source": "https://arxiv.org/abs/1011.0686",
+  "no_new_data_generated": true
+}

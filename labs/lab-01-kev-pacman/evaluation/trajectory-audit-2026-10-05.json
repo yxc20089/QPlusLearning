@@ -1,0 +1,981 @@
+{
+  "version": "pacman-trajectory-audit-2026-10-05",
+  "evidence_scope": "One supplied complete game, exact CPU replay of all 251 observations. This is not a before/after GPU benchmark or a population performance estimate.",
+  "trace_sha256": "69b5b38827624290516335074c8238536c4bde85d5da83b8c45d54efa26ff739",
+  "active_adapter": {
+    "checkpoint_name": "kev-4b-pacman-planner-v1",
+    "stage": "pacman",
+    "optimizer_steps": 762,
+    "checkpoint_sha256": "a8d960ac1908cab49fccda1502b982e56bd74e61d461fff1461654cabd1969af",
+    "adapter_sha256": "c10d45dce2e14d8cc2de7c1344ae20b9a0d6d74f309f2c0007f24b882b77e92e",
+    "base": "Qwen/Qwen3.5-4B-Base",
+    "base_revision": "1001bb4d826a52d1f399e183466143f4da7b741b",
+    "lora_rank": 16,
+    "dtype": "bfloat16",
+    "temperature": 1.0,
+    "api_alias": "kev-latest",
+    "pacman_fine_tuned": true
+  },
+  "exact_replay_matches": 251,
+  "gameplay_metrics": {
+    "decisions": 251,
+    "score": 760,
+    "pellets_collected": 72,
+    "pellets_remaining": 172,
+    "life_losses": 3,
+    "avoidable_immediate_deaths": 3,
+    "immediate_risk_decisions": 3,
+    "avoidable_risk_decisions": 3,
+    "all_immediate_actions_fatal": 0,
+    "unsafe_immediate_choices": 3,
+    "loop_decisions": 22,
+    "longest_no_pellet_decisions": 73,
+    "longest_no_pellet_frames": 593,
+    "simulation_frames": 2090,
+    "straight_available": 215,
+    "straight_chosen": 210,
+    "junction_straight_available": 29,
+    "junction_straight_chosen": 24,
+    "safe_immediate_pellet_skips_at_junction": 22,
+    "multi_tile_actions": 3,
+    "stationary_actions": 3,
+    "normal_pellets": 71,
+    "power_pellets": 1,
+    "ghosts_eaten": 0,
+    "fruit_eaten": 0,
+    "outcome": "game_over",
+    "censored": false,
+    "level_cleared": false,
+    "per_life": {
+      "0": {
+        "decisions": 17,
+        "pellets_collected": 16,
+        "life_lost": true
+      },
+      "1": {
+        "decisions": 119,
+        "pellets_collected": 39,
+        "life_lost": true
+      },
+      "2": {
+        "decisions": 115,
+        "pellets_collected": 17,
+        "life_lost": true
+      }
+    },
+    "loop_periods": {
+      "24": 22
+    },
+    "first_life_pellets": 16,
+    "post_respawn_pellets": 56,
+    "unsafe_immediate_choice_rate": 1.0,
+    "avoidable_immediate_death_rate": 1.0,
+    "straight_choice_rate": 0.9767441860465116,
+    "mean_http_ms": 154.0850182908385
+  },
+  "dataset_audit": {
+    "dataset_sha256": "a6f7e5282e888ede6a24f28cc7dffdb7d3cf51776ec5c9d6adefcf6e15e9e6a1",
+    "splits": {
+      "train": {
+        "n": 4096,
+        "lives": {
+          "3": 4096
+        },
+        "coverage": {
+          "junction": 694,
+          "danger_within_3_tiles": 662,
+          "danger_within_1_tile": 145,
+          "frightened": 1450,
+          "power_pellet_adjacent": 59,
+          "late_maze_30_or_fewer": 373,
+          "revisited_over_4_times": 205,
+          "post_respawn": 0,
+          "search_survival_critical": 411,
+          "all_search_actions_die": 55,
+          "multiple_exact_best_actions": 162
+        },
+        "straight_available": 3467,
+        "straight_labelled": 2264,
+        "junction_straight_available": 516,
+        "junction_straight_labelled": 190
+      },
+      "development": {
+        "n": 256,
+        "lives": {
+          "3": 256
+        },
+        "coverage": {
+          "junction": 42,
+          "danger_within_3_tiles": 31,
+          "danger_within_1_tile": 5,
+          "frightened": 120,
+          "power_pellet_adjacent": 3,
+          "late_maze_30_or_fewer": 0,
+          "revisited_over_4_times": 11,
+          "post_respawn": 0,
+          "search_survival_critical": 18,
+          "all_search_actions_die": 3,
+          "multiple_exact_best_actions": 5
+        },
+        "straight_available": 213,
+        "straight_labelled": 136,
+        "junction_straight_available": 33,
+        "junction_straight_labelled": 11
+      },
+      "evaluation": {
+        "n": 256,
+        "lives": {
+          "3": 256
+        },
+        "coverage": {
+          "junction": 50,
+          "danger_within_3_tiles": 25,
+          "danger_within_1_tile": 8,
+          "frightened": 124,
+          "power_pellet_adjacent": 6,
+          "late_maze_30_or_fewer": 0,
+          "revisited_over_4_times": 3,
+          "post_respawn": 0,
+          "search_survival_critical": 23,
+          "all_search_actions_die": 1,
+          "multiple_exact_best_actions": 3
+        },
+        "straight_available": 208,
+        "straight_labelled": 127,
+        "junction_straight_available": 35,
+        "junction_straight_labelled": 13
+      }
+    }
+  },
+  "teacher_quality_cpu": {
+    "previous_heuristic": {
+      "episodes": 5,
+      "mean_score": 2594,
+      "mean_pellets": 199.4,
+      "mean_decisions": 338,
+      "first_life_losses": 4,
+      "level_clears": 1,
+      "turn_limits": 0
+    },
+    "planner": {
+      "episodes": 5,
+      "mean_score": 3590,
+      "mean_pellets": 225,
+      "mean_decisions": 453.2,
+      "first_life_losses": 1,
+      "level_clears": 0,
+      "turn_limits": 4
+    }
+  },
+  "selected_native_probes": [
+    {
+      "turn": 16,
+      "player": {
+        "row": 18,
+        "column": 6,
+        "heading": "up"
+      },
+      "chosen": "up",
+      "chosen_probability": 0.8311,
+      "outcome": "life_lost",
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": true,
+          "pellets": 1,
+          "action_frames": 5,
+          "player": {
+            "row": 17,
+            "column": 6,
+            "heading": "up"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 18,
+            "column": 6,
+            "heading": "down"
+          }
+        }
+      }
+    },
+    {
+      "turn": 70,
+      "player": {
+        "row": 11,
+        "column": 6,
+        "heading": "right"
+      },
+      "chosen": "up",
+      "chosen_probability": 0.6461,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 2,
+          "action_frames": 24,
+          "player": {
+            "row": 8,
+            "column": 6,
+            "heading": "up"
+          }
+        },
+        "left": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 8,
+          "player": {
+            "row": 11,
+            "column": 5,
+            "heading": "left"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 5,
+          "action_frames": 48,
+          "player": {
+            "row": 17,
+            "column": 6,
+            "heading": "down"
+          }
+        }
+      }
+    },
+    {
+      "turn": 71,
+      "player": {
+        "row": 8,
+        "column": 6,
+        "heading": "up"
+      },
+      "chosen": "up",
+      "chosen_probability": 0.4291,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 7,
+          "player": {
+            "row": 7,
+            "column": 6,
+            "heading": "up"
+          }
+        },
+        "left": {
+          "life_lost": false,
+          "pellets": 4,
+          "action_frames": 40,
+          "player": {
+            "row": 8,
+            "column": 1,
+            "heading": "left"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 16,
+          "player": {
+            "row": 10,
+            "column": 6,
+            "heading": "down"
+          }
+        },
+        "right": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 8,
+          "player": {
+            "row": 8,
+            "column": 7,
+            "heading": "right"
+          }
+        }
+      }
+    },
+    {
+      "turn": 81,
+      "player": {
+        "row": 5,
+        "column": 1,
+        "heading": "down"
+      },
+      "chosen": "down",
+      "chosen_probability": 0.7558,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 5,
+            "column": 1,
+            "heading": "up"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 15,
+          "player": {
+            "row": 7,
+            "column": 1,
+            "heading": "down"
+          }
+        }
+      }
+    },
+    {
+      "turn": 92,
+      "player": {
+        "row": 10,
+        "column": 6,
+        "heading": "up"
+      },
+      "chosen": "up",
+      "chosen_probability": 0.8489,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 15,
+          "player": {
+            "row": 8,
+            "column": 6,
+            "heading": "up"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 10,
+            "column": 6,
+            "heading": "down"
+          }
+        }
+      }
+    },
+    {
+      "turn": 135,
+      "player": {
+        "row": 11,
+        "column": 3,
+        "heading": "right"
+      },
+      "chosen": "right",
+      "chosen_probability": 0.8704,
+      "outcome": "life_lost",
+      "immediate_counterfactuals": {
+        "left": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 11,
+            "column": 3,
+            "heading": "left"
+          }
+        },
+        "right": {
+          "life_lost": true,
+          "pellets": 0,
+          "action_frames": 5,
+          "player": {
+            "row": 11,
+            "column": 4,
+            "heading": "right"
+          }
+        }
+      }
+    },
+    {
+      "turn": 162,
+      "player": {
+        "row": 8,
+        "column": 6,
+        "heading": "up"
+      },
+      "chosen": "up",
+      "chosen_probability": 0.4419,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 8,
+          "player": {
+            "row": 7,
+            "column": 6,
+            "heading": "up"
+          }
+        },
+        "left": {
+          "life_lost": false,
+          "pellets": 1,
+          "action_frames": 10,
+          "player": {
+            "row": 8,
+            "column": 5,
+            "heading": "left"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 8,
+            "column": 6,
+            "heading": "down"
+          }
+        },
+        "right": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 9,
+          "player": {
+            "row": 8,
+            "column": 7,
+            "heading": "right"
+          }
+        }
+      }
+    },
+    {
+      "turn": 195,
+      "player": {
+        "row": 8,
+        "column": 1,
+        "heading": "down"
+      },
+      "chosen": "down",
+      "chosen_probability": 0.5163,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 8,
+            "column": 1,
+            "heading": "up"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 8,
+          "player": {
+            "row": 9,
+            "column": 1,
+            "heading": "down"
+          }
+        },
+        "right": {
+          "life_lost": false,
+          "pellets": 1,
+          "action_frames": 10,
+          "player": {
+            "row": 8,
+            "column": 2,
+            "heading": "right"
+          }
+        }
+      }
+    },
+    {
+      "turn": 230,
+      "player": {
+        "row": 8,
+        "column": 6,
+        "heading": "up"
+      },
+      "chosen": "up",
+      "chosen_probability": 0.4101,
+      "outcome": null,
+      "immediate_counterfactuals": {
+        "up": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 8,
+          "player": {
+            "row": 7,
+            "column": 6,
+            "heading": "up"
+          }
+        },
+        "left": {
+          "life_lost": false,
+          "pellets": 1,
+          "action_frames": 10,
+          "player": {
+            "row": 8,
+            "column": 5,
+            "heading": "left"
+          }
+        },
+        "down": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 8,
+            "column": 6,
+            "heading": "down"
+          }
+        },
+        "right": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 9,
+          "player": {
+            "row": 8,
+            "column": 7,
+            "heading": "right"
+          }
+        }
+      }
+    },
+    {
+      "turn": 250,
+      "player": {
+        "row": 11,
+        "column": 5,
+        "heading": "right"
+      },
+      "chosen": "right",
+      "chosen_probability": 0.8776,
+      "outcome": "life_lost",
+      "immediate_counterfactuals": {
+        "left": {
+          "life_lost": false,
+          "pellets": 0,
+          "action_frames": 2,
+          "player": {
+            "row": 11,
+            "column": 5,
+            "heading": "left"
+          }
+        },
+        "right": {
+          "life_lost": true,
+          "pellets": 0,
+          "action_frames": 5,
+          "player": {
+            "row": 11,
+            "column": 6,
+            "heading": "right"
+          }
+        }
+      }
+    }
+  ],
+  "bounded_teacher_probes": [
+    {
+      "turn": 16,
+      "model": {
+        "type": "choice",
+        "choice": "up",
+        "confidence": 0.6622,
+        "probabilities": {
+          "up": 0.8311,
+          "down": 0.1689
+        }
+      },
+      "teacher": "down",
+      "candidates": [
+        {
+          "action": "down",
+          "survival": 1,
+          "value": 338
+        },
+        {
+          "action": "up",
+          "survival": 0,
+          "value": 9
+        }
+      ]
+    },
+    {
+      "turn": 71,
+      "model": {
+        "type": "choice",
+        "choice": "up",
+        "confidence": 0.2388,
+        "probabilities": {
+          "up": 0.4291,
+          "left": 0.1184,
+          "down": 0.189,
+          "right": 0.2636
+        }
+      },
+      "teacher": "left",
+      "candidates": [
+        {
+          "action": "left",
+          "survival": 1,
+          "value": 708
+        },
+        {
+          "action": "right",
+          "survival": 1,
+          "value": 546
+        },
+        {
+          "action": "up",
+          "survival": 1,
+          "value": 516
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": 372
+        }
+      ]
+    },
+    {
+      "turn": 134,
+      "model": {
+        "type": "choice",
+        "choice": "right",
+        "confidence": 0.653,
+        "probabilities": {
+          "left": 0.1735,
+          "right": 0.8265
+        }
+      },
+      "teacher": "left",
+      "candidates": [
+        {
+          "action": "left",
+          "survival": 1,
+          "value": 57
+        },
+        {
+          "action": "right",
+          "survival": 0,
+          "value": -30
+        }
+      ]
+    },
+    {
+      "turn": 135,
+      "model": {
+        "type": "choice",
+        "choice": "right",
+        "confidence": 0.7409,
+        "probabilities": {
+          "left": 0.1296,
+          "right": 0.8704
+        }
+      },
+      "teacher": "right",
+      "candidates": [
+        {
+          "action": "right",
+          "survival": 0,
+          "value": -18
+        },
+        {
+          "action": "left",
+          "survival": 0,
+          "value": -56
+        }
+      ]
+    },
+    {
+      "turn": 162,
+      "model": {
+        "type": "choice",
+        "choice": "up",
+        "confidence": 0.2558,
+        "probabilities": {
+          "up": 0.4419,
+          "left": 0.2165,
+          "down": 0.0671,
+          "right": 0.2745
+        }
+      },
+      "teacher": "right",
+      "candidates": [
+        {
+          "action": "right",
+          "survival": 1,
+          "value": 253
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": 222
+        },
+        {
+          "action": "up",
+          "survival": 1,
+          "value": 186
+        },
+        {
+          "action": "left",
+          "survival": 1,
+          "value": 146
+        }
+      ]
+    },
+    {
+      "turn": 182,
+      "model": {
+        "type": "choice",
+        "choice": "up",
+        "confidence": 0.1815,
+        "probabilities": {
+          "up": 0.3862,
+          "left": 0.2949,
+          "down": 0.2764,
+          "right": 0.0425
+        }
+      },
+      "teacher": "down",
+      "candidates": [
+        {
+          "action": "down",
+          "survival": 1,
+          "value": -137
+        },
+        {
+          "action": "up",
+          "survival": 1,
+          "value": -149
+        },
+        {
+          "action": "left",
+          "survival": 1,
+          "value": -149
+        },
+        {
+          "action": "right",
+          "survival": 1,
+          "value": -149
+        }
+      ]
+    },
+    {
+      "turn": 195,
+      "model": {
+        "type": "choice",
+        "choice": "down",
+        "confidence": 0.2744,
+        "probabilities": {
+          "up": 0.1097,
+          "down": 0.5163,
+          "right": 0.374
+        }
+      },
+      "teacher": "up",
+      "candidates": [
+        {
+          "action": "up",
+          "survival": 1,
+          "value": -149
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": -149
+        },
+        {
+          "action": "right",
+          "survival": 1,
+          "value": -149
+        }
+      ]
+    },
+    {
+      "turn": 206,
+      "model": {
+        "type": "choice",
+        "choice": "up",
+        "confidence": 0.22,
+        "probabilities": {
+          "up": 0.415,
+          "left": 0.157,
+          "down": 0.0858,
+          "right": 0.3421
+        }
+      },
+      "teacher": "right",
+      "candidates": [
+        {
+          "action": "right",
+          "survival": 1,
+          "value": -145
+        },
+        {
+          "action": "left",
+          "survival": 1,
+          "value": -153
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": -153
+        },
+        {
+          "action": "up",
+          "survival": 1,
+          "value": -157
+        }
+      ]
+    },
+    {
+      "turn": 219,
+      "model": {
+        "type": "choice",
+        "choice": "down",
+        "confidence": 0.2498,
+        "probabilities": {
+          "up": 0.123,
+          "down": 0.4999,
+          "right": 0.3771
+        }
+      },
+      "teacher": "right",
+      "candidates": [
+        {
+          "action": "right",
+          "survival": 1,
+          "value": -147
+        },
+        {
+          "action": "up",
+          "survival": 1,
+          "value": -151
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": -161
+        }
+      ]
+    },
+    {
+      "turn": 230,
+      "model": {
+        "type": "choice",
+        "choice": "up",
+        "confidence": 0.2135,
+        "probabilities": {
+          "up": 0.4101,
+          "left": 0.1608,
+          "down": 0.0849,
+          "right": 0.3441
+        }
+      },
+      "teacher": "right",
+      "candidates": [
+        {
+          "action": "right",
+          "survival": 1,
+          "value": 176
+        },
+        {
+          "action": "left",
+          "survival": 1,
+          "value": -184
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": -184
+        },
+        {
+          "action": "up",
+          "survival": 0,
+          "value": -45
+        }
+      ]
+    },
+    {
+      "turn": 243,
+      "model": {
+        "type": "choice",
+        "choice": "down",
+        "confidence": 0.2959,
+        "probabilities": {
+          "up": 0.1195,
+          "down": 0.5306,
+          "right": 0.3499
+        }
+      },
+      "teacher": "right",
+      "candidates": [
+        {
+          "action": "right",
+          "survival": 1,
+          "value": 147
+        },
+        {
+          "action": "down",
+          "survival": 1,
+          "value": 50
+        },
+        {
+          "action": "up",
+          "survival": 1,
+          "value": -16
+        }
+      ]
+    },
+    {
+      "turn": 250,
+      "model": {
+        "type": "choice",
+        "choice": "right",
+        "confidence": 0.7552,
+        "probabilities": {
+          "left": 0.1224,
+          "right": 0.8776
+        }
+      },
+      "teacher": "left",
+      "candidates": [
+        {
+          "action": "left",
+          "survival": 1,
+          "value": -163
+        },
+        {
+          "action": "right",
+          "survival": 0,
+          "value": -24
+        }
+      ]
+    }
+  ],
+  "confirmed_findings": [
+    "The fine-tuned adapter identity is consistent throughout the recorded game.",
+    "All three fatal actions have a legal alternative that avoids death until the next legacy decision boundary; this does not establish long-term survival.",
+    "The supplied trajectory repeatedly traverses a 24-decision circuit with no pellet progress; observation history covers only 12 decisions.",
+    "The model keeps its heading in 210/215 opportunities, and 24/29 junction opportunities, compared with 2264/3467 and 190/516 among v1 training labels.",
+    "All 4096 training boards are first-life states; 234/251 trace requests occur after a death.",
+    "Every one of 69 observed transitions ending on a tile that contained a pellet consumed it. Remaining dots are on branches the model did not traverse.",
+    "Legacy actions at turns 70,81,92 travel 3,2,2 tiles. Reversal counterfactuals sometimes return to the same centre after two frames.",
+    "Teacher choices are not universally good: turn 135 labels the immediately fatal action when both search candidates die within its horizon; turn 195 has three exact best-value ties.",
+    "The teacher CPU report has higher score but zero clears and four caps among five first-life trials.",
+    "Repeated multi-life counterfactual testing exposed an omitted ghost-release mode in the upstream rewind hook. The benchmark augments rewind only and reproduces the full recorded game exactly."
+  ],
+  "uncertainties": [
+    "Heading bias is an observed association. Its learning cause requires controlled probes of the GPU checkpoint.",
+    "No source of benchmark comparison.json was supplied, so no numerical before/after claim is made.",
+    "Power-pellet consumption is observed once, with zero ghosts eaten. The trace cannot establish learned power expiry, hunting or endgame abilities.",
+    "The exact remaining power timer, phase clock, ghost queued turns, pixel/speed phase and destination visits are absent from v1 observation. Missing features are a demonstrated information gap, not proof they alone caused every bad move."
+  ],
+  "privacy": "Raw trace and full state-by-state audit remain outside the repository; only derived diagnostic evidence is published."
+}
