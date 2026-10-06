@@ -1,6 +1,6 @@
 {
   "repository": "yxc20089/QPlusLearning",
-  "revision": "e88bf455de872d19861586a90813640b407b9ddc",
+  "revision": "ddaca0de385acfe14258147cfbcdcebb5f657615",
   "files": {
     "api_client.py": "0e48a2dfb4e3bb6d07228341c08cde6c92bf25bc311c91bfcae4bcbf19a8d51e",
     "pacman_lab.py": "aaa36ffc056bb060989f50ba31ebda1a1ae04f2ad6c5d4ace0792941763b97e2",
@@ -22,6 +22,10 @@
     "games/arcade-planner.js": "f505a2b131465f0f170e16731863efe870e8549b50239f41d5a230dd57b7ff57",
     "data/pacman-planner-v1.zip": "a6f7e5282e888ede6a24f28cc7dffdb7d3cf51776ec5c9d6adefcf6e15e9e6a1",
     "data/pacman-planner-v1-manifest.json": "3c22ede98985264b46410dc14026eaa22301b79a3f9061cf5063c739fc39b6e2",
-    "data/pacman-planner-v1-quality.json": "db6ae0d8b730c7582f3f76e0c0177061d5449cfd55bc87ae3dd4c66277d54fc0"
+    "data/pacman-planner-v1-quality.json": "db6ae0d8b730c7582f3f76e0c0177061d5449cfd55bc87ae3dd4c66277d54fc0",
+    "gameplay_benchmark.py": "d670447ba8ab3da2822ad93d81339c40c91376d1e12ccb046ea830194a541c1f",
+    "benchmark-spec.json": "fe141fd62bcb73f79d09934645495e27c61ac8d63428dbcc93dd9bd0e6365cb2",
+    "games/benchmark-hooks.js": "9087a8ee70d8bb25c71a84abe8f614a4ea99f897ba345e36f4a70f520dca4069",
+    "games/benchmark-worker.cjs": "779d0955634207bd9ee3080c1d686b2368976591aec41fa9129e4480d3f09e5b"
   }
 }

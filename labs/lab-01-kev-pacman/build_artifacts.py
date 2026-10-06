@@ -10,7 +10,8 @@ HELPERS = ["api_client.py", "pacman_lab.py", "cloud_runtime.py", "training_monit
            "lora_recovery.py", "checkpoint_backup.py", "optimized_training.py", "training-kernels.json", "training_stages.py", "training-stages.json", "games/arcade-engine.js", "games/arcade-worker.js", "games/arcade-browser.js", "games/arcade-shell.html",
            "vendor/arcade-pacman/source.json", "vendor/arcade-pacman/source.zip",
            "planner_data.py", "games/arcade-planner.js", "data/pacman-planner-v1.zip",
-           "data/pacman-planner-v1-manifest.json", "data/pacman-planner-v1-quality.json"]
+           "data/pacman-planner-v1-manifest.json", "data/pacman-planner-v1-quality.json",
+           "gameplay_benchmark.py", "benchmark-spec.json", "games/benchmark-hooks.js", "games/benchmark-worker.cjs"]
 
 
 def source_lock(pin=False):
@@ -88,13 +89,14 @@ if 'runtime' in globals():
     runtime.stop()
 import importlib
 importlib.invalidate_caches()
-for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_backup', 'optimized_training', 'training_stages', 'planner_data', 'pacman_lab', 'api_client']:
+for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_backup', 'optimized_training', 'training_stages', 'gameplay_benchmark', 'planner_data', 'pacman_lab', 'api_client']:
     sys.modules.pop(name, None)
 from cloud_runtime import CloudRuntime
 from lora_recovery import latest_snapshot
 from training_stages import specifications, inspect_checkpoint, restore_checkpoint, backup_checkpoint
 from pacman_lab import *
 from planner_data import prepare_dataset, planner_rollout, PREFIX, RECIPE
+from gameplay_benchmark import evaluate_snapshots, benchmark_gameplay, paired_gameplay
 from api_client import call, distribution
 ensure_node(LAB_DIR)
 runtime = CloudRuntime(LAB_DIR, training_profile=TRAINING_PROFILE)
@@ -517,24 +519,33 @@ else:
 """)
     md("""### Evaluate the baseline and task adapter (60–80 minutes)
 
-The candidate is now fixed. Pause interactive play before running this comparison, which switches the active model. Score both models on the same **256 evaluation snapshots** and save predictions by ID. Report strict and tie-aware teacher agreement, lower search-survival choices, search-value regret within the same survival class, and immediate captures. These are comparisons with an approximate teacher, not full-game win rates. Fine-tuning may leave answers unchanged or make them worse.""")
+The candidate is now fixed. Pause interactive play before this comparison, which switches the active model. The primary test runs both adapters on **five reserved seeds, all three lives, up to 512 decisions per game**. It stops at a cleared level, native game-over or a recorded cap. Report pellet progress, avoidable immediate deaths, no-pellet cycles, first-life and post-respawn progress, power pellets, ghosts eaten and action geometry. Save per-seed paired differences and full trajectories. A capped game is unresolved; a higher score alone does not establish better play. The protocol caps gameplay inference at 5,120 requests across both models; wall time depends on measured serving latency and early termination.
+
+Keep the **256 evaluation snapshots** as a secondary teacher-agreement test, now broken down by danger, power mode, junctions and revisits. Empty late-maze/respawn strata are marked unavailable. The approximate teacher can itself loop or choose a poor label.
+
+This benchmark preserves the current v1 observation and action semantics so your completed adapter remains comparable. The [trajectory diagnosis and v2 plan](https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/README.md#trajectory-diagnosis-and-next-data-plan) explain the observed failures and the gates required before replacing the dataset. No v2 training data has been generated.""")
     code("""runtime.start(GENERAL)
-before = evaluate(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
+before = evaluate_snapshots(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
 before_identity = runtime.active_model_info()
-before_run = rollout(max_turns=128)
+before_gameplay = benchmark_gameplay(model_info=runtime.active_model_info,
+                                    trace_dir=LAB_DIR / 'results/gameplay-general')
 runtime.start(checkpoint)
-after = evaluate(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
+after = evaluate_snapshots(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
 after_identity = runtime.active_model_info()
-after_run = rollout(max_turns=128)
-comparison = {'base_model': audit['base'], 'base_revision': audit['base_revision'], 'baseline_checkpoint': str(GENERAL), 'checkpoint_owners': STAGE_OWNERS, 'fine_tuned_checkpoint': str(checkpoint), 'active_adapters': {'before': before_identity, 'after': after_identity}, 'before': before, 'after': after, 'rollouts': {'general': before_run, 'fine_tuned': after_run}, 'general_training_stages': stage_metrics, 'missing_general_stage_archives': missing_stage_archives, 'pacman_training': metrics, 'runtime': runtime.gpu}
+after_gameplay = benchmark_gameplay(model_info=runtime.active_model_info,
+                                   trace_dir=LAB_DIR / 'results/gameplay-fine-tuned')
+gameplay_comparison = paired_gameplay(before_gameplay, after_gameplay)
+comparison = {'schema_version': 2, 'base_model': audit['base'], 'base_revision': audit['base_revision'], 'baseline_checkpoint': str(GENERAL), 'checkpoint_owners': STAGE_OWNERS, 'fine_tuned_checkpoint': str(checkpoint), 'active_adapters': {'before': before_identity, 'after': after_identity}, 'before': before, 'after': after, 'gameplay': {'general': before_gameplay, 'fine_tuned': after_gameplay, 'paired': gameplay_comparison}, 'general_training_stages': stage_metrics, 'missing_general_stage_archives': missing_stage_archives, 'pacman_training': metrics, 'runtime': runtime.gpu}
 comparison['pacman_dataset'] = manifest
 (LAB_DIR / 'comparison.json').write_text(json.dumps(comparison, indent=2))
 for name, result in [('general', before), ('fine_tuned', after)]:
     print(name, {key:result[key] for key in ['accuracy', 'tie_aware_teacher_accuracy', 'lower_search_survival_choices', 'mean_same_survival_search_regret', 'caught_next_turn']})
-for name, episode in [('general', before_run), ('fine_tuned', after_run)]:
-    print(name, {key:episode[key] for key in ['turns', 'dots_collected', 'score', 'repeated_tiles', 'outcome']})
+    print('Snapshot strata:', json.dumps(result['strata'], indent=2))
+for name, games in [('general', before_gameplay), ('fine_tuned', after_gameplay)]:
+    print(name, 'means:', games['means'], 'clears:', games['level_clears'], 'capped:', games['capped_episodes'])
+print('Paired gameplay differences:', json.dumps(gameplay_comparison, indent=2))
 """)
-    md("""The evaluation leaves your Pac-Man task adapter serving. To play again, rerun **Interactive play — Pac-Man fine-tuned Kev** above, choose **Kev**, and start a new game. Verify the badge says `kev-4b-pacman-planner-v1`. This remains an ungraded activity. Both Python rollouts use the same starting board, seed, native engine and 128-decision cap, stopping at the first lost life or completed level; the browser retains three lives and level progression. The trajectories illustrate behavior rather than a win-rate estimate. The archived five-seed CPU report evaluates the planning teacher itself, which can also fail.
+    md("""The evaluation leaves your Pac-Man task adapter serving. To play again, rerun **Interactive play — Pac-Man fine-tuned Kev** above, choose **Kev**, and start a new game. Verify the badge says `kev-4b-pacman-planner-v1`. This remains an ungraded activity. Both gameplay benchmarks use the same seeds, native engine, three-life rules and caps. They test the same classic maze at starting level 1; five seeds do not establish broad generalization. The archived five-seed CPU report evaluates the planning teacher itself, which can also fail. Native counterfactual actions are used only to score immediate avoidable deaths; they never replace Kev's choices.
 
 ### Explain and export the checkpoint evidence (80–90 minutes)
 
@@ -547,13 +558,16 @@ print('Unavailable earlier stage archives:', missing_stage_archives)
 # Export small adapters/heads and results, without foundation weights or packages.
 import zipfile
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as out:
-    for file in [LAB_DIR/'comparison.json', training_file, LAB_DIR/'data/pacman-planner-v1-manifest.json', LAB_DIR/'data/pacman-planner-v1-quality.json', LAB_DIR/'runtime-preflight.json', LAB_DIR/'optimized-training-preflight.json', LAB_DIR/'trainable-parameters.json']:
+    for file in [LAB_DIR/'comparison.json', LAB_DIR/'benchmark-spec.json', training_file, LAB_DIR/'data/pacman-planner-v1-manifest.json', LAB_DIR/'data/pacman-planner-v1-quality.json', LAB_DIR/'runtime-preflight.json', LAB_DIR/'optimized-training-preflight.json', LAB_DIR/'trainable-parameters.json']:
         out.write(file, file.relative_to(LAB_DIR))
     for folder in [INITIAL, DATES, DOCUMENTS, SKILLS, checkpoint]:
         for file in folder.rglob('*'):
             if file.is_file():
                 out.write(file, Path('checkpoints') / folder.name / file.relative_to(folder))
     for file in LOG_DIR.rglob('*'):
+        if file.is_file():
+            out.write(file, file.relative_to(LAB_DIR))
+    for file in (LAB_DIR/'results').rglob('*'):
         if file.is_file():
             out.write(file, file.relative_to(LAB_DIR))
 try:
