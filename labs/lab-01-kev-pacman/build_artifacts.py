@@ -355,7 +355,7 @@ else:
 
 On a new runtime or after refreshing the bootstrap, run `runtime.setup()`, optimized preparation with `RUN_TRAINING_PREFLIGHT=False`, and the storage cell first. Bootstrap creates a new runtime helper; these cells establish its hardware, training and backup settings while reusing cached files. If using the automatic Drive backup, keep the complete `kev-4b-skills` backup folder (including `latest.json`, ZIPs and their `.zip.json` receipts) at `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/kev-4b-skills`. With `SAVE_TO_DRIVE=True`, storage restores the completed native checkpoint to `/content/pacman-kev-lab/checkpoints/kev-4b-skills`.
 
-**When Skills is already complete, skip the Stage 1–4 training and backup/export cells. Run the cell below, then the single CP1 exercise.** The interactive play cell is available before and after fine-tuning. This cell loads the completed Skills model, reads available saved stage metrics and starts inference. It does not resume Skills training or require the Documents checkpoint. Earlier stage weights and training curves are available only if you also restored them; their absent archives are reported in the submission.
+**When Skills is already complete, skip the Stage 1–4 training and backup/export cells. Run the cell below, then the single CP1 exercise.** Try the Skills baseline in the first interactive play cell. A separate fine-tuned play cell follows Stage 5. This startup cell loads the completed Skills model, reads available saved stage metrics and starts inference. It does not resume Skills training or require the Documents checkpoint. Earlier stage weights and training curves are available only if you also restored them; their absent archives are reported in the submission.
 
 Set Skills ownership to `instructor` below if the instructor supplied this checkpoint. Interactive play initially uses this general model; CP1 fine-tunes it on your reviewed Pac-Man labels.""")
     code("""# Load completed Skills checkpoint for the lab
@@ -395,22 +395,26 @@ print(json.dumps(models, indent=2))
     md("""## Calibration is separate from training
 
 Kev's release fitted one probability temperature after its four training stages. We do not copy that fitted value into freshly trained checkpoints. This notebook keeps their own raw probabilities. A workload calibration experiment needs suitable held-out labels and is outside the mandatory 30-minute Pac-Man fine-tuning block. It does not update LoRA/head weights or change the top-ranked action.""")
-    md("""## Interactive play — trained Kev at the controls
+    md("""## Interactive play — general Skills baseline
 
 Try **Human** mode with arrows/WASD; click the board for keyboard focus. Restart, select **Kev**, and watch its choices. Human mode runs at 60 simulation frames per second. Kev pauses the simulation while choosing a direction at each tile center, then player and all four ghosts advance using upstream speeds/timers. Wall-clock survival is not a fair skill metric. Pause before running training cells.
 
-This activity is available before and after the checkpoint. The **Active LoRA + pointer head** badge initially shows `kev-4b-skills`: general Skills training, no Pac-Man fine-tuning. CP1's evaluation loads `kev-4b-pacman-planner-v1`; rerun this same play cell afterward to play with that adapter. Expand the details for paths and SHA-256 fingerprints. The badge and traces verify the serving model card; `kev-latest` alone is an API alias.
+This cell explicitly selects `kev-4b-skills`: general Skills training, no Pac-Man fine-tuning. After Stage 5, use **Interactive play — Pac-Man fine-tuned Kev** to try the task adapter on the same game. Pause the other board before switching models. Expand the **Active LoRA + pointer head** badge for paths and SHA-256 fingerprints. The badge and traces verify the serving model card; `kev-latest` alone is an API alias.
 
 Colab supplies the notebook callback below. On Kaggle, use the Python evaluation and rollouts instead. API errors pause visibly; the game does not replace failed player decisions with a hidden rules controller. Pause play before training, and finish interactive play before exporting results.""")
-    code("""from IPython.display import display, HTML, JSON
+    code("""# Interactive play with the general Skills checkpoint
+from IPython.display import display, HTML, JSON
+GENERAL_PLAY_CHECKPOINT = LAB_DIR / 'checkpoints/kev-4b-skills'
+if runtime.active_checkpoint is None or runtime.active_model_info()['checkpoint'] != str(GENERAL_PLAY_CHECKPOINT):
+    runtime.start(GENERAL_PLAY_CHECKPOINT)
 bridge = NotebookBridge(LAB_DIR / 'results/player-trace.jsonl', runtime.active_model_info)
 try:
     from google.colab import output
 except ImportError:
     print('Kaggle/local: continue with the decision and rollout cells below.')
 else:
-    output.register_callback('pacman.decide', lambda state: JSON(bridge.decide(state)))
-    output.register_callback('pacman.model', lambda: JSON(bridge.model()))
+    output.register_callback('pacman.decide', lambda state, selected_bridge=bridge: JSON(selected_bridge.decide(state)))
+    output.register_callback('pacman.model', lambda selected_bridge=bridge: JSON(selected_bridge.model()))
     display(HTML(GAME))
 """)
     md("""## CP1 — Fine-tune and evaluate Kev on Pac-Man game states
@@ -485,9 +489,35 @@ assert metrics['optimizer_steps'] == manifest['expected_optimizer_steps'], 'Comp
 assert not metrics.get('truncated_records', 0) and not metrics.get('rejected_records', 0), 'No state truncation or dropped records'
 assert metrics['records_seen'] == metrics['requested_records'] == manifest['expected_training_requests'], 'Complete one epoch including replay'
 """)
+    md("""## Interactive play — Pac-Man fine-tuned Kev
+
+Run the cell below after Stage 5 completes, or after the storage cell restores your completed `kev-4b-pacman-planner-v1` checkpoint from Drive. It loads that adapter and pointer head explicitly; you can play before running the benchmark. This cell needs only the initialized runtime, game helpers and completed checkpoint. It does not require earlier training or evaluation variables.
+
+Pause the baseline board first. On the new board, select **Kev** and press **Start**. Check that **Active LoRA + pointer head** says **`kev-4b-pacman-planner-v1` / Pac-Man fine-tuned**. The classic maze, assets, four native ghosts, power pellets, lives and levels are the same as in baseline play. **New game** resets the board using the same seed (7). You can pause, restart or switch to Human mode. The badge shows the verified adapter and each model decision records it in `results/fine-tuned-player-trace.jsonl`.
+
+This is an ungraded activity. Pause the game before benchmarking, switching models or exporting results. Run only one board at a time: both cells connect to the same notebook-local inference server. Colab supplies the callbacks; Kaggle/local users can use the Python rollouts.""")
+    code("""# Interactive play with the completed Pac-Man adapter
+from IPython.display import display, HTML, JSON
+PACMAN_PLAY_CHECKPOINT = LAB_DIR / 'checkpoints/kev-4b-pacman-planner-v1'
+if not (PACMAN_PLAY_CHECKPOINT / 'run-evidence.json').is_file():
+    raise RuntimeError(f'Complete Stage 5 or restore its completed checkpoint to {PACMAN_PLAY_CHECKPOINT} before playing.')
+if runtime.active_checkpoint is None or runtime.active_model_info()['checkpoint'] != str(PACMAN_PLAY_CHECKPOINT):
+    runtime.start(PACMAN_PLAY_CHECKPOINT)
+if not runtime.active_model_info()['pacman_fine_tuned']:
+    raise RuntimeError('The active checkpoint is not recorded as Pac-Man fine-tuned. Load the completed Stage 5 checkpoint.')
+fine_tuned_bridge = NotebookBridge(LAB_DIR / 'results/fine-tuned-player-trace.jsonl', runtime.active_model_info)
+try:
+    from google.colab import output
+except ImportError:
+    print('Kaggle/local: use the Python rollouts below; interactive callbacks require Colab.')
+else:
+    output.register_callback('pacman.decide', lambda state, selected_bridge=fine_tuned_bridge: JSON(selected_bridge.decide(state)))
+    output.register_callback('pacman.model', lambda selected_bridge=fine_tuned_bridge: JSON(selected_bridge.model()))
+    display(HTML(GAME))
+""")
     md("""### Evaluate the baseline and task adapter (60–80 minutes)
 
-The candidate is now fixed. Score both models on the same **256 evaluation snapshots** and save predictions by ID. Report strict and tie-aware teacher agreement, lower search-survival choices, search-value regret within the same survival class, and immediate captures. These are comparisons with an approximate teacher, not full-game win rates. Fine-tuning may leave answers unchanged or make them worse.""")
+The candidate is now fixed. Pause interactive play before running this comparison, which switches the active model. Score both models on the same **256 evaluation snapshots** and save predictions by ID. Report strict and tie-aware teacher agreement, lower search-survival choices, search-value regret within the same survival class, and immediate captures. These are comparisons with an approximate teacher, not full-game win rates. Fine-tuning may leave answers unchanged or make them worse.""")
     code("""runtime.start(GENERAL)
 before = evaluate(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
 before_identity = runtime.active_model_info()
@@ -504,7 +534,7 @@ for name, result in [('general', before), ('fine_tuned', after)]:
 for name, episode in [('general', before_run), ('fine_tuned', after_run)]:
     print(name, {key:episode[key] for key in ['turns', 'dots_collected', 'score', 'repeated_tiles', 'outcome']})
 """)
-    md("""The evaluation leaves your Pac-Man task adapter serving. You can now rerun **Interactive play** above, choose **Kev**, and start a new game. Verify the badge says `kev-4b-pacman-planner-v1`. This remains an ungraded activity. Both Python rollouts use the same starting board, seed, native engine and 128-decision cap, stopping at the first lost life or completed level; the browser retains three lives and level progression. The trajectories illustrate behavior rather than a win-rate estimate. The archived five-seed CPU report evaluates the planning teacher itself, which can also fail.
+    md("""The evaluation leaves your Pac-Man task adapter serving. To play again, rerun **Interactive play — Pac-Man fine-tuned Kev** above, choose **Kev**, and start a new game. Verify the badge says `kev-4b-pacman-planner-v1`. This remains an ungraded activity. Both Python rollouts use the same starting board, seed, native engine and 128-decision cap, stopping at the first lost life or completed level; the browser retains three lives and level progression. The trajectories illustrate behavior rather than a win-rate estimate. The archived five-seed CPU report evaluates the planning teacher itself, which can also fail.
 
 ### Explain and export the checkpoint evidence (80–90 minutes)
 
