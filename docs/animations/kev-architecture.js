@@ -38,15 +38,15 @@
     {id:'right',x:584,y:242,w:108,h:22,size:13,text:'Right  0.09'},
     {id:'execute',x:584,y:282,w:108,h:23,size:15,bold:true,color:C.teal,text:'Execute Left'},
     {id:'repeated',x:186,y:285,w:228,h:18,size:12,color:C.muted,text:'Adapted projections across layers'},
-    {id:'encoder-formula',x:36,y:306,w:355,h:32,size:22,formula:true,text:'H = f(x; W₀ + ΔW)'},
+    {id:'encoder-formula',x:36,y:306,w:355,h:32,size:22,formula:true,text:'H = fθ(x)',subscript:[5,6]},
     {id:'output-formula',x:436,y:306,w:248,h:32,size:22,formula:true,text:'p = softmax(z)'},
-    {id:'symbols',x:36,y:343,w:648,h:36,size:13,color:C.muted,text:'x: input tokens   H: hidden vectors   W₀: fixed base weights\nΔW: LoRA updates   z: option scores   p: move probabilities'},
+    {id:'symbols',x:36,y:343,w:648,h:36,size:13,color:C.muted,text:'x: input tokens   H: hidden vectors   θ: effective backbone parameters\nW₀: fixed base weights   ΔW: LoRA updates   z: scores   p: probabilities'},
     {id:'footer',x:36,y:383,w:615,h:17,size:9,color:C.muted,text:'Illustrative probabilities. Open animation controls.'},
     {id:'number',x:665,y:383,w:19,h:17,size:9,color:C.muted,text:'1'},
   ];
   const stages = [
     {title:'1. Supply the decision input',text:'The game supplies the current maze, ghost state, timers, movement history and legal moves. These become input token IDs, x. Kev chooses only among the supplied options.'},
-    {title:'2. Compute contextual hidden vectors',text:'Qwen processes x using its fixed base weights W₀ and learned LoRA updates ΔW. H collects the resulting hidden vectors. This branch drawing summarizes adaptations inside multiple layers, not one adapter added after the whole model.'},
+    {title:'2. Compute contextual hidden vectors',text:'Qwen turns the input x into hidden vectors H. The subscript θ names the effective backbone parameters: the fixed base weights together with learned LoRA updates at selected projections. The drawing summarizes these adaptations across multiple layers.'},
     {title:'3. Score the supplied options',text:'The trainable pointer head reads the final decision marker and the closing marker of each option from H. Its two projections produce one score per supplied move. The vector z contains these scores.'},
     {title:'4. Convert scores into probabilities',text:'Softmax converts z into p, a probability distribution over the supplied moves. The example uses logits [2, 1, 0], giving approximately [0.67, 0.24, 0.09]. These are illustrative values, not measured model output or survival odds.'},
     {title:'5. Execute the selected label',text:'The application returns and executes Left, the option with the largest probability in this example. The next board becomes a new input. Kev does not generate the action label or response JSON token by token.'},
@@ -76,7 +76,7 @@
     s+=lines.map(([x1,y1,x2,y2,c,a])=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="1.4"${a?` marker-end="url(#${c===C.teal?'teal':'orange'}-arrow)"`:''}/>`).join('');
     s+=`<circle cx="389" cy="215" r="10" fill="white" stroke="${C.muted}"/><text x="389" y="220" text-anchor="middle" font-family="Arial" font-size="17" fill="${C.ink}">+</text>`;
     for(const [y,w] of [[181,67],[225,24],[269,9]])s+=`<rect x="584" y="${y}" width="100" height="7" fill="${C.light}"/><rect x="584" y="${y}" width="${w}" height="7" fill="${C.teal}"/>`;
-    s+=texts.map(v=>`<text id="text-${v.id}" x="${v.center?v.x+v.w/2:v.x}" y="${v.y+v.size}" font-family="${v.formula?'Georgia':'Arial'}" font-size="${v.size}" font-weight="${v.bold?'700':'400'}" fill="${v.color||C.ink}"${v.center?' text-anchor="middle"':''}>${v.text.split('\n').map((line,i)=>`<tspan x="${v.center?v.x+v.w/2:v.x}" dy="${i?v.size*1.3:0}">${esc(line)}</tspan>`).join('')}</text>`).join('');
+    s+=texts.map(v=>`<text id="text-${v.id}" x="${v.center?v.x+v.w/2:v.x}" y="${v.y+v.size}" font-family="${v.formula?'Georgia':'Arial'}" font-size="${v.size}" font-weight="${v.bold?'700':'400'}" fill="${v.color||C.ink}"${v.center?' text-anchor="middle"':''}>${v.text.split('\n').map((line,i)=>`<tspan x="${v.center?v.x+v.w/2:v.x}" dy="${i?v.size*1.3:0}">${v.subscript?esc(line.slice(0,v.subscript[0]))+`<tspan baseline-shift="sub" font-size="${v.size*.7}">${esc(line.slice(...v.subscript))}</tspan>`+esc(line.slice(v.subscript[1])):esc(line)}</tspan>`).join('')}</text>`).join('');
     return s;
   }
   const api={C,rects,lines,texts,stages,overlay,diagram,point};

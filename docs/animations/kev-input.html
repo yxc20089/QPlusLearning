@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kev input: from board state to hidden vectors</title>
+<style>
+:root{font:17px/1.5 Arial,sans-serif;color:#111827;background:white;color-scheme:light}body{max-width:1120px;margin:24px auto;padding:0 20px}a{color:#167985}.intro{font-size:15px;color:#5e6e80}svg{display:block;width:100%;height:auto;border-bottom:1px solid #e5eaed}.controls,.stages{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}button{font:inherit;border:1px solid #b5c4cc;background:white;border-radius:3px;padding:7px 16px;cursor:pointer}button:hover,button:focus-visible{outline:2px solid #167985;outline-offset:2px}button:disabled{opacity:.45;cursor:default}button[aria-current=step]{color:white;background:#167985;border-color:#167985}.stages button{font-size:15px}h1{font-size:25px}#explanation{max-width:950px;min-height:76px}footer{font-size:14px;color:#5e6e80;border-top:1px solid #e5eaed;padding-top:14px;margin:28px 0}
+</style>
+<p class="intro"><a href="https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit?slide=id.decision_lab_pros">Slide 2</a> · <a href="kev-architecture.html">Architecture overview</a>. Simplified input layout; no model or API runs on this page.</p>
+<svg id="input" viewBox="0 0 720 405" role="img" aria-label="State, instruction and three legal options form one marked input sequence. Qwen produces hidden vectors at all positions. Kev reads the option closing markers and final decision marker."></svg>
+<div class="controls" aria-label="Animation controls"><button id="play" aria-pressed="false">Play</button><button id="previous">Previous step</button><button id="next">Next step</button><button id="reset">Reset</button></div>
+<nav class="stages" aria-label="Input stages"><button data-stage="0">1 State</button><button data-stage="1">2 Instruction</button><button data-stage="2">3 Options</button><button data-stage="3">4 Decide</button><button data-stage="4">5 Hidden vectors</button><button data-stage="5">6 Readouts</button></nav>
+<section aria-live="polite" aria-atomic="true"><h1 id="stage-title">1. Describe the current board</h1><p id="explanation">The state describes the current board.</p></section>
+<footer>Based on the <a href="https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py">pinned Kev encoder and readout</a>. Readable marker names represent existing Qwen special tokens. Text spans and token counts are schematic. The lab uses causal rows without option isolation.</footer>
+<script src="kev-input.js"></script>
+</html>
