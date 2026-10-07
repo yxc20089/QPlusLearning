@@ -25,6 +25,25 @@ def checkpoint_files(folder):
 
 
 class CloudRuntimeTests(unittest.TestCase):
+    def test_explicit_correction_recipe_changes_replay_without_changing_architecture(self):
+        from planner_data import RECIPE
+        with tempfile.TemporaryDirectory() as folder:
+            runtime = CloudRuntime(folder)
+            inherited = ['python', '-m', 'kev.train', '--lora', '16', '--head_dim', '256',
+                         '--batch', '1', '--accum', '8', '--replay', '2000']
+            v4 = {**RECIPE, 'replay': 304}
+            with patch.object(runtime, 'training_command', side_effect=lambda *args: list(inherited)):
+                old = runtime.finetuning_command('data', 'v3', 'v2')
+                new = runtime.finetuning_command('data', 'v4', 'v3', recipe=v4)
+            self.assertEqual(old[old.index('--replay') + 1], '2000')
+            self.assertEqual(new[new.index('--replay') + 1], '304')
+            for flag, value in (('--lora', '16'), ('--head_dim', '256'), ('--batch', '4'), ('--accum', '2')):
+                self.assertEqual(new[new.index(flag) + 1], value)
+            with self.assertRaises(ValueError):
+                runtime.finetuning_command('data', 'v4', 'v3', recipe={**v4, 'lora': 32})
+            with self.assertRaises(ValueError):
+                runtime.finetuning_command('data', 'v4', 'v3', recipe={**v4, 'accum': 8})
+
     def test_serving_identity_hashes_native_checkpoint_and_tracks_finetuned_stage(self):
         for stage in ('skills', 'pacman'):
             with self.subTest(stage=stage), tempfile.TemporaryDirectory() as folder:

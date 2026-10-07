@@ -14,7 +14,9 @@ HELPERS = ["api_client.py", "pacman_lab.py", "cloud_runtime.py", "training_monit
            "gameplay_benchmark.py", "benchmark-spec.json", "games/benchmark-hooks.js", "games/benchmark-worker.cjs",
            "games/arcade-teacher.js", "teacher_validation.py", "teacher-validation-spec.json", "teacher_data.py",
            "evaluation/teacher-qualification.json", "evaluation/teacher-qualification-replays.zip",
-           "data/pacman-native-v2.zip", "data/pacman-native-v2-manifest.json", "data/pacman-native-v2-replays.zip", "data/pacman-native-v2-generator.py", "v3_data.py"]
+           "data/pacman-native-v2.zip", "data/pacman-native-v2-manifest.json", "data/pacman-native-v2-replays.zip", "data/pacman-native-v2-generator.py", "v3_data.py",
+           "v4_data.py", "collection_backup.py", "hard_case_evaluation.py",
+           "evaluation/v3-analysis-2026-10-07/teacher-reference.json"]
 
 
 def source_lock(pin=False):
@@ -92,7 +94,7 @@ if 'runtime' in globals():
     runtime.stop()
 import importlib
 importlib.invalidate_caches()
-for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_backup', 'optimized_training', 'training_stages', 'gameplay_benchmark', 'teacher_validation', 'teacher_data', 'planner_data', 'pacman_lab', 'api_client', 'v3_data']:
+for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_backup', 'optimized_training', 'training_stages', 'gameplay_benchmark', 'teacher_validation', 'teacher_data', 'planner_data', 'pacman_lab', 'api_client', 'v3_data', 'v4_data', 'collection_backup', 'hard_case_evaluation']:
     sys.modules.pop(name, None)
 from cloud_runtime import CloudRuntime
 from lora_recovery import latest_snapshot
@@ -780,6 +782,234 @@ Run this before replacing the runtime, including after data prework. Checkpoint 
 
 
 
+def v4_notebook(base):
+    """A separately saved hard-disagreement experiment from completed v3."""
+    cells = []
+    def add(kind, text):
+        cell = {'id': f'v4-{len(cells):02d}', 'cell_type': kind, 'metadata': {}, 'source': text.strip().splitlines(keepends=True)}
+        if kind == 'code':
+            cell.update(execution_count=None, outputs=[])
+        cells.append(cell)
+    def reuse(prefix, replace=None):
+        text = next(''.join(c['source']) for c in base['cells'] if c['cell_type'] == 'code' and ''.join(c['source']).startswith(prefix))
+        if replace:
+            text = text.replace(*replace)
+        add('code', text)
+    md = lambda text: add('markdown', text)
+    code = lambda text: add('code', text)
+    md("""# Hard-disagreement experiment — native-v3 → native-v4
+
+Warm-start your completed **native-v3 rank-16 LoRA and pointer head**. V4 uses its own output, recovery and fresh optimizer/schedule; v1/v2/v3 stay available. No general-decision curriculum rerun is needed.
+
+The [v3 audit](https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/evaluation/v3-analysis-2026-10-07/README.md) found fewer immediate avoidable deaths, but zero clears and worse food efficiency. This experiment changes data selection: mostly verified consequential learner/teacher disagreements, with a bounded replay budget. Rank, architecture, observation/action protocol, CE loss and total update budget stay fixed. Read [the experiment plan](https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/evaluation/v4-hard-disagreements-plan.md) before generation.
+
+**Generation is prework, not a 30-minute class activity.** Offline native scenarios and teacher continuation verification use concurrent CPU workers; v3 collection/probes and training use the optimized GPU runtime. No v4 improvement or generation duration is claimed before an actual run. Hard quotas must pass; the code does not fill missing cases with easy frames. The main lab still has one assessed CP1.
+
+For a restored completed v4 checkpoint, run setup/storage and the adapter-loading cell, then skip generation/training and go to comparison or interactive play.""")
+    md("""## Setup and Drive storage
+
+Use the same RTX PRO 6000 Blackwell allocation and pinned optimized training environment. Drive is enabled by default. Storage restores available v3/v4 checkpoints and v4's exact dataset/receipt/development/replay evidence. The adapter-loading cell separately restores completed generation cases. A periodic backup failure stops prework and keeps local progress; wait for the backup acknowledgment before replacing a runtime.""")
+    reuse('from pathlib import Path\nfrom urllib.request')
+    reuse('import subprocess\nsubprocess.check_call')
+    reuse('runtime.setup()')
+    reuse('RUN_TRAINING_PREFLIGHT = False')
+    reuse('SAVE_TO_DRIVE = False', ('SAVE_TO_DRIVE = False', 'SAVE_TO_DRIVE = True'))
+    md("""## Freeze the completed v3 learner
+
+The parent is `checkpoints/kev-4b-pacman-native-v3`, restored from its own Drive backup. Check the printed model hash and rank. Training/development use new disjoint seed families; the original 20 starts remain evaluation-only. Changing parent weights or collection configuration requires a separate collection directory.""")
+    code("""from v4_data import (harvest_scenarios, collect_learner, probe_candidates, verify_cases,
+                     build_dataset, validate_dataset, completed_files, PREFIX as V4_PREFIX,
+                     RECIPE as V4_RECIPE, DEFAULT_TRAIN_SEEDS as V4_TRAIN_SEEDS,
+                     DEFAULT_DEVELOPMENT_SEEDS as V4_DEVELOPMENT_SEEDS)
+from collection_backup import restore_collection, backup_collection
+from hard_case_evaluation import evaluate_hard_cases, native_summary
+from training_stages import checkpoint_fingerprint
+from api_client import call_batch
+V3 = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v3'
+V4 = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v4'
+V4_DATA = LAB_DIR / 'data'
+V4_TRAINING = V4_DATA / f'{V4_PREFIX}-train.jsonl'
+V4_DEVELOPMENT = V4_DATA / f'{V4_PREFIX}-development.jsonl'
+QUALIFICATION = LAB_DIR / 'evaluation/teacher-qualification.json'
+COLLECTION_DIR = LAB_DIR / 'results/v4-collection'
+COLLECTION_WAVE = 'wave-001'
+WAVE_TRAIN_SEEDS = list(V4_TRAIN_SEEDS)
+WAVE_DEVELOPMENT_SEEDS = list(V4_DEVELOPMENT_SEEDS)
+OFFLINE_ROOTS_PER_EPISODE = 64
+LEARNER_ROOTS_PER_EPISODE = 64
+COLLECTION_BACKUP = (runtime.backup_root.parent / 'prework-backups/v4-collection'
+                     if runtime.backup_root is not None else None)
+if COLLECTION_BACKUP is not None:
+    restore_collection(COLLECTION_DIR, COLLECTION_BACKUP)
+if not (V3 / 'run-evidence.json').is_file():
+    raise RuntimeError(f'Restore the completed native-v3 adapter to {V3}. This round does not start from Skills or v2.')
+runtime.start(V3)
+V3_IDENTITY = runtime.active_model_info()
+assert V3_IDENTITY['lora_rank'] == 16 and V3_IDENTITY['pacman_fine_tuned']
+def predict_v3_batch(requests):
+    if runtime.active_model_info() != V3_IDENTITY:
+        raise RuntimeError('Start the frozen v3 checkpoint before probing candidates')
+    responses = [value for value, elapsed in call_batch('/v1/systemone', requests, concurrency=16)]
+    if runtime.active_model_info() != V3_IDENTITY:
+        raise RuntimeError('Adapter changed during candidate probing')
+    return responses
+def generation_needed():
+    return not ((V4_DATA / f'{V4_PREFIX}-manifest.json').is_file() or (V4 / 'run-evidence.json').is_file())
+print('Frozen learner / warm-start parent:', json.dumps(V3_IDENTITY, indent=2))
+print('New v4 output:', V4)
+print('Collection Drive backup:', COLLECTION_BACKUP)
+print('Selected recipe:', V4_RECIPE)
+""")
+    md("""## 1. Harvest targeted offline native scenarios — CPU prework
+
+New native games provide coherent board state, movement history and clocks. Teacher prefixes and legal deviations expose impending ghost interceptions, late retreat, power expiration, pellet stalls, sparse-food cleanup and respawn. No hand-edited impossible board or future RNG enters Kev's input. This creates **candidates**, not accepted labels. Completed per-episode receipts are reused. Automatic workers respect physical cores, affinity and CPU quota; set a positive integer to override.
+
+Generation backs up completed artifacts and changed indexes at start, every five minutes and orderly stop. Active/incomplete work retries. A hard runtime loss can lose work since the last acknowledged backup. Do not run this cell concurrently with another generation stage in the same collection.
+
+The default is a first collection wave, not a promise of enough qualifying cases. If admission reports shortages, set a new `COLLECTION_WAVE` and new disjoint `WAVE_TRAIN_SEEDS`/`WAVE_DEVELOPMENT_SEEDS` in the loading cell, rerun it, then stages 1–4. Prior completed cases remain reusable. A saved wave cannot change its seeds or limits. Never use the 500xx benchmark seeds.""")
+    code("""TEACHER_WORKERS = None
+if generation_needed():
+    runtime.stop()
+    offline_status = harvest_scenarios(COLLECTION_DIR, QUALIFICATION,
+        train_seeds=WAVE_TRAIN_SEEDS, development_seeds=WAVE_DEVELOPMENT_SEEDS,
+        wave_id=COLLECTION_WAVE, roots_per_episode=OFFLINE_ROOTS_PER_EPISODE,
+        workers=TEACHER_WORKERS, backup_directory=COLLECTION_BACKUP)
+    print(json.dumps(offline_status, indent=2))
+else:
+    print('Verified dataset/completed v4 restored; generation skipped.')
+""")
+    md("""## 2. Collect fresh v3 trajectories — GPU prework
+
+The learner plays fresh training/development games without teacher overrides. Store complete state/action/probability traces and adapter identity. These states complement offline targeted scenarios. Entire source episodes and their forks stay in the same partition; benchmark seeds cannot be used. Completed games are reused when rerunning with identical weights/configuration.""")
+    code("""if generation_needed():
+    runtime.start(V3)
+    learner_status = collect_learner(COLLECTION_DIR, model_info=runtime.active_model_info, qualification_path=QUALIFICATION,
+        train_seeds=WAVE_TRAIN_SEEDS, development_seeds=WAVE_DEVELOPMENT_SEEDS,
+        wave_id=COLLECTION_WAVE, roots_per_episode=LEARNER_ROOTS_PER_EPISODE,
+        predict=lambda request: predict_v3_batch([request])[0],
+        backup_directory=COLLECTION_BACKUP)
+    print(json.dumps(learner_status, indent=2))
+else:
+    print('Verified dataset/completed v4 restored; learner collection skipped.')
+""")
+    md("""## 3. Probe candidate states with the frozen v3 model — GPU
+
+Send independent states concurrently to Kev's existing HTTP batching queue. Keep each legal wrong alternative in the request; gold labels, teacher plans and future outcomes stay outside the input. Save v3's move and raw probabilities. Confident wrong choices are priority corrections; agreement on a dangerous-looking state is not a verified disagreement. Rerun after verification if it produces a bounded informative candidate window.""")
+    code("""if generation_needed():
+    runtime.start(V3)
+    probe_status = probe_candidates(COLLECTION_DIR, model_info=runtime.active_model_info,
+        predict_batch=predict_v3_batch, batch_size=16, backup_directory=COLLECTION_BACKUP)
+    print(json.dumps(probe_status, indent=2))
+else:
+    print('Verified dataset/completed v4 restored; probing skipped.')
+""")
+    md("""## 4. Verify consequential disagreements — CPU
+
+The positive teacher branch must clear the native maze and pass the existing survival/sustained-loop/stall gates. Immediate fatal alternatives use exact native one-action counterfactuals. Earlier ghost traps, stalls and detours compare a forced teacher-first move with a forced v3-first move followed by the **same frozen teacher**. A different successful safe route alone does not qualify as a harmful negative.
+
+Retain full successful and rejected continuations. Independently replay admitted cases. Short informative lead-in/recovery windows need their own provenance and probe; the returned `pending_probe_count` tells you whether to rerun cells 3 then 4. Completed verification is reused. Do not train until all selected evidence and quotas pass.""")
+    code("""if generation_needed():
+    runtime.stop()
+    verification_status = verify_cases(COLLECTION_DIR, QUALIFICATION,
+        workers=TEACHER_WORKERS, backup_directory=COLLECTION_BACKUP)
+    print(json.dumps(verification_status, indent=2))
+    if verification_status.get('pending_probe_count', 0):
+        print('Informative candidates remain: rerun probe cell 3, then verification cell 4.')
+else:
+    print('Verified dataset/completed v4 restored; verification skipped.')
+""")
+    md("""## 5. Admit the hard-focused dataset
+
+Target **3,660 verified consequential disagreement roots + 1,220 informative hard decisions + 912 prior Pac-Man replay**, with **304 generic decision requests** added by Kev's trainer. The Pac-Man file has 5,792 requests; total training stays 6,096 / 762 updates. At least 75% of the 4,880-case hard pool must be verified disagreement roots. Deduplication, source/cohort quotas and episode caps prevent correlated easy frames from dominating.
+
+Fresh development remains separate. Insufficient distinct hard cases stop this cell and report missing quotas. Expand targeted collection on new seeds in a separate collection wave; do not duplicate rows, relabel benchmark traces or enable partial-data training. Full trajectories are evidence, not automatically all training rows. The selected states use native history already included in the observation.""")
+    code("""if not (V4 / 'run-evidence.json').is_file():
+    v4_manifest = build_dataset(COLLECTION_DIR, V4_DATA, QUALIFICATION)
+    assert v4_manifest['probe_checkpoint']['checkpoint_sha256'] == checkpoint_fingerprint(V3)
+    assert v4_manifest['expected_training_requests'] == 6096
+    assert v4_manifest['expected_optimizer_steps'] == 762
+    print(json.dumps({k: v4_manifest[k] for k in
+        ['counts', 'selected_budgets', 'coverage', 'expected_optimizer_steps']}, indent=2))
+    if COLLECTION_BACKUP is not None:
+        backup_collection(COLLECTION_DIR, COLLECTION_BACKUP, files=completed_files(COLLECTION_DIR))
+else:
+    print('Completed v4 restored; dataset build skipped.')
+""")
+    md("""## 6. Train a new v4 stage from v3 weights
+
+Rank 16, all-module LoRA/head, existing CE, one epoch, lr 2e-5, batch 4 × accumulation 2, required optimized kernels, BF16 autocast and FP32 stored weights. Changing data selection is the first experiment; a pairwise loss or higher rank is a later ablation. Rerunning resumes only an interrupted **v4** optimizer. Drive checkpoint backup also saves the exact v4 input and its development/verification receipt. Watch recovery/backup acknowledgments at step 1, every 100 steps or five minutes, and completion.""")
+    code("""if (V4 / 'run-evidence.json').is_file():
+    print('Using completed v4 checkpoint:', V4)
+else:
+    v4_manifest = validate_dataset(V4_DATA, QUALIFICATION)
+    assert v4_manifest['probe_checkpoint']['checkpoint_sha256'] == checkpoint_fingerprint(V3)
+    assert v4_manifest['expected_training_requests'] == 6096
+    assert v4_manifest['expected_optimizer_steps'] == 762
+    assert v4_manifest['recipe'] == V4_RECIPE
+    RESUME_V4 = latest_snapshot(Path(str(V4) + '-recovery')) is not None
+    print('Resume interrupted v4:', RESUME_V4)
+    print('Selected v4 command:', runtime.finetuning_command(V4_TRAINING, V4, V3, recipe=V4_RECIPE))
+    runtime.finetune(V4_TRAINING, V4, init_from=V3, steps=0, resume=RESUME_V4, recipe=V4_RECIPE)
+    metrics = json.loads((V4 / 'training_metrics.json').read_text())
+    assert metrics['optimizer_steps'] == 762 and metrics['records_seen'] == metrics['requested_records'] == 6096
+    assert not metrics.get('truncated_records', 0) and not metrics.get('rejected_records', 0)
+    evidence = json.loads((V4 / 'run-evidence.json').read_text())
+    assert evidence['parent_checkpoint_sha256'] == checkpoint_fingerprint(V3)
+print('V4 training metrics:', (V4 / 'training_metrics.json').read_text())
+""")
+    md("""## Compare v3/v4 on frozen hard development and full native games
+
+Both models receive the same disjoint hard development labels for diagnostic teacher agreement, CE and teacher probability margin by cohort. Snapshot fit remains secondary. The primary comparison uses the **unchanged 20 native game starts**, continuing through lives until clear, game-over or watchdog. No teacher or safety filter replaces a model choice. Save all trajectories; report clears/censoring, first-life food, pellet/native-frame efficiency, avoidable deaths and their opportunity denominators, all-actions-fatal endpoints, dry intervals and sustained cycles. A short safe retreat can be correct even when it collects no immediate pellet.
+
+This cell also retains the archived, independently replay-verified frozen teacher reference on these same 20 starts: 20 clears, one life lost. The reference is checked against the current protocol, teacher sources/options and qualification hash; it is context from the prior audit, not a new teacher run. Its private raw traces were retained in the instructor archive. This cell creates a new dated recording directory each time. Pause interactive play first. Tune using fresh development games; these 500xx benchmark traces remain evaluation-only.""")
+    code("""comparison_run = new_run_directory(LAB_DIR / 'results', 'comparison-v3-v4',
+    baseline_checkpoint=str(V3), fine_tuned_checkpoint=str(V4), action_version=2)
+validate_dataset(V4_DATA, QUALIFICATION)
+development = {}
+gameplay = {}
+for name, checkpoint in [('native-v3', V3), ('native-v4', V4)]:
+    runtime.start(checkpoint)
+    development[name] = evaluate_hard_cases(V4_DEVELOPMENT,
+        predict_batch=lambda requests: [value for value, elapsed in call_batch('/v1/systemone', requests, concurrency=16)],
+        model_info=runtime.active_model_info)
+    (comparison_run / f'{name}-hard-development.json').write_text(json.dumps(development[name], indent=2))
+    gameplay[name] = benchmark_gameplay(model_info=runtime.active_model_info, trace_dir=comparison_run / name)
+    (comparison_run / f'{name}.json').write_text(json.dumps(gameplay[name], indent=2))
+comparison = {'schema_version': 4, 'baseline_checkpoint': str(V3), 'fine_tuned_checkpoint': str(V4),
+    'hard_development': development,
+    'gameplay': {'general': gameplay['native-v3'], 'fine_tuned': gameplay['native-v4'],
+                 'paired': paired_gameplay(gameplay['native-v3'], gameplay['native-v4'])},
+    'behavior': {name: native_summary(report) for name, report in gameplay.items()},
+    'recording_directory': str(comparison_run)}
+from teacher_validation import source_hashes
+teacher_reference = json.loads((LAB_DIR / 'evaluation/v3-analysis-2026-10-07/teacher-reference.json').read_text())
+assert teacher_reference['simulation_protocol'] == gameplay['native-v3']['protocol']
+assert teacher_reference['source_sha256'] == source_hashes()
+assert teacher_reference['qualification_sha256'] == hashlib.sha256(QUALIFICATION.read_bytes()).hexdigest()
+assert teacher_reference['options'] == json.loads(QUALIFICATION.read_text())['options']
+assert teacher_reference['native_replays_verified']
+comparison['teacher_reference'] = {'summary': teacher_reference['summary'],
+    'source_sha256': teacher_reference['source_sha256'],
+    'teacher_replay_bundle_sha256': teacher_reference['teacher_replay_bundle_sha256'],
+    'interpretation': 'Archived frozen-teacher games on the same20 starts, independently replay-verified in the prior audit; not regenerated by this cell.'}
+(comparison_run / 'comparison.json').write_text(json.dumps(comparison, indent=2))
+(LAB_DIR / 'comparison-v3-v4.json').write_text(json.dumps(comparison, indent=2))
+print('Native safety and food efficiency:', json.dumps(comparison['behavior'], indent=2))
+print('All development probes and benchmark trajectories:', comparison_run)
+""")
+    md("""## Interactive play with native-v4 — ungraded
+
+Choose Kev and Start. The badge must say `kev-4b-pacman-native-v4` and show its LoRA/head hashes. The observation/action protocol and native ghost/pellet mechanisms match the benchmark. Every invocation saves a separate dated trace. Pause before evaluation or backup.""")
+    reuse('# Interactive play with the completed Pac-Man adapter',
+          ("PACMAN_PLAY_CHECKPOINT = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v2'", "PACMAN_PLAY_CHECKPOINT = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v4'"))
+    md("""## Final Drive backup: checkpoints, cases, curves and full traces
+
+Run before replacing the runtime. The session archive saves all generation evidence, accepted/rejected branches, benchmark trajectories, hard-development probes and interactive traces. Checkpoint backups remain separate for each adapter and include v4's exact input/development/receipt. Wait for `Session backup complete` and an empty `checkpoint_errors` list.""")
+    reuse('# Back up all available checkpoints, trajectories and traces to Google Drive')
+    result = {'cells': cells, 'metadata': {**base['metadata'], 'colab': {'name': 'pacman_kev_v4.ipynb'}}, 'nbformat': 4, 'nbformat_minor': 5}
+    (ROOT / 'notebooks/pacman_kev_v4.ipynb').write_text(json.dumps(result, indent=2) + '\n')
+
+
 def game():
     from pacman_lab import notebook_game
     html = notebook_game(action_version=2)
@@ -792,6 +1022,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.pin_source:
         source_lock(pin=True)
-    v3_notebook(notebook())
+    base = notebook()
+    v3_notebook(base)
+    v4_notebook(base)
     game()
-    print('Built Lab 1 notebook, v3 correction notebook and Pac-Man browser game.')
+    print('Built Lab 1, v3/v4 correction notebooks and Pac-Man browser game.')

@@ -299,8 +299,8 @@ def save_backup(output, snapshot, backup_root, workspace, training_data=None):
     artifacts = []
     # The correction round generates private evidence at runtime. Restore its
     # dataset receipt/development/replays together with the exact training file.
-    if data is not None and data.name == 'pacman-native-v3-train.jsonl':
-        manifest_path = data.with_name('pacman-native-v3-manifest.json')
+    if data is not None and data.name in ('pacman-native-v3-train.jsonl', 'pacman-native-v4-train.jsonl'):
+        manifest_path = data.with_name(data.name.removesuffix('-train.jsonl') + '-manifest.json')
         manifest = json.loads(manifest_path.read_text())
         for artifact_name, expected in manifest['files'].items():
             artifact = data.parent / artifact_name

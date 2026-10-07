@@ -113,7 +113,7 @@ class CloudRuntime:
             return result
         self.backup_root.mkdir(parents=True, exist_ok=True)
         result['backup_root'] = str(self.backup_root)
-        for name in ('kev-4b-initial', 'kev-4b-dates', 'kev-4b-documents', 'kev-4b-skills', 'kev-4b-pacman-arcade', 'kev-4b-pacman-planner-v1', 'kev-4b-pacman-native-v2', 'kev-4b-pacman-native-v3'):
+        for name in ('kev-4b-initial', 'kev-4b-dates', 'kev-4b-documents', 'kev-4b-skills', 'kev-4b-pacman-arcade', 'kev-4b-pacman-planner-v1', 'kev-4b-pacman-native-v2', 'kev-4b-pacman-native-v3', 'kev-4b-pacman-native-v4'):
             output = Path(checkpoint_root).resolve() / name
             restored = restore_backup(output, self.backup_root, self.workspace)
             if restored:
@@ -415,12 +415,18 @@ print('Prepared', len(rows), 'verified training records and base weights. LoRA/h
             command += ["--base_revision", meta["base_revision"]]
         return self._profile(command)
 
-    def finetuning_command(self, training_data, output, init_from, steps=0):
+    def finetuning_command(self, training_data, output, init_from, steps=0, recipe=None):
         from planner_data import RECIPE
+        recipe = dict(RECIPE if recipe is None else recipe)
+        if set(recipe) != set(RECIPE):
+            raise ValueError('An explicit fine-tuning recipe must provide the existing domain-training fields')
+        if (int(recipe['batch']) * int(recipe['accum']) != 8 or int(recipe['replay']) < 0
+                or int(recipe['epochs']) != 1 or not 0 < float(recipe['lr']) < 1):
+            raise ValueError('Fine-tuning keeps one epoch and an effective request batch of eight')
         command = self.training_command(training_data, output, init_from, steps)
         # Pac-Man's short-context execution selection is explicit, just like
         # Stage 1's 4 x 2 selection; long-document memory overrides stay separate.
-        for key, value in RECIPE.items():
+        for key, value in recipe.items():
             flag = '--' + key
             if flag in command:
                 command[command.index(flag)+1] = str(value)
@@ -429,8 +435,8 @@ print('Prepared', len(rows), 'verified training records and base weights. LoRA/h
         command += ['--suite', TRAINING_SUITE]
         return command
 
-    def finetune(self, training_data, output, init_from, steps=0, resume=False):
-        command = self.finetuning_command(training_data, output, init_from, steps)
+    def finetune(self, training_data, output, init_from, steps=0, resume=False, recipe=None):
+        command = self.finetuning_command(training_data, output, init_from, steps, recipe=recipe)
         return self._train(command, output, 180, "pacman", resume=resume)
 
     def _train(self, command, output, timeout_minutes, stage, resume=False, allow_execution_change=False, resume_from=None):

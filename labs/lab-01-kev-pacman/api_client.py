@@ -3,6 +3,7 @@ import json
 import math
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -22,6 +23,18 @@ def call(path, body=None):
     except (URLError, TimeoutError) as exc:
         raise RuntimeError("Cannot reach Kev. Check KEV_BASE_URL and whether the notebook-local server is running.") from exc
     return value, (time.perf_counter() - started) * 1000
+
+
+def call_batch(path, bodies, concurrency=16):
+    """Send ordered independent requests to Kev's existing batching queue.
+
+    Kev does not expose a JSON-array bulk endpoint. Concurrent HTTP requests let
+    its model thread batch independent states; no game decisions are pipelined.
+    """
+    if not isinstance(concurrency, int) or isinstance(concurrency, bool) or not 1 <= concurrency <= 32:
+        raise ValueError('Use between 1 and 32 concurrent independent requests')
+    with ThreadPoolExecutor(max_workers=concurrency) as pool:
+        return list(pool.map(lambda body: call(path, body), bodies))
 
 
 def distribution(answer, keys):
