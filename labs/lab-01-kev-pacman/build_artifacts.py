@@ -696,11 +696,14 @@ Select up to 24 learner-visited roots per game: fatal choices with safe alternat
 
 Training mixes **2,048 unchanged canonical v2 expert examples + 2,048 newly verified corrections/recovery examples**, plus the trainer's **2,000 generic decision-v7 replay requests**. Fresh development has 512 labels and never enters training. Coverage floors include at least 128 learner-visited roots, 64 learner/teacher disagreements, 512 immediate safe/fatal decisions and 256 critical reverse labels in the new training half; development requires at least 64 critical decisions and 32 critical reversals. These are admission requirements, not claims that collection has already met them. Insufficient coverage stops the pipeline and reports what is missing.
 
-Full native replays independently verify teacher recoveries before the dataset receipt is published. Search plans, future diagnostics and teacher targets remain outside Kev's inference input. The loss remains the published option softmax cross-entropy; all legal competing actions, including dangerous ones, remain options.""")
+Full native replays independently verify teacher recoveries before the dataset receipt is published. Search plans, future diagnostics and teacher targets remain outside Kev's inference input. The loss remains the published option softmax cross-entropy; all legal competing actions, including dangerous ones, remain options.
+
+The native JavaScript teacher runs on CPU. `TEACHER_WORKERS=None` automatically uses available physical cores, respecting CPU affinity and cgroup quotas; set a positive integer to override. A VM with 48 available logical CPUs / 24 physical cores selects 24 workers. The cell prints its allocation and a generation-only ETA after the first worker wave; recovery lengths vary, so this is an estimate. Interrupt stops submissions and lets active workers close after their current native query. Rerunning reuses completed attempt receipts and retries incomplete attempts. This interrupt behavior applies to this updated helper; a cell already running an older helper keeps its old pool.""")
     code("""# Offline teacher corrections, full recovery proof and balanced dataset
 runtime.stop()  # GPU is not needed for the frozen CPU teacher
+TEACHER_WORKERS = None  # Automatic physical-core allocation; use 24 for an explicit override
 if not (V3 / 'run-evidence.json').is_file():
-    v3_manifest = build(COLLECTION_DIR, V3_DATA, QUALIFICATION, workers=min(4, os.cpu_count() or 1))
+    v3_manifest = build(COLLECTION_DIR, V3_DATA, QUALIFICATION, workers=TEACHER_WORKERS)
     assert v3_manifest['learner']['checkpoint_sha256'] == checkpoint_fingerprint(V2), 'Dataset used another v2 adapter'
     print('Accepted teacher recoveries:', sum(a['accepted'] for a in v3_manifest['attempts']))
     print('Rejected attempts retained:', sum(not a['accepted'] for a in v3_manifest['attempts']))

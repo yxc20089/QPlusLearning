@@ -7,8 +7,13 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
 import hashlib
 import json
+import math
+import multiprocessing
+import os
 from pathlib import Path
 import random
+import signal
+import time
 import zipfile
 
 from gameplay_benchmark import BenchmarkEngine, SPEC, benchmark_gameplay, diagnostic_record, strata, summarize
@@ -22,6 +27,7 @@ DEVELOPMENT_SEEDS = [310019, 310033]
 COUNTS = {'train': 4096, 'development': 512}
 OLD_REPLAY_COUNT = 2048
 ROOTS_PER_GAME = 24
+_CANCEL_RECOVERIES = None
 OPPOSITE = {'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left'}
 MINIMUMS = {
     'train': {'learner_visited': 128, 'learner_disagreement': 64,
@@ -53,6 +59,74 @@ def file_hash(path):
         for chunk in iter(lambda: stream.read(1024 * 1024), b''):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def cpu_capacity():
+    """Count usable physical cores, respecting Linux affinity and CPU quotas."""
+    affinity = sorted(os.sched_getaffinity(0)) if hasattr(os, 'sched_getaffinity') else list(range(os.cpu_count() or 1))
+    cores = set()
+    for cpu in affinity:
+        topology = Path(f'/sys/devices/system/cpu/cpu{cpu}/topology')
+        try:
+            cores.add(((topology / 'physical_package_id').read_text().strip(),
+                       (topology / 'core_id').read_text().strip()))
+        except OSError:
+            cores = set()
+            break
+    physical = len(cores) or len(affinity)
+    quota = None
+    # The visible cgroup root plus the process's group/ancestors may each limit it.
+    root = Path('/sys/fs/cgroup')
+    groups = [root]
+    try:
+        relative = next(line.split(':', 2)[2] for line in Path('/proc/self/cgroup').read_text().splitlines()
+                        if line.startswith('0::'))
+        group = root / relative.lstrip('/')
+        if root in group.parents:
+            groups += [group] + [p for p in group.parents if root in p.parents]
+    except (OSError, StopIteration):
+        pass
+    for group in groups:
+        try:
+            maximum, period = (group / 'cpu.max').read_text().split()
+            if maximum != 'max':
+                limit = max(1, math.ceil(int(maximum) / int(period)))
+                quota = limit if quota is None else min(quota, limit)
+        except (OSError, ValueError, ZeroDivisionError):
+            pass
+    return {'logical_cpus': len(affinity), 'physical_cores': physical,
+            'quota_cpus': quota, 'automatic_workers': min(physical, quota or physical)}
+
+
+def recovery_workers(requested, pending, capacity=None):
+    if requested is not None and (isinstance(requested, bool) or not isinstance(requested, int) or requested < 1):
+        raise ValueError('Teacher workers must be a positive integer or None for automatic selection')
+    capacity = cpu_capacity() if capacity is None else capacity
+    return min(requested or capacity['automatic_workers'], pending)
+
+
+def recovery_progress(started, completed, pending, workers, now=None):
+    """Generation-only estimate; cached jobs never inflate the current run rate."""
+    elapsed = max(0, (time.monotonic() if now is None else now) - started)
+    if completed < workers or not elapsed:
+        eta = 'ETA warming up'
+    elif pending:
+        eta = f'estimated generation remaining {elapsed * pending / completed / 60:.1f} min'
+    else:
+        eta = 'generation complete'
+    return f'{workers} CPU workers; elapsed {elapsed / 60:.1f} min; {eta}'
+
+
+def _initialize_recovery_worker(cancelled):
+    global _CANCEL_RECOVERIES
+    _CANCEL_RECOVERIES = cancelled
+    # The parent handles notebook Interrupt, then workers close their Node engines.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def _check_recovery_cancelled():
+    if _CANCEL_RECOVERIES is not None and _CANCEL_RECOVERIES.is_set():
+        raise InterruptedError('Teacher recovery interrupted; incomplete attempt will be retried')
 
 
 def reserved_seeds():
@@ -196,6 +270,7 @@ def replay_prefix(engine, rows, root_index):
     if engine.request('observe') != first:
         raise ValueError('Learner replay initial state differs')
     for record in rows[:root_index]:
+        _check_recovery_cancelled()
         if engine.request('observe') != record['request']['state']:
             raise ValueError('Learner replay state differs before the correction root')
         diag = record['diagnostics']
@@ -234,6 +309,7 @@ def coverage_flags(record):
 
 def continuation_job(job):
     """Reproduce a learner prefix, then require a complete teacher recovery."""
+    _check_recovery_cancelled()
     rows = [json.loads(line) for line in Path(job['learner_trace']).read_text().splitlines()]
     if file_hash(job['learner_trace']) != job['learner_trace_sha256']:
         raise ValueError('Learner trajectory changed during correction collection')
@@ -247,6 +323,7 @@ def continuation_job(job):
         replay_prefix(engine, rows, job['root_index'])
         state = engine.request('observe')
         for index in range(SPEC['max_decisions']):
+            _check_recovery_cancelled()
             risks = engine.request('risks')
             plan = engine.request('teacher', options=job['options'])
             if engine.request('observe') != state:
@@ -301,12 +378,75 @@ def continuation_job(job):
     receipt = {**job, 'metrics': metrics, 'accepted': not failures, 'rejection_reasons': failures,
                'trace': str(trace), 'trace_sha256': file_hash(trace)}
     # Rejected recoveries remain evidence, but never supply training labels.
-    save(folder / 'attempt.json', receipt)
     if not failures:
-        with (folder / 'candidates.jsonl').open('w') as out:
+        temporary = folder / 'candidates.jsonl.tmp'
+        with temporary.open('w') as out:
             for record in candidates:
                 out.write(json.dumps(record, separators=(',', ':')) + '\n')
+        temporary.replace(folder / 'candidates.jsonl')
+    # Commit last: a completed receipt always has its full trace and labels.
+    save(folder / 'attempt.json', receipt)
     return receipt
+
+
+def run_recoveries(pending, attempts, directory, workers):
+    """Bound submissions and stop cooperatively; reruns reuse committed attempts."""
+    if not pending:
+        return []
+    started, finished, errors = time.monotonic(), 0, []
+    total = len(attempts) + len(pending)
+    jobs = iter(pending)
+    context = multiprocessing.get_context()
+    cancelled = context.Event()
+    pool = ProcessPoolExecutor(max_workers=workers, mp_context=context,
+                               initializer=_initialize_recovery_worker, initargs=(cancelled,))
+    futures = {}
+
+    def submit_next():
+        job = next(jobs, None)
+        if job is not None:
+            futures[pool.submit(continuation_job, job)] = job
+
+    def record_progress():
+        save(Path(directory) / 'teacher-recoveries.json', {'attempts': attempts, 'errors': errors,
+             'execution': {'workers': workers, 'completed_this_run': finished,
+                           'elapsed_seconds': time.monotonic() - started}})
+
+    try:
+        for _ in range(workers):
+            submit_next()
+        while futures:
+            ready, _ = wait(futures, timeout=15, return_when=FIRST_COMPLETED)
+            if not ready:
+                print(f'[v3] Teacher recovery running: {len(attempts)}/{total} complete; '
+                      + recovery_progress(started, finished, len(pending) - finished, workers), flush=True)
+            for future in ready:
+                job = futures.pop(future)
+                try:
+                    attempt = future.result()
+                except Exception as error:
+                    errors.append({'id': job['id'], 'error': str(error)})
+                else:
+                    attempts.append(attempt)
+                    m = attempt['metrics']
+                    print(f'[v3] {len(attempts)}/{total}: {job["id"]}; admitted={attempt["accepted"]}, '
+                          f'outcome={m["outcome"]}, deaths={m["life_losses"]}, avoidable={m["avoidable_immediate_deaths"]}, '
+                          f'dry={m["longest_no_pellet_decisions"]}', flush=True)
+                finished += 1
+                print('[v3] ' + recovery_progress(started, finished, len(pending) - finished, workers), flush=True)
+                record_progress()
+                submit_next()
+    except BaseException:
+        cancelled.set()
+        for future in futures:
+            future.cancel()
+        record_progress()
+        print('[v3] Stopping workers after their current native query. Completed attempt receipts are retained; '
+              'rerun this cell to retry only missing attempts.', flush=True)
+        raise
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)
+    return errors
 
 
 def balanced_select(records, count, minimums, seed):
@@ -433,7 +573,7 @@ def old_expert_records():
     return result
 
 
-def build(directory, output_directory, qualification_path, workers=4):
+def build(directory, output_directory, qualification_path, workers=None):
     """Generate the mixture only after teacher recovery and split checks pass."""
     directory, output_directory = Path(directory), Path(output_directory)
     target = output_directory / f'{PREFIX}-manifest.json'
@@ -474,31 +614,17 @@ def build(directory, output_directory, qualification_path, workers=4):
             attempt = load(path)
             if any(attempt.get(k) != v for k, v in job.items()) or file_hash(attempt['trace']) != attempt['trace_sha256']:
                 raise ValueError('Cached teacher recovery inputs/evidence changed')
+            if attempt['accepted'] and not Path(attempt['trace']).with_name('candidates.jsonl').is_file():
+                raise ValueError('Cached admitted teacher recovery is missing its labels')
             attempts.append(attempt)
         else:
             pending.append(job)
     print(f'[v3] {len(jobs)} teacher recovery attempts; {len(attempts)} cached, {len(pending)} pending', flush=True)
-    errors = []
-    with ProcessPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(continuation_job, job): job for job in pending}
-        remaining = set(futures)
-        while remaining:
-            ready, remaining = wait(remaining, timeout=15, return_when=FIRST_COMPLETED)
-            if not ready:
-                print(f'[v3] Teacher recovery running: {len(attempts)}/{len(jobs)} complete; {len(remaining)} pending', flush=True)
-            for future in ready:
-                job = futures[future]
-                try:
-                    attempt = future.result()
-                except Exception as error:
-                    errors.append({'id': job['id'], 'error': str(error)})
-                else:
-                    attempts.append(attempt)
-                    m = attempt['metrics']
-                    print(f'[v3] {len(attempts)}/{len(jobs)}: {job["id"]}; admitted={attempt["accepted"]}, '
-                          f'outcome={m["outcome"]}, deaths={m["life_losses"]}, avoidable={m["avoidable_immediate_deaths"]}, '
-                          f'dry={m["longest_no_pellet_decisions"]}', flush=True)
-                save(directory / 'teacher-recoveries.json', {'attempts': attempts, 'errors': errors})
+    capacity = cpu_capacity()
+    workers = recovery_workers(workers, len(pending), capacity)
+    print(f'[v3] Native JavaScript CPU teacher: {json.dumps(capacity)}; selected workers={workers}. '
+          'GPU acceleration is not implemented for this native simulator.', flush=True)
+    errors = run_recoveries(pending, attempts, directory, workers)
     if errors:
         raise ValueError('Native recovery jobs failed; evidence retained. Rerun to finish missing attempts.')
     attempts.sort(key=lambda x: x['id'])

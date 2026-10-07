@@ -8,6 +8,7 @@ import shutil
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+import zipfile
 
 from checkpoint_backup import save_backup, restore_backup
 from cloud_runtime import CloudRuntime, BASE_MODEL, BASE_REVISION
@@ -15,7 +16,8 @@ from gameplay_benchmark import BenchmarkEngine, diagnostic_record
 from pacman_lab import ROOT, body, teacher
 from planner_data import RECIPE
 from v3_data import (OPPOSITE, balanced_select, behavior_summary, candidate_flags, check_seed_splits,
-                     file_hash, replay_prefix, require_v2_identity, select_roots)
+                     cpu_capacity, file_hash, recovery_progress, recovery_workers, replay_prefix,
+                     require_v2_identity, run_recoveries, select_roots)
 
 
 class V3CorrectionTests(unittest.TestCase):
@@ -35,6 +37,127 @@ class V3CorrectionTests(unittest.TestCase):
         request['_meta'] = {'origin': origin, 'immediate_survival_critical': critical,
                             'learner_choice': state['player']['heading'] if origin == 'learner_visited' else None}
         return request
+
+    def test_worker_selection_respects_affinity_physical_cores_and_nested_quota(self):
+        quota = {}
+
+        def read(path, *args, **kwargs):
+            name = str(path)
+            if name == '/proc/self/cgroup':
+                return '0::/lab/job\n'
+            if name.endswith('/cpu.max'):
+                return quota.get(name, 'max 100000')
+            cpu = int(name.rsplit('/cpu', 1)[1].split('/')[0])
+            return '0' if name.endswith('physical_package_id') else str(cpu // 2)
+
+        with patch('v3_data.os.sched_getaffinity', return_value=set(range(48)), create=True), \
+                patch.object(Path, 'read_text', read):
+            capacity = cpu_capacity()
+            self.assertEqual(capacity['logical_cpus'], 48)
+            self.assertEqual(capacity['physical_cores'], 24)
+            self.assertEqual(recovery_workers(None, 576, capacity), 24)
+            self.assertEqual(recovery_workers(None, 3, capacity), 3)
+            quota['/sys/fs/cgroup/lab/cpu.max'] = '650000 100000'
+            self.assertEqual(cpu_capacity()['automatic_workers'], 7)
+        for invalid in (0, -1, True, 2.5):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                recovery_workers(invalid, 10, capacity)
+        self.assertEqual(recovery_workers(32, 576, capacity), 32)
+
+    def test_eta_uses_only_current_completed_jobs_and_reports_warmup(self):
+        self.assertIn('warming up', recovery_progress(0, 23, 500, 24, now=120))
+        self.assertIn('remaining 40.0 min', recovery_progress(0, 24, 480, 24, now=120))
+        self.assertIn('generation complete', recovery_progress(0, 24, 0, 24, now=120))
+
+    def test_interrupt_cancels_bounded_pool_and_retains_completed_receipts(self):
+        import v3_data
+        with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+            cancelled, pool = Mock(), Mock()
+            pending = [{'id': str(i)} for i in range(576)]
+            attempts = [{'id': 'already-committed'}]
+            with patch.object(v3_data, 'ProcessPoolExecutor', return_value=pool), \
+                    patch.object(v3_data.multiprocessing, 'get_context') as context, \
+                    patch.object(v3_data, 'wait', side_effect=KeyboardInterrupt):
+                context.return_value.Event.return_value = cancelled
+                with self.assertRaises(KeyboardInterrupt):
+                    run_recoveries(pending, attempts, folder, 24)
+            self.assertEqual(pool.submit.call_count, 24, 'An interrupt must not leave 576 queued jobs')
+            cancelled.set.assert_called_once()
+            pool.shutdown.assert_called_once_with(wait=True, cancel_futures=True)
+            self.assertEqual(json.loads((Path(folder) / 'teacher-recoveries.json').read_text())['attempts'], attempts)
+            with patch.object(v3_data, '_CANCEL_RECOVERIES', cancelled):
+                cancelled.is_set.return_value = True
+                with self.assertRaises(InterruptedError):
+                    v3_data.continuation_job({'id': 'cancel-before-opening-any-files'})
+
+    def test_native_recoveries_are_identical_with_one_or_two_workers(self):
+        # CPU-only fixture: replay a qualified game to its last two decisions.
+        # This test never publishes a dataset or uses these reserved seeds for training.
+        with zipfile.ZipFile(ROOT / 'evaluation/teacher-qualification-replays.zip') as archive:
+            proofs = [json.loads(line) for line in archive.read('level-1-seed-91009.jsonl').splitlines()]
+        with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+            directory = Path(folder)
+            rows = []
+            with BenchmarkEngine() as engine:
+                state = engine.request('reset', options={'seed': 91009, 'level': 1, 'action_version': 2})
+                for proof in proofs:
+                    choice = proof['choice']
+                    response = {'answers': {'move': {'choice': choice, 'probabilities': {
+                        d: float(d == choice) for d in state['legal_moves']}}}}
+                    risks = engine.request('risks')
+                    step = engine.step(choice)
+                    rows.append({'request': body(state), 'response': response,
+                                 'diagnostics': diagnostic_record(state, response, step, risks, 0)})
+                    state = step['state']
+            trace = directory / 'learner.jsonl'
+            trace.write_text(''.join(json.dumps(row) + '\n' for row in rows))
+            options = json.loads((ROOT / 'evaluation/teacher-qualification.json').read_text())['options']
+            results = []
+            for workers in (1, 2):
+                attempts = []
+                jobs = [{'id': str(root), 'split': 'train', 'seed': 91009, 'level': 1,
+                         'root_index': root, 'learner_trace': str(trace), 'learner_trace_sha256': file_hash(trace),
+                         'directory': str(directory / f'workers-{workers}'), 'options': options}
+                        for root in (len(rows) - 2, len(rows) - 1)]
+                self.assertEqual(run_recoveries(jobs, attempts, directory, workers), [])
+                result = {}
+                for attempt in attempts:
+                    self.assertTrue(attempt['accepted'])
+                    self.assertEqual(attempt['metrics']['outcome'], 'level_cleared')
+                    candidate = Path(attempt['trace']).with_name('candidates.jsonl')
+                    self.assertTrue(candidate.is_file())
+                    result[attempt['id']] = (attempt['metrics'], Path(attempt['trace']).read_bytes(), candidate.read_bytes())
+                results.append(result)
+            self.assertEqual(results[0], results[1])
+
+    def test_cancel_during_native_recovery_closes_node_without_committing_attempt(self):
+        import v3_data
+        engines = []
+
+        def open_engine():
+            engine = BenchmarkEngine()
+            engines.append(engine)
+            return engine
+
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            with BenchmarkEngine() as engine:
+                rows = self.native_rows(engine, turns=1)
+            trace = directory / 'learner.jsonl'
+            trace.write_text(json.dumps(rows[0]) + '\n')
+            job = {'id': 'cancelled', 'split': 'train', 'seed': 300017, 'level': 1,
+                   'root_index': 0, 'learner_trace': str(trace), 'learner_trace_sha256': file_hash(trace),
+                   'directory': str(directory),
+                   'options': json.loads((ROOT / 'evaluation/teacher-qualification.json').read_text())['options']}
+            cancelled = Mock()
+            cancelled.is_set.side_effect = [False, False, True]
+            with patch.object(v3_data, '_CANCEL_RECOVERIES', cancelled), \
+                    patch.object(v3_data, 'BenchmarkEngine', side_effect=open_engine), self.assertRaises(InterruptedError):
+                v3_data.continuation_job(job)
+            self.assertEqual(len(engines), 1)
+            self.assertIsNotNone(engines[0].process.poll(), 'Cancellation must not orphan the native Node simulator')
+            self.assertTrue((directory / 'cancelled/teacher.jsonl').is_file())
+            self.assertFalse((directory / 'cancelled/attempt.json').exists(), 'An incomplete trajectory is not a cache hit')
 
     def test_fresh_seeds_never_overlap_benchmarks_or_old_partitions(self):
         check_seed_splits([300017], [310019])
