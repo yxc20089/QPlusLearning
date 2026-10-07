@@ -11,7 +11,10 @@ HELPERS = ["api_client.py", "pacman_lab.py", "cloud_runtime.py", "training_monit
            "vendor/arcade-pacman/source.json", "vendor/arcade-pacman/source.zip",
            "planner_data.py", "games/arcade-planner.js", "data/pacman-planner-v1.zip",
            "data/pacman-planner-v1-manifest.json", "data/pacman-planner-v1-quality.json",
-           "gameplay_benchmark.py", "benchmark-spec.json", "games/benchmark-hooks.js", "games/benchmark-worker.cjs"]
+           "gameplay_benchmark.py", "benchmark-spec.json", "games/benchmark-hooks.js", "games/benchmark-worker.cjs",
+           "games/arcade-teacher.js", "teacher_validation.py", "teacher-validation-spec.json", "teacher_data.py",
+           "evaluation/teacher-qualification.json", "evaluation/teacher-qualification-replays.zip",
+           "data/pacman-native-v2.zip", "data/pacman-native-v2-manifest.json", "data/pacman-native-v2-replays.zip", "data/pacman-native-v2-generator.py"]
 
 
 def source_lock(pin=False):
@@ -89,14 +92,14 @@ if 'runtime' in globals():
     runtime.stop()
 import importlib
 importlib.invalidate_caches()
-for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_backup', 'optimized_training', 'training_stages', 'gameplay_benchmark', 'planner_data', 'pacman_lab', 'api_client']:
+for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_backup', 'optimized_training', 'training_stages', 'gameplay_benchmark', 'teacher_validation', 'teacher_data', 'planner_data', 'pacman_lab', 'api_client']:
     sys.modules.pop(name, None)
 from cloud_runtime import CloudRuntime
 from lora_recovery import latest_snapshot
 from training_stages import specifications, inspect_checkpoint, restore_checkpoint, backup_checkpoint
 from pacman_lab import *
-from planner_data import prepare_dataset, planner_rollout, PREFIX, RECIPE
-from gameplay_benchmark import evaluate_snapshots, benchmark_gameplay, paired_gameplay
+from teacher_data import prepare_dataset, PREFIX, RECIPE
+from gameplay_benchmark import benchmark_gameplay, paired_gameplay
 from api_client import call, distribution
 ensure_node(LAB_DIR)
 runtime = CloudRuntime(LAB_DIR, training_profile=TRAINING_PROFILE)
@@ -106,12 +109,12 @@ DATES = CHECKPOINT_ROOT / 'kev-4b-dates'
 DOCUMENTS = CHECKPOINT_ROOT / 'kev-4b-documents'
 SKILLS = CHECKPOINT_ROOT / 'kev-4b-skills'
 STAGES = specifications()
-manifest = prepare_dataset(LAB_DIR / 'data')
-GAME = notebook_game()
+manifest = None  # Loaded with its teacher qualification receipt in CP1
+GAME = notebook_game(action_version=2)
 STAGE_OWNERS = {}
-print('Prepared classic arcade engine, four ghosts and episode-disjoint player snapshots.')
+print('Prepared the native arcade engine, four ghosts and full-game benchmark. CP1 verifies qualified demonstrations.')
 """)
-    md("""Setup fetches readable helpers, a compressed planning dataset and a 9.7 MB archive of original game source/assets, verifying every SHA-256. It extracts the three declared dataset files after checking their individual hashes. The instructor generates planning labels before class; learners do not spend the training block generating demonstrations. Node.js executes that same engine for Python evaluation; Colab installs a checksum-pinned official Node binary only if needed, separate from Torch. Cached downloads are reused. Network access is needed on first use.
+    md("""Setup fetches readable helpers, a compressed planning dataset and a 9.7 MB archive of original game source/assets, verifying every SHA-256. CP1 extracts the two declared training/development files after checking their individual hashes and the teacher qualification receipt. The instructor qualifies the teacher on complete native games before generating labels. Native replays verify the receipt; learners do not generate demonstrations during the training block. Node.js executes that same engine for Python evaluation; Colab installs a checksum-pinned official Node binary only if needed, separate from Torch. Cached downloads are reused. Network access is needed on first use.
 
 ## Training monitor: open TensorBoard before running any stage
 
@@ -399,7 +402,7 @@ print(json.dumps(models, indent=2))
 Kev's release fitted one probability temperature after its four training stages. We do not copy that fitted value into freshly trained checkpoints. This notebook keeps their own raw probabilities. A workload calibration experiment needs suitable held-out labels and is outside the mandatory 30-minute Pac-Man fine-tuning block. It does not update LoRA/head weights or change the top-ranked action.""")
     md("""## Interactive play — general Skills baseline
 
-Try **Human** mode with arrows/WASD; click the board for keyboard focus. Restart, select **Kev**, and watch its choices. Human mode runs at 60 simulation frames per second. Kev pauses the simulation while choosing a direction at each tile center, then player and all four ghosts advance using upstream speeds/timers. Wall-clock survival is not a fair skill metric. Pause before running training cells.
+Try **Human** mode with arrows/WASD; click the board for keyboard focus. Restart, select **Kev**, and watch its choices. Human mode runs at 60 simulation frames per second. Kev pauses the simulation while choosing a direction at each adjacent-tile entry boundary, then player and all four ghosts advance using upstream speeds/timers. Wall-clock survival is not a fair skill metric. Pause before running training cells.
 
 This cell explicitly selects `kev-4b-skills`: general Skills training, no Pac-Man fine-tuning. After Stage 5, use **Interactive play — Pac-Man fine-tuned Kev** to try the task adapter on the same game. Pause the other board before switching models. Expand the **Active LoRA + pointer head** badge for paths and SHA-256 fingerprints. The badge and traces verify the serving model card; `kev-latest` alone is an API alias.
 
@@ -421,23 +424,23 @@ else:
 """)
     md("""## CP1 — Fine-tune and evaluate Kev on Pac-Man game states
 
-Use the committed planning-labelled game states to adapt your completed Skills LoRA/head, then compare the baseline and task adapter on the same held-out boards. This is the lab's only assessed checkpoint.
+This is the only assessed checkpoint. Review demonstrations from a teacher that passed complete native-game qualification, adapt your Skills LoRA/head, and compare full games before and after training. Submit the adapter/head, reviewed labels, curves and `comparison.json`. Improvement must be measured; higher agreement with teacher labels alone is insufficient.
 
-Complete the data review, full task training and paired evaluation below. Submit the trained adapter/head, reviewed training labels, curves and `comparison.json`, with a short explanation of one changed move or remaining mistake. Explain how the native ghost rules affect a planning label and why the search is approximate. Completion requires the full 762-update recipe, no dropped/truncated records, and recorded before/after measurements; improvement is an experimental result to measure.
+### Inspect qualified demonstrations (20–30 minutes)
 
-### Inspect the planning data (20–30 minutes)
+The instructor first tests a fixed teacher on **20 complete native games: five separate qualification seeds at levels 1, 2, 3 and 5**. Every maze must clear. Avoidable immediate deaths, sustained loops (eight consecutive cycle detections), pellet stalls beyond 128 decisions and incorrect movement boundaries fail the gate. All brief repeats remain visible. The original zero-repeat suite is archived as failed; the user-selected sustained-loop criterion uses fresh seeds and an unchanged teacher. A source/configuration receipt and compact native replays are verified before labels can be loaded. Development and current/retired qualification seeds never enter training. This is finite-suite evidence, not a guarantee for every future state.
 
-Data has **4,096 training, 256 development and 256 evaluation** snapshots from valid native-engine trajectories, starting at levels 1, 2, 3 and 5. At every labelled board, the teacher simulates up to **20 future player moves** for every legal first action, retaining **eight paths per first action** under **two independent frightened-mode randomness scenarios**. Chase/scatter movement is predicted from each ghost's deterministic native targeting rule, rather than a random walk. Native code handles speeds, timers, release counters, collisions, power pellets, fruit and score.
+The teacher combines CS188-style cached shortest food routes with **native rollout MPC**: enumerate each legal first direction, simulate routing policies with safety buffers 1, 2, 4 and 6 for 240 native frames (480 near dangerous ghosts or with 30 or fewer pellets), and use two independently resampled future-RNG scenarios. Native targeting predicts Blinky, Pinky, Inky and Clyde; frightened turns retain uncertainty. Exact immediate safety comes first, then actual/imminent dry-cycle avoidance, approximate rollout survival and predicted time to the next pellet. The teacher is an independently implemented finite policy portfolio, not UCT/MCTS or a globally optimal solver. See the [algorithm comparison](https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/evaluation/teacher-methods.md).
 
-The objective ranks worst-scenario survival first, then mean `score gained + 5 × pellets collected − 4 × repeat visits − 6 × distance to the next pellet + 2 × min(dangerous-ghost distance, 8)`. The stored candidates show the best sequence found for each direction. **Beam pruning and the finite horizon mean this is an approximate planning teacher, not a globally optimal full-game solver.** The teacher uses current native timers/pixel offsets; the learner sees board, modes, history and elapsed frames, so this is privileged-state imitation. The teacher resamples future RNG rather than looking ahead at the actual episode RNG. Search sequences, labels, replay seeds and scores stay in `_meta`, outside model inputs.
+There are **4,096 training and 256 development labels** sampled from completed teacher games, including danger, power, late-maze and post-respawn decisions. Collection interleaves ordinary starts with recovery games: a declared legal-action prefix intentionally loses one native life, then the frozen teacher takes over and must finish. The prefix is excluded from labels. Every teacher continuation must pass the same per-game gates; full-game metrics still show the scripted death. Native collection replays verify both phases, and failed games are never discarded. Whole episode seeds and exact inputs are disjoint. The learner sees the current maze/power pellets, pixel offsets, movement phases, power countdown, ghost/release/phase clocks, destination visits and recent history. Labels and search information stay outside the model inputs. One action ends when entering the requested adjacent tile using whole native frames; browser play and headless evaluation use this same v2 contract. Old v1 checkpoints/data remain available for diagnosis, but new training uses `pacman-native-v2`.
 
-Collection uses 70% planning, 20% the earlier heuristic and 10% random legal moves to include recovery states. Snapshots are spaced four moves apart. Whole episodes and exact observable snapshots are disjoint across splits; all use the classic maze. Inspect the manifest's episode counts, action balance, four-ghost, frightened, fruit and junction coverage, and the CPU teacher-comparison report.
-
-Inspect three training boards and enter your own legal move labels in `EDITS` before checking the teacher. Keep all edits in the training partition. Fix the training file and one candidate before opening evaluation data. The versioned planner files and checkpoint preserve earlier heuristic experiments. Warm-start this candidate from Skills.""")
-    code("""training_file = LAB_DIR / 'data/pacman-planner-v1-train-reviewed.jsonl'
-label_source = training_file if training_file.is_file() else LAB_DIR / 'data/pacman-planner-v1-train.jsonl'
+Inspect three training boards and enter reviewed legal labels in `EDITS`. Keep edits inside training and record them as learner annotations. Fix the candidate before running the reserved gameplay benchmark.""")
+    code("""manifest = prepare_dataset(LAB_DIR / 'data')  # Fails closed if the teacher/receipt/data changed
+qualification_receipt = json.loads((LAB_DIR / 'evaluation/teacher-qualification.json').read_text())
+print('Teacher qualification:', qualification_receipt['qualification'])
+training_file = LAB_DIR / 'data/pacman-native-v2-train-reviewed.jsonl'
+label_source = training_file if training_file.is_file() else LAB_DIR / 'data/pacman-native-v2-train.jsonl'
 training = [json.loads(line) for line in label_source.read_text().splitlines()]
-print('Training labels:', label_source)
 for row in training[:3]:
     print(row['_meta']['id'], json.dumps(row['state'], indent=2))
     print('Legal:', list(row['questions']['move']['criteria']))
@@ -451,13 +454,10 @@ for row in training:
         row['_meta']['label_source'] = 'learner annotation'
 if EDITS or not training_file.is_file():
     training_file.write_text(''.join(json.dumps(row) + '\\n' for row in training))
-print('Teacher labels for inspected boards:', [(r['_meta']['id'], r['questions']['move']['label']) for r in training[:3]])
-print('Search alternatives:', training[0]['_meta'].get('teacher', {}).get('candidates', []))
-print('Split sizes:', manifest['counts'])
-print('Coverage:', manifest['coverage'])
-print('CPU teacher comparison:', json.loads((LAB_DIR / 'data/pacman-planner-v1-quality.json').read_text())['summary'])
-before_dev = evaluate(LAB_DIR / 'data/pacman-planner-v1-development.jsonl')
-print('Development accuracy:', before_dev['accuracy'])
+print('Labels:', [(r['_meta']['id'], r['questions']['move']['label']) for r in training[:3]])
+print('Search alternatives:', training[0]['_meta']['teacher']['candidates'])
+print('Equally ranked directions:', training[0]['_meta']['equally_ranked_actions'])
+print('Counts:', manifest['counts'], 'coverage:', manifest['coverage'])
 """)
     md("""### Stage 5 — Fine-tune Pac-Man decisions (30–60 minutes)
 
@@ -469,7 +469,7 @@ For the target 96 GB GPU this stage explicitly uses **batch 4 × accumulation 2,
 
 The helper reads architecture from the checkpoint and stops inference to free GPU memory. The state budget is 4,096 tokens; truncation/rejected records fail the audit. Existing recovery and Drive backup apply. The full stage has no short-step cap and may exceed the classroom block: at 1.5 seconds/update, compute alone is 19 minutes; at 3 seconds/update, 38 minutes. Measure steady step time before class and complete a slower full run as prework. CPU checks do not establish GPU timing, memory fit or trained-model improvement.""")
     code("""print(json.dumps(training[0], indent=2))
-CHECKPOINT = CHECKPOINT_ROOT / 'kev-4b-pacman-planner-v1'
+CHECKPOINT = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v2'
 from lora_recovery import latest_snapshot
 RESUME_PACMAN = latest_snapshot(Path(str(CHECKPOINT) + '-recovery')) is not None
 print('Pac-Man recipe:', RECIPE)
@@ -493,14 +493,15 @@ assert metrics['records_seen'] == metrics['requested_records'] == manifest['expe
 """)
     md("""## Interactive play — Pac-Man fine-tuned Kev
 
-Run the cell below after Stage 5 completes, or after the storage cell restores your completed `kev-4b-pacman-planner-v1` checkpoint from Drive. It loads that adapter and pointer head explicitly; you can play before running the benchmark. This cell needs only the initialized runtime, game helpers and completed checkpoint. It does not require earlier training or evaluation variables.
+Run the cell below after Stage 5 completes, or after the storage cell restores your completed `kev-4b-pacman-native-v2` checkpoint from Drive. It loads that adapter and pointer head explicitly; you can play before running the benchmark. This cell needs only the initialized runtime, game helpers and completed checkpoint. It does not require earlier training or evaluation variables.
 
-Pause the baseline board first. On the new board, select **Kev** and press **Start**. Check that **Active LoRA + pointer head** says **`kev-4b-pacman-planner-v1` / Pac-Man fine-tuned**. The classic maze, assets, four native ghosts, power pellets, lives and levels are the same as in baseline play. **New game** resets the board using the same seed (7). You can pause, restart or switch to Human mode. The badge shows the verified adapter and each model decision records it in `results/fine-tuned-player-trace.jsonl`.
+Pause the baseline board first. On the new board, select **Kev** and press **Start**. Check that **Active LoRA + pointer head** says **`kev-4b-pacman-native-v2` / Pac-Man fine-tuned**. The classic maze, assets, four native ghosts, power pellets, lives and levels are the same as in baseline play. **New game** resets the board using the same seed (7). You can pause, restart or switch to Human mode. The badge shows the verified adapter and each model decision records it in `results/fine-tuned-player-trace.jsonl`.
 
 This is an ungraded activity. Pause the game before benchmarking, switching models or exporting results. Run only one board at a time: both cells connect to the same notebook-local inference server. Colab supplies the callbacks; Kaggle/local users can use the Python rollouts.""")
     code("""# Interactive play with the completed Pac-Man adapter
 from IPython.display import display, HTML, JSON
-PACMAN_PLAY_CHECKPOINT = LAB_DIR / 'checkpoints/kev-4b-pacman-planner-v1'
+PACMAN_PLAY_CHECKPOINT = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v2'
+# To inspect your existing v1 adapter, explicitly select CHECKPOINT_ROOT / 'kev-4b-pacman-planner-v1' instead.
 if not (PACMAN_PLAY_CHECKPOINT / 'run-evidence.json').is_file():
     raise RuntimeError(f'Complete Stage 5 or restore its completed checkpoint to {PACMAN_PLAY_CHECKPOINT} before playing.')
 if runtime.active_checkpoint is None or runtime.active_model_info()['checkpoint'] != str(PACMAN_PLAY_CHECKPOINT):
@@ -517,39 +518,42 @@ else:
     output.register_callback('pacman.model', lambda selected_bridge=fine_tuned_bridge: JSON(selected_bridge.model()))
     display(HTML(GAME))
 """)
-    md("""### Evaluate the baseline and task adapter (60–80 minutes)
+    md("""### Evaluate actual games before and after training (60–80 minutes)
 
-The candidate is now fixed. Pause interactive play before this comparison, which switches the active model. The primary test runs both adapters on **five reserved seeds, all three lives, up to 512 decisions per game**. It stops at a cleared level, native game-over or a recorded cap. Report pellet progress, avoidable immediate deaths, no-pellet cycles, first-life and post-respawn progress, power pellets, ghosts eaten and action geometry. Save per-seed paired differences and full trajectories. A capped game is unresolved; a higher score alone does not establish better play. The protocol caps gameplay inference at 5,120 requests across both models; wall time depends on measured serving latency and early termination.
+Pause interactive play. Both adapters run **20 full native games** from the same initial boards: five reserved seeds at starting levels **1, 2, 3 and 5**. Each game continues after a lost life, until the first maze clears or native game-over ends all lives. Initial ghosts, release rules, bonus lives, power, fruit and collisions are native. Every episode starts in a fresh game closure. No graphics, random isolated states, teacher-agreement score or hidden replacement controller is involved.
 
-Keep the **256 evaluation snapshots** as a secondary teacher-agreement test, now broken down by danger, power mode, junctions and revisits. Empty late-maze/respawn strata are marked unavailable. The approximate teacher can itself loop or choose a poor label.
+Report clears/game-overs, remaining pellets, avoidable immediate deaths, every raw cycle, longest consecutive cycle streak, pellet stalls, power pellets, ghosts eaten, post-respawn progress and action geometry. Compare paired per-seed results; higher score alone is insufficient. Large watchdogs (10,000 decisions, 600 simulated seconds or 512 consecutive dry decisions) stop hung agents. These exits are incomplete failures, never wins or native game-overs. Full games may exceed the classroom block; time serving and complete a slower benchmark as prework. The published CPU teacher results do not establish learned-Kev performance.
 
-This benchmark preserves the current v1 observation and action semantics so your completed adapter remains comparable. The [trajectory diagnosis and v2 plan](https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/README.md#trajectory-diagnosis-and-next-data-plan) explain the observed failures and the gates required before replacing the dataset. No v2 training data has been generated.""")
-    code("""runtime.start(GENERAL)
-before = evaluate_snapshots(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
+This v2 benchmark changes action boundaries and exposes more current state. Old v1 benchmark scores are not directly comparable. You may explicitly evaluate an existing v1 adapter using this protocol, but it was trained with the older schema. A new v2 adapter requires the newly qualified demonstrations and a fresh Pac-Man output directory.""")
+    code("""# This comparison can also evaluate your existing completed v1 checkpoint explicitly.
+GENERAL = CHECKPOINT_ROOT / 'kev-4b-skills'
+checkpoint = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v2'
+# checkpoint = CHECKPOINT_ROOT / 'kev-4b-pacman-planner-v1'  # Existing adapter, older training schema
+runtime.start(GENERAL)
 before_identity = runtime.active_model_info()
 before_gameplay = benchmark_gameplay(model_info=runtime.active_model_info,
                                     trace_dir=LAB_DIR / 'results/gameplay-general')
 runtime.start(checkpoint)
-after = evaluate_snapshots(LAB_DIR / 'data/pacman-planner-v1-evaluation.jsonl')
 after_identity = runtime.active_model_info()
 after_gameplay = benchmark_gameplay(model_info=runtime.active_model_info,
                                    trace_dir=LAB_DIR / 'results/gameplay-fine-tuned')
 gameplay_comparison = paired_gameplay(before_gameplay, after_gameplay)
-comparison = {'schema_version': 2, 'base_model': audit['base'], 'base_revision': audit['base_revision'], 'baseline_checkpoint': str(GENERAL), 'checkpoint_owners': STAGE_OWNERS, 'fine_tuned_checkpoint': str(checkpoint), 'active_adapters': {'before': before_identity, 'after': after_identity}, 'before': before, 'after': after, 'gameplay': {'general': before_gameplay, 'fine_tuned': after_gameplay, 'paired': gameplay_comparison}, 'general_training_stages': stage_metrics, 'missing_general_stage_archives': missing_stage_archives, 'pacman_training': metrics, 'runtime': runtime.gpu}
-comparison['pacman_dataset'] = manifest
+comparison = {'schema_version': 3, 'baseline_checkpoint': str(GENERAL),
+    'fine_tuned_checkpoint': str(checkpoint), 'active_adapters': {'before': before_identity, 'after': after_identity},
+    'gameplay': {'general': before_gameplay, 'fine_tuned': after_gameplay, 'paired': gameplay_comparison},
+    'runtime': runtime.gpu, 'pacman_dataset': manifest,
+    'teacher_qualification_sha256': hashlib.sha256((LAB_DIR / 'evaluation/teacher-qualification.json').read_bytes()).hexdigest(),
+    'checkpoint_owners': STAGE_OWNERS}
 (LAB_DIR / 'comparison.json').write_text(json.dumps(comparison, indent=2))
-for name, result in [('general', before), ('fine_tuned', after)]:
-    print(name, {key:result[key] for key in ['accuracy', 'tie_aware_teacher_accuracy', 'lower_search_survival_choices', 'mean_same_survival_search_regret', 'caught_next_turn']})
-    print('Snapshot strata:', json.dumps(result['strata'], indent=2))
 for name, games in [('general', before_gameplay), ('fine_tuned', after_gameplay)]:
-    print(name, 'means:', games['means'], 'clears:', games['level_clears'], 'capped:', games['capped_episodes'])
-print('Paired gameplay differences:', json.dumps(gameplay_comparison, indent=2))
+    print(name, 'means:', games['means'], 'clears:', games['level_clears'], 'incomplete:', games['capped_episodes'])
+print('Paired native gameplay:', json.dumps(gameplay_comparison, indent=2))
 """)
-    md("""The evaluation leaves your Pac-Man task adapter serving. To play again, rerun **Interactive play — Pac-Man fine-tuned Kev** above, choose **Kev**, and start a new game. Verify the badge says `kev-4b-pacman-planner-v1`. This remains an ungraded activity. Both gameplay benchmarks use the same seeds, native engine, three-life rules and caps. They test the same classic maze at starting level 1; five seeds do not establish broad generalization. The archived five-seed CPU report evaluates the planning teacher itself, which can also fail. Native counterfactual actions are used only to score immediate avoidable deaths; they never replace Kev's choices.
+    md("""The comparison leaves the chosen task adapter serving. Rerun **Interactive play — Pac-Man fine-tuned Kev**, select the same checkpoint, choose **Kev** and start a new game. Verify its path/hash in the badge. Both gameplay reports use the same v2 observation/action schema and native engine. Results apply to the listed levels/seeds in the same maze. Counterfactual actions only diagnose immediate avoidable deaths; they never replace Kev's choices.
 
 ### Explain and export the checkpoint evidence (80–90 minutes)
 
-Explain one changed move or remaining mistake. Relate a planning label to the board and ghost personalities. Identify the LoRA/head parameters that trained and the limitations of finite-horizon beam search.
+Explain one changed move or remaining mistake. Relate a planning label to the board and ghost personalities. Identify the LoRA/head parameters that trained and the limits of finite-horizon native rollout search.
 
 Submit the executed notebook, reviewed training JSONL, `comparison.json`, all available small adapter/head checkpoints and stage configurations/metrics, training logs and TensorBoard events and `runtime-preflight.json`. A full fresh run produces five checkpoints. If you continued from a completed intermediate checkpoint without older archives, record those missing stages; the imported checkpoint retains its recorded parent provenance, but absent parent weights cannot be rechecked or exported. Record the Colab compute units consumed and elapsed GPU time from your session. Save outputs before the temporary runtime disconnects, then stop the server. On Colab, run the download cell.""")
     code("""runtime.stop()
@@ -558,7 +562,7 @@ print('Unavailable earlier stage archives:', missing_stage_archives)
 # Export small adapters/heads and results, without foundation weights or packages.
 import zipfile
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as out:
-    for file in [LAB_DIR/'comparison.json', LAB_DIR/'benchmark-spec.json', training_file, LAB_DIR/'data/pacman-planner-v1-manifest.json', LAB_DIR/'data/pacman-planner-v1-quality.json', LAB_DIR/'runtime-preflight.json', LAB_DIR/'optimized-training-preflight.json', LAB_DIR/'trainable-parameters.json']:
+    for file in [LAB_DIR/'comparison.json', LAB_DIR/'benchmark-spec.json', training_file, LAB_DIR/'data/pacman-native-v2-manifest.json', LAB_DIR/'data/pacman-native-v2-replays.zip', LAB_DIR/'evaluation/teacher-qualification.json', LAB_DIR/'evaluation/teacher-qualification-replays.zip', LAB_DIR/'runtime-preflight.json', LAB_DIR/'optimized-training-preflight.json', LAB_DIR/'trainable-parameters.json']:
         out.write(file, file.relative_to(LAB_DIR))
     for folder in [INITIAL, DATES, DOCUMENTS, SKILLS, checkpoint]:
         for file in folder.rglob('*'):
@@ -584,7 +588,7 @@ else:
 
 def game():
     from pacman_lab import notebook_game
-    html = notebook_game()
+    html = notebook_game(action_version=2)
     (ROOT / 'games/pacman.html').write_text(html)
 
 

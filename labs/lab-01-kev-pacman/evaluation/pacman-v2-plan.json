@@ -1,6 +1,6 @@
 {
   "version": "pacman-v2-plan-2026-10-05",
-  "status": "Diagnosis and v1 benchmark implemented. New action semantics, observation schema, teacher and training data are planned, not yet implemented or generated.",
+  "status": "Historical diagnosis plan. Adjacent-tile-entry action semantics, expanded state and complete native-game evaluation are implemented. See teacher-validation-spec.json and teacher-methods.md for the current candidate/gates; qualification and new data are separately reported. Centre/substep proposals in this original plan are superseded by whole-frame adjacent-tile entry.",
   "dependency_order": [
     "freeze_baseline",
     "action_contract",
@@ -88,5 +88,6 @@
     "Compare current maze-only reasoning with an explicitly derived-feature schema on development pilots. Keep controller and labels fixed for each ablation."
   ],
   "method_source": "https://arxiv.org/abs/1011.0686",
-  "no_new_data_generated": true
+  "no_new_data_generated": true,
+  "archived": true
 }

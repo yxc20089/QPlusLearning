@@ -11,6 +11,7 @@
   "max_no_pellet_decisions": 512,
   "stop": "win = first native level clear; death = native game-over after all initial/bonus lives; continue after intermediate deaths. Large watchdog bounds detect stalled runs and never count as wins.",
   "loop_definition": "repeated position sequence of period 2..64 with at least 2 distinct tiles, within one life and without consuming a pellet",
+  "loop_streak_definition": "Consecutive decisions satisfying loop_definition. A non-cycle decision, pellet consumption or new life resets the streak. Report all raw cycles and the longest streak separately.",
   "avoidable_death_definition": "chosen action loses a life before entering the requested adjacent tile, while another legal action from identical native state and RNG does not; no claim of eventual survival",
   "primary_metrics": ["level clears", "pellets collected", "avoidable immediate deaths", "no-pellet cycles", "longest no-pellet interval", "post-respawn progress"],
   "secondary_metrics": ["score", "first-life progress", "power pellets", "ghosts eaten", "fruit eaten", "heading bias", "action geometry"],

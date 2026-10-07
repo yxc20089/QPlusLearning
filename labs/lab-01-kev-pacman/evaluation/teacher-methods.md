@@ -39,10 +39,17 @@ a design idea, without claiming to reproduce their algorithm or reported scores.
 See [Monte Carlo Tree Search guided by Symbolic Advice for MDPs](https://arxiv.org/abs/2006.04712).
 
 Our first measured MPC development version cleared 20/20 boards with no deaths,
-but produced many dry cycles. It was rejected. The qualification specification
-is fixed before testing its separate reserved seeds. All boards must clear, no
-avoidable immediate death or dry cycle is allowed, and a long pellet stall or
-incorrect movement boundary fails qualification. Only a matching source/configuration
+but produced many dry cycles. It was rejected. The final frozen candidate then
+cleared the separate strict-v2 qualification suite, with zero deaths and one
+brief repeat; the strict zero-repeat rule rejected it. That [failed result](teacher-strict-qualification-v2.json)
+and its [replays](teacher-strict-qualification-v2-replays.zip) remain archived.
+At the user's request, v3 rejects sustained loops and pellet stalls, while keeping
+every brief repeat visible. Eight consecutive cycle detections, more than 128
+decisions without a pellet, an avoidable immediate death, an incomplete maze or
+an incorrect movement endpoint fails. The teacher algorithm and search options
+stay frozen. Twenty fresh qualification cases use unseen seeds; the previous
+qualification seeds are retired and excluded from training. We do not retrospectively
+turn the failed strict report into authorization. Only a matching source/configuration
 receipt with independently verified native replays can unlock new data creation.
 Passing this finite suite is empirical evidence, never a universal safety claim.
 
@@ -50,6 +57,9 @@ The final development comparison uses the same 20 native initial boards (five
 development seeds at levels 1, 2, 3, 5). Both reports include source hashes and
 independently verified replay bundles. The MPC candidate is frozen before any
 qualification game; development success alone does not unlock training.
+These archived development reports bind to the original source at commit
+`c29f2ad`, before the v3 loop-streak diagnostic was added. The teacher itself is
+identical; timing measurements are retained rather than presented as a new run.
 
 | CPU controller | Maze clears | Lives lost | Avoidable immediate deaths | Dry-cycle decisions | Longest pellet stall |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -63,6 +73,14 @@ is much faster. This offline teacher cost is separate from LoRA training or
 inference cost. The compact [MPC replays](teacher-development-replays.zip) and
 [heuristic replays](heuristic-development-replays.zip) expose every native result.
 
+The [fresh v3 qualification](teacher-qualification.json) passed all 20 cases:
+20 clears, zero deaths, zero raw cycles, a maximum pellet stall of 67 decisions,
+all 4,880 pellets, 80 power pellets and 44 ghosts eaten. Four CPU workers took
+512 seconds for the measured suite. The [saved qualification replays](teacher-qualification-replays.zip)
+verify every native state, transition and metric. This is 20 distinct seed/level
+cases; a deterministic repeat for the corrected JSON verifier is not counted as
+additional independent evidence. No search or gate settings changed in that repeat.
+
 For this lab, use BFS maze distances as the route primitive and the native engine
 as the transition model. Normal targeting is predictable from the player and
 ghost state; frightened turns require multiple independently sampled futures.
@@ -73,3 +91,24 @@ those disagree. Full-maze completion tests this potential beyond a few good
 opening moves. If the fixed rollout portfolio fails, add native MCTS and measure
 it under the same reserved suite before distillation; do not substitute a
 competition score or a short successful clip for qualification.
+
+For data collection, ordinary starts are interleaved with native post-respawn
+recovery. A fixed public prefix follows a shortest route towards an outside ghost
+and deliberately loses one life using legal actions. It never moves actors or
+changes game physics. The frozen teacher takes over after native respawn, and
+its entire continuation must pass the same per-game standards before sampling.
+Prefix actions are excluded from labels; full-game metrics still retain the
+scripted death. Every collection trajectory is replayed before label publication.
+This addresses the old dataset's first-life-only coverage. It is a controlled
+perturbation experiment, not DAgger from a learned Kev policy, and does not prove
+recovery from every possible learner mistake.
+
+The released collection consists of 20 complete games (ten ordinary, ten scripted
+post-respawn). Every maze clears. Teacher-controlled play loses three lives with
+zero avoidable immediate deaths, four raw repeats, a longest repeat streak of two
+and a longest pellet stall of 100 decisions. Prefix deaths remain visible in the
+full-game metrics. Two selected training states have no immediate legal escape;
+these and exact rank ties remain disclosed rather than described as unique safe
+optima. Native replay and input/action matching verify all 4,096 training and 256
+development labels. See the [manifest](../data/pacman-native-v2-manifest.json) and
+[collection replays](../data/pacman-native-v2-replays.zip).

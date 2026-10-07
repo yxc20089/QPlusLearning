@@ -132,14 +132,19 @@ class GameplayTests(unittest.TestCase):
             rows.append(row)
         result = summarize(rows, 'decision_cap')
         self.assertEqual(result['loop_periods'], {4: 5})
+        self.assertEqual(result['longest_loop_streak_decisions'], 5)
         self.assertEqual(result['longest_no_pellet_frames'], 96)
+        sustained = rows + copy.deepcopy(rows[:3])
+        self.assertEqual(summarize(sustained, 'decision_cap')['longest_loop_streak_decisions'], 8)
         progress = copy.deepcopy(rows)
         for row in progress:
             row['pellets_after'] -= 1
         self.assertEqual(summarize(progress, 'decision_cap')['loop_decisions'], 0)
+        self.assertEqual(summarize(progress, 'decision_cap')['longest_loop_streak_decisions'], 0)
         respawn = copy.deepcopy(rows)
         for i, row in enumerate(respawn): row['life_index'] = i//4
         self.assertEqual(summarize(respawn, 'decision_cap')['loop_decisions'], 0)
+        self.assertEqual(summarize(respawn, 'decision_cap')['longest_loop_streak_decisions'], 0)
 
 
 if __name__ == '__main__':

@@ -5,11 +5,15 @@ from pathlib import Path
 import tempfile
 import unittest
 import subprocess
+import hashlib
+import zipfile
+from unittest.mock import patch
 
-from gameplay_benchmark import BenchmarkEngine, SPEC
-from pacman_lab import ROOT, destination, engine_script, position, teacher
-from teacher_validation import VALIDATION, qualification, require_qualified_teacher
-from teacher_data import generate
+from gameplay_benchmark import BenchmarkEngine, SPEC, diagnostic_record, summarize
+from pacman_lab import ROOT, body, destination, engine_script, position, teacher
+from teacher_validation import VALIDATION, qualification, require_qualified_teacher, verify_replays
+from teacher_data import COLLECTION, PREFIX, generate, prefix_move, validate_partitions, verify_collection
+from teacher_validation import fingerprint
 
 
 class NativeTeacherTests(unittest.TestCase):
@@ -97,7 +101,7 @@ globalThis.longGhostPause = function() {
 
     def test_every_gate_is_recomputed_and_development_never_authorizes_data(self):
         metrics = {'level_cleared':True,'life_losses':0,'avoidable_immediate_deaths':0,
-                   'loop_decisions':0,'longest_no_pellet_decisions':12,
+                   'loop_decisions':0,'longest_loop_streak_decisions':0,'longest_no_pellet_decisions':12,
                    'multi_tile_actions':0,'stationary_actions':0,
                    'nonterminal_multi_tile_actions':0,'nonterminal_stationary_actions':0,
                    'outcome':'level_cleared','pellets_remaining':0}
@@ -105,9 +109,12 @@ globalThis.longGhostPause = function() {
                   'episodes':[{'level':level,'seed':seed,'metrics':dict(metrics)}
                     for level in VALIDATION['levels'] for seed in VALIDATION['qualification_seeds']]}
         self.assertTrue(qualification(report)['approved_for_training'])
+        brief_repeat=copy.deepcopy(report)
+        brief_repeat['episodes'][0]['metrics'].update(loop_decisions=1,longest_loop_streak_decisions=1)
+        self.assertTrue(qualification(brief_repeat)['approved_for_training'])
         failed_simulation=copy.deepcopy(report);failed_simulation['errors']=[{'level':5,'seed':1,'error':'native action timeout'}]
         self.assertFalse(qualification(failed_simulation)['approved_for_training'])
-        for key,value in [('loop_decisions',1),('avoidable_immediate_deaths',1),
+        for key,value in [('longest_loop_streak_decisions',8),('avoidable_immediate_deaths',1),
                           ('longest_no_pellet_decisions',129),('pellets_remaining',1),
                           ('nonterminal_multi_tile_actions',1),('nonterminal_stationary_actions',1),
                           ('level_cleared',False),('life_losses',5),('outcome','no_progress_watchdog')]:
@@ -130,6 +137,115 @@ globalThis.longGhostPause = function() {
             path.write_text(json.dumps(report))
             with self.assertRaisesRegex(ValueError,'implementation changed'):
                 require_qualified_teacher(path)
+
+    def test_recovery_prefix_reaches_a_native_respawn_using_only_legal_moves(self):
+        for level in (1,2,3,5):
+            with BenchmarkEngine() as engine:
+                state=engine.request('reset',options={'seed':201012,'level':level,'action_version':2})
+                for _ in range(COLLECTION['prefix_max_decisions']):
+                    move=prefix_move(state,engine.request('risks'))
+                    self.assertIn(move,state['legal_moves'])
+                    step=engine.step(move);state=step['state']
+                    if step['outcome']=='life_lost':break
+                    self.assertIsNone(step['outcome'], 'Prefix must reach a real death before completing a maze')
+                else:self.fail('Scripted prefix did not produce a native respawn')
+                continued=engine.request('continue')
+                self.assertEqual(continued['status'],'playing')
+                self.assertEqual(continued['state']['life_epoch'],1)
+                self.assertEqual(continued['state']['timing']['release']['mode'],'global')
+
+    def test_saved_report_with_real_cycles_roundtrips_through_native_replay(self):
+        report=json.loads((ROOT/'evaluation/heuristic-development.json').read_text())
+        episode=next(e for e in report['episodes'] if e['metrics']['loop_decisions'])
+        with zipfile.ZipFile(ROOT/'evaluation/heuristic-development-replays.zip') as archive:
+            content=archive.read(episode['replay_entry'])
+        rows=[{**json.loads(line)['diagnostics'],'http_ms':0} for line in content.splitlines()]
+        # Recompute the added streak metric without running the controller or
+        # changing the archived native actions. JSON roundtrip stringifies periods.
+        episode['metrics']=summarize(rows,episode['metrics']['outcome'])
+        with tempfile.TemporaryDirectory() as directory:
+            replay=Path(directory)/'replay.zip'
+            with zipfile.ZipFile(replay,'w') as archive:archive.writestr(episode['replay_entry'],content)
+            saved=json.loads(json.dumps({'episodes':[episode],
+                'replay_sha256':hashlib.sha256(replay.read_bytes()).hexdigest()}))
+            self.assertTrue(verify_replays(saved,replay))
+
+    def test_collection_replays_a_complete_native_game_and_rejects_a_false_controller_boundary(self):
+        report=json.loads((ROOT/'evaluation/teacher-development.json').read_text());episode=report['episodes'][0]
+        with zipfile.ZipFile(ROOT/'evaluation/teacher-development-replays.zip') as archive:
+            records=[json.loads(line) for line in archive.read(episode['replay_entry']).splitlines()]
+        rows=[{**r['diagnostics'],'http_ms':0} for r in records]
+        metrics=summarize(rows,episode['metrics']['outcome'])
+        episode.update(metrics=metrics,full_game_metrics=metrics,collection_mode='normal',
+                       prefix_decisions=0,teacher_start_life=0)
+        for record in records:record['controller']='qualified_teacher'
+        with tempfile.TemporaryDirectory() as directory:
+            replay=Path(directory)/'collection.zip'
+            def save():
+                with zipfile.ZipFile(replay,'w') as archive:
+                    archive.writestr(episode['replay_entry'],''.join(json.dumps(r)+'\n' for r in records))
+                return json.loads(json.dumps({'episodes':[episode],
+                    'replay_sha256':hashlib.sha256(replay.read_bytes()).hexdigest()}))
+            self.assertTrue(verify_collection(save(),replay))
+            records[0]['controller']='perturbation_prefix'
+            with self.assertRaisesRegex(ValueError,'Invalid perturbation/teacher boundary'):
+                verify_collection(save(),replay)
+
+    def test_labels_are_bound_to_actual_teacher_steps_and_never_to_scripted_prefix_actions(self):
+        with BenchmarkEngine() as engine:
+            state=engine.request('reset',options={'seed':201012,'action_version':2})
+            move=engine.request('teacher',options={'horizon_frames':16,'buffers':[1],'scenario_seeds':[11117]})['choice']
+            risks=engine.request('risks');step=engine.step(move)
+        group='level-1-seed-201012';name='episode.jsonl'
+        request=body(state);request.pop('model');request['questions']['move'].update(label=move,src='test')
+        request['_meta']={'group_id':group,'qualification_sha256':'fixture',
+                          'collection_mode':'normal','equally_ranked_actions':[move]}
+        manifest={'episodes':[{'level':1,'seed':201012,'split':'train','replay_entry':name}],
+                  'counts':{'train':1},'groups':{'train':[group]},'coverage':{'train':{}},
+                  'qualification_sha256':'fixture'}
+        record={'state_sha256':fingerprint(state),'choice':move,'controller':'qualified_teacher',
+                'diagnostics':diagnostic_record(state,{'answers':{'move':{'choice':move,'probabilities':{}}}},step,risks,0)}
+        with tempfile.TemporaryDirectory() as directory:
+            replay=Path(directory)/'replay.zip'
+            def write():
+                with zipfile.ZipFile(replay,'w') as archive:archive.writestr(name,json.dumps(record)+'\n')
+            def contents():return {f'{PREFIX}-train.jsonl':(json.dumps(request)+'\n').encode()}
+            write();self.assertTrue(validate_partitions(manifest,contents(),replay))
+            request['questions']['move']['label']=next(d for d in state['legal_moves'] if d!=move)
+            with self.assertRaisesRegex(ValueError,'label differs'):
+                validate_partitions(manifest,contents(),replay)
+            request['questions']['move']['label']=move;record['controller']='perturbation_prefix';write()
+            with self.assertRaisesRegex(ValueError,'absent from the teacher-controlled'):
+                validate_partitions(manifest,contents(),replay)
+
+    def test_failed_development_collection_does_not_publish_a_training_partition(self):
+        with BenchmarkEngine() as engine:
+            state=engine.request('reset',options={'seed':201012,'action_version':2})
+        metrics={'level_cleared':True,'outcome':'level_cleared','pellets_remaining':0,
+                 'life_losses':0,'avoidable_immediate_deaths':0,'loop_decisions':1,
+                 'longest_loop_streak_decisions':1,'longest_no_pellet_decisions':12,
+                 'multi_tile_actions':0,'stationary_actions':0,
+                 'nonterminal_multi_tile_actions':0,'nonterminal_stationary_actions':0}
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);receipt=root/'qualification.json';receipt.write_text('{}')
+            trace=root/'trace.jsonl'
+            request=body(state);move=state['legal_moves'][0]
+            trace.write_text(json.dumps({'request':request,'response':{
+                'answers':{'move':{'choice':move}},'teacher':{'candidates':[]}}})+'\n')
+            good={'seed':201012,'level':1,'metrics':metrics,'trace':str(trace),
+                  'collection_mode':'normal','prefix_decisions':0,'teacher_start_life':0,
+                  'full_game_metrics':metrics}
+            failed=copy.deepcopy(good);failed['seed']=202021
+            failed['metrics'].update(loop_decisions=8,longest_loop_streak_decisions=8)
+            pool=unittest.mock.MagicMock()
+            pool.__enter__.return_value.map.side_effect=[[good],[failed]]
+            output=root/'labels'
+            with patch('teacher_data.require_qualified_teacher',return_value={
+                    'algorithm':VALIDATION['teacher'],'options':VALIDATION['teacher_options']}), \
+                 patch('teacher_data.ProcessPoolExecutor',return_value=pool):
+                with self.assertRaisesRegex(RuntimeError,'sustained no-pellet cycle'):
+                    generate(output,receipt,counts={'train':1,'development':1},workers=1)
+            self.assertEqual(list(output.iterdir()),[], 'No partial train/dev set after a failed collection game')
 
 
 if __name__=='__main__':unittest.main()

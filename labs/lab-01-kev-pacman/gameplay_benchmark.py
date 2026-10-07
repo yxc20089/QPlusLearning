@@ -96,7 +96,8 @@ def summarize(rows, status):
                'pellets_remaining': rows[-1]['pellets_after'],
                'life_losses': 0, 'avoidable_immediate_deaths': 0, 'immediate_risk_decisions': 0,
                'avoidable_risk_decisions': 0, 'all_immediate_actions_fatal': 0,
-               'unsafe_immediate_choices': 0, 'loop_decisions': 0, 'longest_no_pellet_decisions': 0,
+               'unsafe_immediate_choices': 0, 'loop_decisions': 0, 'longest_loop_streak_decisions': 0,
+               'longest_no_pellet_decisions': 0,
                'longest_no_pellet_frames': 0, 'simulation_frames': sum(r['action_frames'] for r in rows),
                'straight_available': 0, 'straight_chosen': 0, 'junction_straight_available': 0,
                'junction_straight_chosen': 0, 'safe_immediate_pellet_skips_at_junction': 0,
@@ -106,11 +107,11 @@ def summarize(rows, status):
                'outcome': status, 'censored': status in ('decision_cap', 'simulation_frame_cap', 'trace_end', 'no_progress_watchdog'),
                'level_cleared': status == 'level_cleared', 'per_life': {}}
     periods, positions, previous_life = Counter(), [], None
-    stalled, stalled_frames = 0, 0
+    stalled, stalled_frames, loop_streak = 0, 0, 0
     for row in rows:
         life = str(row['life_index'])
         if life != previous_life:
-            positions, stalled, stalled_frames = [], 0, 0
+            positions, stalled, stalled_frames, loop_streak = [], 0, 0, 0
             previous_life = life
         per_life = metrics['per_life'].setdefault(life, {'decisions': 0, 'pellets_collected': 0, 'life_lost': False})
         collected = row['pellets_before'] - row['pellets_after']
@@ -150,7 +151,7 @@ def summarize(rows, status):
             metrics[name] += row['events'][name]
         metrics['ghosts_eaten'] += len(row['events']['ghosts_eaten'])
         if collected:
-            positions, stalled, stalled_frames = [], 0, 0
+            positions, stalled, stalled_frames, loop_streak = [], 0, 0, 0
         else:
             stalled += 1
             stalled_frames += row['action_frames']
@@ -158,11 +159,15 @@ def summarize(rows, status):
             positions = positions[-128:]
             metrics['longest_no_pellet_decisions'] = max(metrics['longest_no_pellet_decisions'], stalled)
             metrics['longest_no_pellet_frames'] = max(metrics['longest_no_pellet_frames'], stalled_frames)
+            repeated = False
             for period in range(2, min(64, len(positions)//2)+1):
                 if positions[-period:] == positions[-2*period:-period] and len(set(positions[-period:])) >= 2:
                     metrics['loop_decisions'] += 1
                     periods[period] += 1
+                    repeated = True
                     break
+            loop_streak = loop_streak + 1 if repeated else 0
+            metrics['longest_loop_streak_decisions'] = max(metrics['longest_loop_streak_decisions'], loop_streak)
     metrics['loop_periods'] = dict(periods)
     metrics['first_life_pellets'] = metrics['per_life']['0']['pellets_collected']
     metrics['post_respawn_pellets'] = sum(v['pellets_collected'] for k, v in metrics['per_life'].items() if k != '0')
@@ -298,6 +303,7 @@ def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC,
                 print('[gameplay] completed:', episode['metrics'], flush=True)
     means = {key: sum(e['metrics'][key] for e in episodes)/len(episodes) for key in
              ('score', 'pellets_collected', 'life_losses', 'avoidable_immediate_deaths', 'loop_decisions',
+              'longest_loop_streak_decisions',
               'longest_no_pellet_decisions', 'first_life_pellets', 'post_respawn_pellets')}
     return {'protocol': spec, 'active_checkpoint': identity, 'episodes': episodes, 'means': means,
             'level_clears': sum(e['metrics']['level_cleared'] for e in episodes),

@@ -25,16 +25,18 @@ class CheckpointBackupTests(unittest.TestCase):
             workspace = Path(folder)
             data = workspace / 'data'
             data.mkdir()
-            row = {'_meta': {'id': 'board-000'}, 'state': {'player': [1, 1]},
+            row = {'_meta': {'id': 'board-000', 'teacher': {'candidates': []}, 'equally_ranked_actions':['left']}, 'state': {'player': [1, 1]},
                    'questions': {'move': {'criteria': {'left': 'Move left'}, 'label': 'left'}}}
             # Different serialization from the notebook; byte identity matters
             # for the recovery training-data fingerprint.
             original = json.dumps(row, separators=(',', ':')).encode() + b'\n'
-            reviewed = data / 'pacman-planner-v1-train-reviewed.jsonl'
+            reviewed = data / 'pacman-native-v2-train-reviewed.jsonl'
             reviewed.write_bytes(original)
-            (data/'pacman-planner-v1-quality.json').write_text('{"summary":{}}')
+            (workspace/'evaluation').mkdir()
+            (workspace/'evaluation/teacher-qualification.json').write_text('{"qualification":{"approved_for_training":true}}')
             scope = {'LAB_DIR': workspace, 'json': json, 'manifest': {'counts': {'train': 1}, 'coverage': {}},
-                     'print': lambda *args, **kwargs: None, 'evaluate': lambda *args: {'accuracy': 1}}
+                     'print': lambda *args, **kwargs: None,
+                     'prepare_dataset': lambda *args: {'counts': {'train': 1}, 'coverage': {}}}
             exec(source, scope)
             self.assertEqual(reviewed.read_bytes(), original)
             self.assertEqual(scope['training'][0]['questions']['move']['label'], 'left')

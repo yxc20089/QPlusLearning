@@ -144,7 +144,8 @@ def validate_partitions(manifest, contents, replay_path):
     for split,count in manifest['counts'].items():
         records=[json.loads(line) for line in contents[f'{PREFIX}-{split}.jsonl'].splitlines()]
         if len(records)!=count:raise ValueError('Dataset partition count mismatch')
-        coverage=Counter(power_expires_within_60_frames=0,labelled_ghost_eating_action=0,labelled_power_pellet_action=0)
+        coverage=manifest['coverage'][split]
+        coverage.update(power_expires_within_60_frames=0,labelled_ghost_eating_action=0,labelled_power_pellet_action=0)
         used=set()
         for r in records:
             digest=fingerprint(r['state']);group=r['_meta']['group_id'];used.add(group)
@@ -158,20 +159,10 @@ def validate_partitions(manifest, contents, replay_path):
                 raise ValueError('Training/inference question formatting differs')
             if set(r)!={'state','questions','_meta'} or r['_meta']['qualification_sha256']!=manifest['qualification_sha256']:
                 raise ValueError('Dataset request/provenance differs')
-            for name,included in strata(r['state']).items():
-                if name!='search_survival_critical':coverage[name]+=included
-            coverage[f"level_{r['state']['level']}"]+=1
-            coverage[f"collection_mode_{r['_meta']['collection_mode']}"]+=1
-            coverage['four_ghosts_outside']+=all(g['mode']=='outside' for g in r['state']['ghosts'])
-            coverage['tied_teacher_rank']+=len(r['_meta']['equally_ranked_actions'])>1
             coverage['power_expires_within_60_frames']+=r['state']['frightened'] and r['state']['timing']['power']['remaining_frames']<=60
             coverage['labelled_ghost_eating_action']+=bool(native['diagnostics']['events']['ghosts_eaten'])
             coverage['labelled_power_pellet_action']+=bool(native['diagnostics']['events']['power_pellets'])
-            fatal=[v['life_lost'] for v in native['diagnostics']['immediate_counterfactuals'].values()]
-            coverage['immediate_survival_critical']+=any(fatal) and not all(fatal)
-            coverage['all_immediate_actions_fatal']+=all(fatal)
         if used!=set(manifest['groups'][split]):raise ValueError('Declared dataset groups differ')
-        manifest['coverage'][split]=dict(coverage)
     return True
 
 
@@ -247,7 +238,7 @@ def generate(directory, qualification_path, counts=COUNTS, workers=4):
             for r in selected:
                 for k,v in strata(r['state']).items():coverage[k]+=v
                 coverage[f"level_{r['state']['level']}"]+=1
-                coverage[f"collection_mode_{r['_meta']['collection_mode']}"]+=1
+                coverage[r['_meta']['collection_mode']]+=1
                 coverage['four_ghosts_outside']+=all(g['mode']=='outside' for g in r['state']['ghosts'])
                 coverage['tied_teacher_rank']+=len(r['_meta']['equally_ranked_actions'])>1
                 labels[r['questions']['move']['label']]+=1
@@ -277,7 +268,6 @@ def generate(directory, qualification_path, counts=COUNTS, workers=4):
     # No partitions are published until every teacher continuation and its full
     # native replay passes, including the held-out development collection.
     for name,content in partition_bytes.items():(directory/name).write_bytes(content)
-    (directory/f'{PREFIX}-generator.py').write_bytes(Path(__file__).read_bytes())
     (directory/f'{PREFIX}-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     with zipfile.ZipFile(directory/f'{PREFIX}.zip','w',zipfile.ZIP_DEFLATED,compresslevel=9) as archive:
         for name in manifest['files']:
@@ -293,9 +283,8 @@ def prepare_dataset(directory=ROOT/'data'):
     if manifest['qualification_sha256']!=hashlib.sha256((ROOT/'evaluation/teacher-qualification.json').read_bytes()).hexdigest():
         raise ValueError('Dataset uses another teacher qualification receipt')
     if manifest['source_sha256']!=source_hashes():raise ValueError('Dataset teacher implementation changed')
-    producer=directory/f'{PREFIX}-generator.py'
-    if manifest['generator_sha256']!=hashlib.sha256(producer.read_bytes()).hexdigest():
-        raise ValueError('Archived dataset producer does not match its generating-source fingerprint')
+    if manifest['generator_sha256']!=hashlib.sha256(Path(__file__).read_bytes()).hexdigest():
+        raise ValueError('Dataset generator changed; regenerate the demonstrations')
     if manifest['counts']!=COUNTS or manifest['recipe']!=RECIPE:
         raise ValueError('Dataset count/recipe differs from the declared task')
     if manifest['collection']!=COLLECTION:raise ValueError('Dataset collection protocol differs')

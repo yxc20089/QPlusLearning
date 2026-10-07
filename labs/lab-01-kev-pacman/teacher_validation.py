@@ -74,7 +74,9 @@ def verify_replays(report, archive_path):
                         raise ValueError('Teacher replay continued past its native terminal state')
                 measured = summarize(rows, status or episode['metrics']['outcome'])
                 expected = {k:v for k,v in episode['metrics'].items() if k != 'mean_http_ms'}
-                if {k:v for k,v in measured.items() if k != 'mean_http_ms'} != expected:
+                # JSON object keys are strings after loading a saved report;
+                # loop-period counters originally use integer keys in memory.
+                if fingerprint({k:v for k,v in measured.items() if k != 'mean_http_ms'}) != fingerprint(expected):
                     raise ValueError('Teacher gate metrics disagree with native replay')
     return True
 
@@ -104,6 +106,27 @@ def episode_job(algorithm, seed, level, directory, options):
     return episode
 
 
+def episode_quality_failures(metrics, gates=VALIDATION['gates']):
+    """The same per-game standards apply to qualification and data collection."""
+    failures = []
+    if 'maximum_loop_streak_decisions_per_game' in gates:
+        if metrics['longest_loop_streak_decisions'] > gates['maximum_loop_streak_decisions_per_game']:
+            failures.append('sustained no-pellet cycle')
+    elif metrics['loop_decisions'] > gates['maximum_loop_decisions_per_game']:
+        failures.append('no-pellet cycle')  # Archived strict-v2 criterion.
+    if metrics['longest_no_pellet_decisions'] > gates['maximum_no_pellet_decisions_per_game']:
+        failures.append('pellet stall')
+    if metrics.get('nonterminal_multi_tile_actions', metrics['multi_tile_actions']) > gates['maximum_nonterminal_multi_tile_actions']:
+        failures.append('incorrect multi-tile action')
+    if metrics.get('nonterminal_stationary_actions', metrics['stationary_actions']) > gates['maximum_nonterminal_stationary_actions']:
+        failures.append('incorrect stationary action')
+    if metrics['avoidable_immediate_deaths'] > gates['maximum_avoidable_immediate_deaths']:
+        failures.append('avoidable immediate death')
+    if not metrics['level_cleared'] or metrics['outcome'] != 'level_cleared' or metrics['pellets_remaining'] != 0:
+        failures.append('maze incomplete')
+    return failures
+
+
 def qualification(report, specifications=VALIDATION):
     failures, episodes = [], report['episodes']
     gates = specifications['gates']
@@ -127,17 +150,8 @@ def qualification(report, specifications=VALIDATION):
     if sum(e['metrics']['avoidable_immediate_deaths'] for e in episodes) > gates['maximum_avoidable_immediate_deaths']:
         failures.append('Avoidable immediate deaths')
     for e in episodes:
-        m = e['metrics']; prefix = f"level {e['level']} seed {e['seed']}"
-        if m['loop_decisions'] > gates['maximum_loop_decisions_per_game']:
-            failures.append(prefix+': no-pellet cycle')
-        if m['longest_no_pellet_decisions'] > gates['maximum_no_pellet_decisions_per_game']:
-            failures.append(prefix+': pellet stall')
-        if m.get('nonterminal_multi_tile_actions', m['multi_tile_actions']) > gates['maximum_nonterminal_multi_tile_actions']:
-            failures.append(prefix+': incorrect multi-tile action')
-        if m.get('nonterminal_stationary_actions', m['stationary_actions']) > gates['maximum_nonterminal_stationary_actions']:
-            failures.append(prefix+': incorrect stationary action')
-        if m['outcome'] != 'level_cleared' or m['pellets_remaining'] != 0:
-            failures.append(prefix+': maze incomplete')
+        prefix = f"level {e['level']} seed {e['seed']}"
+        failures.extend(prefix+': '+reason for reason in episode_quality_failures(e['metrics'], gates))
     if report['algorithm'] != specifications['teacher'] or report['options'] != specifications['teacher_options']:
         failures.append('Algorithm/configuration differs from the fixed candidate')
     return {'approved_for_training': not failures, 'failures': failures,
@@ -168,6 +182,7 @@ def validate(directory, algorithm='rollout_mpc', phase='development', workers=4)
             print(f"[{algorithm}/{phase}] {len(episodes)}/{len(jobs)} level={e['level']} seed={e['seed']} "
                   f"{m['outcome']} pellets={m['pellets_collected']} losses={m['life_losses']} "
                   f"avoidable={m['avoidable_immediate_deaths']} loops={m['loop_decisions']} "
+                  f"loop_streak={m['longest_loop_streak_decisions']} "
                   f"dry={m['longest_no_pellet_decisions']} time={e['wall_seconds']:.1f}s", flush=True)
     episodes.sort(key=lambda e:(e['level'],e['seed']))
     report = {'version': VALIDATION['version'], 'phase': phase, 'algorithm': algorithm, 'options': options,
