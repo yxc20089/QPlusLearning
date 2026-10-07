@@ -8,7 +8,7 @@
     {id:'b',x:328,y:218,w:106,h:54,fill:C.orangeFill,stroke:C.orange},
     {id:'scale',x:466,y:218,w:84,h:54,fill:C.orangeFill,stroke:C.orange}
   ];
-  const circles=[{id:'sum',x:602,y:173,w:38,h:38,fill:'white',stroke:C.muted}];
+  const circles=[{id:'sum',x:602,y:173,w:38,h:38,fill:'#ffffff',stroke:C.muted}];
   const lines=[
     [87,192,137,192,C.teal,false],[137,142.5,137,245,C.teal,false],
     [137,142.5,190,142.5,C.teal,true],[512,142.5,621,142.5,C.teal,false],[621,142.5,621,171,C.teal,true],
@@ -29,13 +29,13 @@
     {id:'scale',x:466,y:230,w:84,h:28,size:20,formula:true,color:C.orange,center:true,text:'α/r'},
     {id:'train-label',x:176,y:191,w:374,h:23,size:15,bold:true,color:C.orange,text:'LoRA matrices A and B train'},
     {id:'sum',x:602,y:174,w:38,h:35,size:25,formula:true,center:true,text:'+'},
-    {id:'projection-formula',x:36,y:286,w:390,h:30,size:23,formula:true,text:'y = W₀v + (α/r)BAv'},
+    {id:'projection-formula',x:36,y:286,w:390,h:30,size:23,formula:true,text:'y = W0v + (α/r)BAv',subs:[[5,6]]},
     {id:'update-formula',x:459,y:286,w:225,h:30,size:22,formula:true,text:'ΔW = (α/r)BA'},
     {id:'config',x:36,y:322,w:648,h:24,size:16,text:'r = 16     α = 32     α/r = 2     LoRA dropout = 0.05'},
     {id:'trainable',x:36,y:348,w:648,h:22,size:14,text:'33.8M trainable parameters across LoRA and the pointer head'},
     {id:'symbols',x:36,y:369,w:648,h:18,size:12,color:C.muted,text:'v: layer input    y: layer output    din / dout: input / output widths',subs:[[38,40],[44,47]]},
-    {id:'footer',x:36,y:391,w:615,h:13,size:9,color:C.muted,text:'One adapted projection. Kev uses all targets. Open animation controls.'},
-    {id:'number',x:665,y:391,w:19,h:13,size:9,color:C.muted,text:'3'}
+    {id:'footer',x:36,y:383,w:615,h:17,size:9,color:C.muted,text:'One adapted projection. Kev uses all targets. Open animation controls.'},
+    {id:'number',x:665,y:383,w:19,h:17,size:9,color:C.muted,text:'3'}
   ];
   const stages=[
     {title:'1. Follow a layer input',text:'v is an activation entering one selected projection inside Qwen. It is different from x, the complete token sequence on the previous slide. y is the output of this projection.'},

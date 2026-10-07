@@ -7,15 +7,16 @@
   "finetuning_minutes": 30,
   "state": "Native classic game and planning dataset prepared; GPU task training pending",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "Bq-KVL2ywqK_AA",
+  "revision_id": "-RfjvhcIOWohXw",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-07",
-  "visual_qa": "Slides 1–2 inspected in the native PDF export and Google Slides presentation. Native diagram and mathematical text verified; speaker notes read back; slide 2 embedded highlights animate and its live Play, Next and Reset controls work. Slides 3–15 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1–3 inspected in native PDF exports. Slide 3 mathematical text, native branch diagram, notes and animated projection highlights verified in Google Slides. Slides 4–15 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
       1,
-      2
+      2,
+      3
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -51,7 +52,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 3–15 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 4–15 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -69,6 +70,29 @@
       "readouts": "Option closing-marker vectors plus the final decide-marker vector",
       "marker_labels": "Readable names for existing Qwen special tokens; token spans and counts are schematic",
       "configuration": "Qwen3.5 causal row form, option_isolation=false"
+    },
+    "slide_3": {
+      "object_id": "decision_lab_training_cost",
+      "title": "LoRA inside Kev",
+      "formulae": [
+        "y = W₀v + (α/r)BAv",
+        "ΔW = (α/r)BA"
+      ],
+      "speaker_notes": "speaker-notes/slide-03.md",
+      "diagram_source": "../../../docs/animations/kev-lora.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-lora.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/18299745bd98d9a22db374d3ea11834f3b1eeb61/docs/animations/assets/kev-lora-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed highlights behind the native projection diagram",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "configuration": {
+        "rank": 16,
+        "alpha": 32,
+        "scaling": 2,
+        "dropout": 0.05,
+        "targets": "all",
+        "trainable_count_includes_pointer_head": true
+      }
     }
   },
   "initial_training_prework": true,
@@ -109,6 +133,7 @@
     "embedded_slides": [
       1,
       2,
+      3,
       6,
       13
     ],
@@ -119,6 +144,7 @@
   "mathematics_slides": [
     1,
     2,
+    3,
     6,
     11,
     12,
