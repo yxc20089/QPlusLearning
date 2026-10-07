@@ -25,6 +25,96 @@ def atomic_json(path, value):
     os.replace(temporary, path)
 
 
+def new_run_directory(results_root, label, **metadata):
+    """Preserve each invocation, including runs that are later interrupted."""
+    if not label or Path(label).name != label or label in ('.', '..'):
+        raise ValueError('Run label must be a single directory name')
+    run_id = time.strftime('%Y%m%d-%H%M%S', time.gmtime()) + '-' + uuid.uuid4().hex[:8]
+    directory = Path(results_root) / f'{label}-{run_id}'
+    directory.mkdir(parents=True, exist_ok=False)
+    atomic_json(directory / 'session.json', {'run_id': run_id, 'label': label,
+                'created_ns': time.time_ns(), **metadata})
+    return directory
+
+
+def backup_lab_to_drive(workspace, drive_root, checkpoint_root=None):
+    """Publish restore-compatible checkpoints and a dated archive of all recordings.
+
+    Missing stages/comparisons are allowed. A failed checkpoint copy does not
+    prevent preserving the traces; the returned errors must still be reported.
+    Foundation downloads and environments are outside the selected directories.
+    """
+    from lora_recovery import latest_snapshot
+    workspace, drive_root = Path(workspace).resolve(), Path(drive_root).resolve()
+    checkpoint_root = (Path(checkpoint_root).resolve() if checkpoint_root is not None
+                       else workspace / 'checkpoints')
+    if not workspace.is_dir() or drive_root.is_relative_to(workspace):
+        raise ValueError('Use an existing lab workspace and a separate Drive directory')
+    checkpoints, skipped, errors = {}, [], {}
+    if checkpoint_root.is_dir():
+        for output in sorted(checkpoint_root.iterdir()):
+            if not output.is_dir() or output.name.endswith('-recovery'):
+                continue
+            try:
+                snapshot = latest_snapshot(Path(str(output) + '-recovery'))
+                if snapshot is None and not (output / 'run-evidence.json').is_file():
+                    skipped.append({'checkpoint': str(output), 'reason': 'No complete learned snapshot or final checkpoint'})
+                    continue
+                config_path = output / 'training_config.json'
+                data = json.loads(config_path.read_text()).get('args', {}).get('data') if config_path.is_file() else None
+                if data and not Path(data).is_absolute():
+                    data = workspace / 'kev' / data
+                # Preserve available input bytes, as in automatic training
+                # backups; a restored final checkpoint may lack older inputs.
+                data = Path(data).resolve() if data else None
+                data = data if data and data.is_relative_to(workspace) and data.is_file() else None
+                checkpoints[output.name] = save_backup(output, snapshot, drive_root / 'backups',
+                                                       workspace, training_data=data)
+            except Exception as error:
+                errors[output.name] = f'{type(error).__name__}: {error}'
+                print(f'Checkpoint backup failed for {output.name}: {errors[output.name]}', flush=True)
+
+    directories = ('results', 'logs', 'data', 'evaluation')
+    files = {file for name in directories for file in (workspace / name).rglob('*') if file.is_file()}
+    files.update(file for pattern in ('*.json', '*.log') for file in workspace.glob(pattern) if file.is_file())
+    manifest = {'version': 1, 'workspace': str(workspace), 'created_ns': time.time_ns(),
+                'checkpoint_backups': checkpoints, 'skipped_checkpoints': skipped, 'checkpoint_errors': errors,
+                'missing_directories': [name for name in directories if not (workspace / name).is_dir()],
+                'files': []}
+    folder = drive_root / 'session-backups'
+    folder.mkdir(parents=True, exist_ok=True)
+    name = 'session-' + time.strftime('%Y%m%d-%H%M%S', time.gmtime()) + '-' + uuid.uuid4().hex[:8] + '.zip'
+    print(f'Session backup starting: {len(files)} recording/log/data files', flush=True)
+    with tempfile.TemporaryDirectory(prefix='kev-session-backup-') as temporary:
+        archive = Path(temporary) / name
+        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=1) as saved:
+            for file in sorted(files):
+                if file.is_symlink() or not file.resolve().is_relative_to(workspace):
+                    raise ValueError('Session backup contains a symbolic link or external file')
+                relative = str(file.relative_to(workspace))
+                digest, size = hashlib.sha256(), 0
+                with file.open('rb') as source, saved.open(relative, 'w', force_zip64=True) as target:
+                    for block in iter(lambda: source.read(1024 * 1024), b''):
+                        target.write(block)
+                        digest.update(block)
+                        size += len(block)
+                manifest['files'].append({'path': relative, 'bytes': size, 'sha256': digest.hexdigest()})
+            saved.writestr('session-manifest.json', json.dumps(manifest, indent=2) + '\n')
+        checksum = file_hash(archive)
+        uploading = folder / ('.uploading-' + name)
+        shutil.copyfile(archive, uploading)
+        if file_hash(uploading) != checksum:
+            raise ValueError('Drive session archive checksum mismatch; previous backup retained')
+        os.replace(uploading, folder / name)
+    receipt = {'version': 1, 'archive': str(folder / name), 'sha256': checksum,
+               'created_ns': manifest['created_ns'], 'files': len(files),
+               'checkpoint_backups': checkpoints, 'skipped_checkpoints': skipped, 'checkpoint_errors': errors}
+    atomic_json(folder / (name + '.json'), receipt)
+    atomic_json(folder / 'latest.json', receipt)
+    print(f'Session backup complete: {folder / name}', flush=True)
+    return receipt
+
+
 def save_backup(output, snapshot, backup_root, workspace, training_data=None):
     output, workspace = Path(output).resolve(), Path(workspace).resolve()
     snapshot = Path(snapshot).resolve() if snapshot else None

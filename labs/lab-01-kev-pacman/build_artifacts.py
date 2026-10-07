@@ -96,6 +96,7 @@ for name in ['cloud_runtime', 'training_monitor', 'lora_recovery', 'checkpoint_b
     sys.modules.pop(name, None)
 from cloud_runtime import CloudRuntime
 from lora_recovery import latest_snapshot
+from checkpoint_backup import new_run_directory
 from training_stages import specifications, inspect_checkpoint, restore_checkpoint, backup_checkpoint
 from pacman_lab import *
 from teacher_data import prepare_dataset, PREFIX, RECIPE
@@ -412,7 +413,10 @@ from IPython.display import display, HTML, JSON
 GENERAL_PLAY_CHECKPOINT = LAB_DIR / 'checkpoints/kev-4b-skills'
 if runtime.active_checkpoint is None or runtime.active_model_info()['checkpoint'] != str(GENERAL_PLAY_CHECKPOINT):
     runtime.start(GENERAL_PLAY_CHECKPOINT)
-bridge = NotebookBridge(LAB_DIR / 'results/player-trace.jsonl', runtime.active_model_info)
+general_play_run = new_run_directory(LAB_DIR / 'results', 'interactive-general',
+                                    active_checkpoint=runtime.active_model_info(), seed=7, action_version=2)
+bridge = NotebookBridge(general_play_run / 'player-trace.jsonl', runtime.active_model_info)
+print('Interactive state/action/probability trace:', bridge.trace_path)
 try:
     from google.colab import output
 except ImportError:
@@ -495,7 +499,7 @@ assert metrics['records_seen'] == metrics['requested_records'] == manifest['expe
 
 Run the cell below after Stage 5 completes, or after the storage cell restores your completed `kev-4b-pacman-native-v2` checkpoint from Drive. It loads that adapter and pointer head explicitly; you can play before running the benchmark. This cell needs only the initialized runtime, game helpers and completed checkpoint. It does not require earlier training or evaluation variables.
 
-Pause the baseline board first. On the new board, select **Kev** and press **Start**. Check that **Active LoRA + pointer head** says **`kev-4b-pacman-native-v2` / Pac-Man fine-tuned**. The classic maze, assets, four native ghosts, power pellets, lives and levels are the same as in baseline play. **New game** resets the board using the same seed (7). You can pause, restart or switch to Human mode. The badge shows the verified adapter and each model decision records it in `results/fine-tuned-player-trace.jsonl`.
+Pause the baseline board first. On the new board, select **Kev** and press **Start**. Check that **Active LoRA + pointer head** says **`kev-4b-pacman-native-v2` / Pac-Man fine-tuned**. The classic maze, assets, four native ghosts, power pellets, lives and levels are the same as in baseline play. **New game** resets the board using the same seed (7). You can pause, restart or switch to Human mode. Every cell invocation creates its own dated `results/interactive-fine-tuned-…/` directory, so v1/v2 play and reruns cannot overwrite each other. It prints the trace path. Each model decision immediately appends the complete supplied state, action, probabilities, latency and verified adapter identity. `session.json` records the seed and action version; resets remain visible as turn counters restart. Human-only play is not a model trace.
 
 This is an ungraded activity. Pause the game before benchmarking, switching models or exporting results. Run only one board at a time: both cells connect to the same notebook-local inference server. Colab supplies the callbacks; Kaggle/local users can use the Python rollouts.""")
     code("""# Interactive play with the completed Pac-Man adapter
@@ -508,7 +512,10 @@ if runtime.active_checkpoint is None or runtime.active_model_info()['checkpoint'
     runtime.start(PACMAN_PLAY_CHECKPOINT)
 if not runtime.active_model_info()['pacman_fine_tuned']:
     raise RuntimeError('The active checkpoint is not recorded as Pac-Man fine-tuned. Load the completed Stage 5 checkpoint.')
-fine_tuned_bridge = NotebookBridge(LAB_DIR / 'results/fine-tuned-player-trace.jsonl', runtime.active_model_info)
+fine_tuned_play_run = new_run_directory(LAB_DIR / 'results', 'interactive-fine-tuned',
+                                       active_checkpoint=runtime.active_model_info(), seed=7, action_version=2)
+fine_tuned_bridge = NotebookBridge(fine_tuned_play_run / 'fine-tuned-player-trace.jsonl', runtime.active_model_info)
+print('Interactive state/action/probability trace:', fine_tuned_bridge.trace_path)
 try:
     from google.colab import output
 except ImportError:
@@ -524,26 +531,35 @@ Pause interactive play. Both adapters run **20 full native games** from the same
 
 Report clears/game-overs, remaining pellets, avoidable immediate deaths, every raw cycle, longest consecutive cycle streak, pellet stalls, power pellets, ghosts eaten, post-respawn progress and action geometry. Compare paired per-seed results; higher score alone is insufficient. Large watchdogs (10,000 decisions, 600 simulated seconds or 512 consecutive dry decisions) stop hung agents. These exits are incomplete failures, never wins or native game-overs. Full games may exceed the classroom block; time serving and complete a slower benchmark as prework. The published CPU teacher results do not establish learned-Kev performance.
 
-This v2 benchmark changes action boundaries and exposes more current state. Old v1 benchmark scores are not directly comparable. You may explicitly evaluate an existing v1 adapter using this protocol, but it was trained with the older schema. A new v2 adapter requires the newly qualified demonstrations and a fresh Pac-Man output directory.""")
+This v2 benchmark changes action boundaries and exposes more current state. Old v1 benchmark scores are not directly comparable. You may explicitly evaluate an existing v1 adapter using this protocol, but it was trained with the older schema. A new v2 adapter requires the newly qualified demonstrations and a fresh Pac-Man output directory.
+
+Each comparison creates a dated `results/comparison-…/` directory. Every episode flushes its full state/action/probability trace and native diagnostics after each move. The baseline report is saved before the task-adapter benchmark begins; interrupted runs keep their partial traces. Completed comparisons are saved inside that directory and as the latest `comparison.json`. The final **Back up to Google Drive** cell preserves every run, including previous recordings at the old paths.""")
     code("""# This comparison can also evaluate your existing completed v1 checkpoint explicitly.
 GENERAL = CHECKPOINT_ROOT / 'kev-4b-skills'
 checkpoint = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v2'
 # checkpoint = CHECKPOINT_ROOT / 'kev-4b-pacman-planner-v1'  # Existing adapter, older training schema
+comparison_run = new_run_directory(LAB_DIR / 'results', 'comparison',
+                                   baseline_checkpoint=str(GENERAL), fine_tuned_checkpoint=str(checkpoint),
+                                   action_version=2)
+print('Saving all benchmark trajectories:', comparison_run)
 runtime.start(GENERAL)
 before_identity = runtime.active_model_info()
 before_gameplay = benchmark_gameplay(model_info=runtime.active_model_info,
-                                    trace_dir=LAB_DIR / 'results/gameplay-general')
+                                    trace_dir=comparison_run / 'gameplay-general')
+(comparison_run / 'general.json').write_text(json.dumps(before_gameplay, indent=2))
 runtime.start(checkpoint)
 after_identity = runtime.active_model_info()
 after_gameplay = benchmark_gameplay(model_info=runtime.active_model_info,
-                                   trace_dir=LAB_DIR / 'results/gameplay-fine-tuned')
+                                   trace_dir=comparison_run / 'gameplay-fine-tuned')
+(comparison_run / 'fine-tuned.json').write_text(json.dumps(after_gameplay, indent=2))
 gameplay_comparison = paired_gameplay(before_gameplay, after_gameplay)
 comparison = {'schema_version': 3, 'baseline_checkpoint': str(GENERAL),
     'fine_tuned_checkpoint': str(checkpoint), 'active_adapters': {'before': before_identity, 'after': after_identity},
     'gameplay': {'general': before_gameplay, 'fine_tuned': after_gameplay, 'paired': gameplay_comparison},
     'runtime': runtime.gpu, 'pacman_dataset': manifest,
     'teacher_qualification_sha256': hashlib.sha256((LAB_DIR / 'evaluation/teacher-qualification.json').read_bytes()).hexdigest(),
-    'checkpoint_owners': STAGE_OWNERS}
+    'checkpoint_owners': STAGE_OWNERS, 'recording_directory': str(comparison_run)}
+(comparison_run / 'comparison.json').write_text(json.dumps(comparison, indent=2))
 (LAB_DIR / 'comparison.json').write_text(json.dumps(comparison, indent=2))
 for name, games in [('general', before_gameplay), ('fine_tuned', after_gameplay)]:
     print(name, 'means:', games['means'], 'clears:', games['level_clears'], 'incomplete:', games['capped_episodes'])
@@ -580,6 +596,26 @@ except ImportError:
     print('Download:', archive)
 else:
     files.download(archive)
+""")
+    md("""## Back up to Google Drive — checkpoints, all trajectories and traces
+
+Pause interactive play, then run this final cell before replacing the runtime. It mounts Drive even if `SAVE_TO_DRIVE` was disabled earlier. It works without completing the benchmark, training every stage or running the submission-download cell.
+
+All available completed checkpoints and latest complete recovery snapshots, including **v1 and v2**, are saved separately under `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/<checkpoint-name>/`. They use the existing verified backup format and are automatically restored by the storage cell next time you enable `SAVE_TO_DRIVE=True`; the latest two backups per checkpoint are retained. Outputs without learned weights are listed as skipped.
+
+Every file under `results/`, training logs/TensorBoard events, labels, teacher replays/evidence and root JSON reports is stored in a dated ZIP under **`MyDrive/QPlusLearning/lab-01-kev-pacman/session-backups/`**. This includes every benchmark trajectory and interactive model trace, old paths and partial runs. These session archives are retained, have a file/checksum manifest, and are separate from checkpoint auto-restore. Foundation weights and installed environments are downloaded by setup. Wait for **Session backup complete** and check that `checkpoint_errors` is empty before disconnecting.""")
+    code("""# Back up all available checkpoints, trajectories and traces to Google Drive
+from pathlib import Path
+import json
+from google.colab import drive
+from checkpoint_backup import backup_lab_to_drive
+drive.mount('/content/drive')
+runtime.stop()
+DRIVE_LAB_ROOT = Path('/content/drive/MyDrive/QPlusLearning/lab-01-kev-pacman')
+drive_receipt = backup_lab_to_drive(LAB_DIR, DRIVE_LAB_ROOT, checkpoint_root=CHECKPOINT_ROOT)
+print(json.dumps(drive_receipt, indent=2))
+if drive_receipt['checkpoint_errors']:
+    raise RuntimeError('Traces were saved, but some checkpoint backups failed. See checkpoint_errors above and retry.')
 """)
     result = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}, "language_info": {"name": "python"}, "colab": {"name": "pacman_kev_lab.ipynb"}}, "nbformat": 4, "nbformat_minor": 5}
     (ROOT / 'notebooks/pacman_kev_lab.ipynb').write_text(json.dumps(result, indent=2) + '\n')
