@@ -66,7 +66,7 @@
     t=Math.max(0,Math.min(1,t));
     if(stage===0)return dot([[156,215],[222,215]],t,C.teal);
     if(stage===1)return dot([[222,215],[222,174],[242,174],[346,174],[389,174],[389,215],[436,215]],t,C.orange)+dot([[222,215],[222,241],[242,241],[346,241],[389,241],[389,215],[436,215]],t,C.teal);
-    if(stage===2)return `<rect x="439" y="160" width="113" height="110" rx="5" fill="none" stroke="${C.orange}" stroke-width="${1.3+Math.sin(t*Math.PI)*1.5}"/>`;
+    if(stage===2)return `<rect x="432" y="153" width="127" height="124" rx="5" fill="none" stroke="${C.orange}" stroke-width="${1.3+Math.sin(t*Math.PI)*1.5}"/>`;
     if(stage===3)return dot([[555,215],[577,215]],t,C.orange);
     return `<rect x="581" y="149" width="108" height="47" rx="3" fill="none" stroke="${C.teal}" stroke-width="${1.3+Math.sin(t*Math.PI)*1.5}"/>`;
   }
