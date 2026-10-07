@@ -1,7 +1,7 @@
 """Versioned whole-game evaluation and exact replay of private player traces.
 
-Native counterfactuals are scoring diagnostics only. Kev receives body(state),
-unchanged from v1 training; no planner or safety filter replaces its decisions.
+Native counterfactuals are scoring diagnostics only. Kev receives body(state)
+with the declared observation version; no planner or safety filter replaces its decisions.
 """
 import argparse
 from collections import Counter
@@ -14,37 +14,13 @@ import time
 import zipfile
 
 from pacman_lab import (ArcadeEngine, ROOT, PACMAN_REVISION, body, call, destination,
-                        distances, distribution, engine_script, ensure_node, evaluate, position)
+                        distances, distribution, engine_script, ensure_node, evaluate, position, teacher)
 
 SPEC = json.loads((ROOT / 'benchmark-spec.json').read_text())
 
 
 def benchmark_script():
     source = engine_script()
-    # Upstream rewind omits release mode and saves only the currently active
-    # counter. Counterfactuals can cross GLOBAL -> PERSONAL after a respawn.
-    # Augment save/load ONLY; forward physics and legacy player semantics agree
-    # exactly with the unmodified source. Never run diagnostics on that source's
-    # incomplete recovery hook during a live episode.
-    start, end = source.index('var ghostReleaser = (function(){'), source.index('var elroyTimer = (function(){')
-    section = source[start:end]
-    save_start = section.index('    var save = function(t) {')
-    save_end = section.index('\n    return {', save_start)
-    section = section[:save_start] + '''    var savedMode = {};
-    var save = function(t) {
-        savedMode[t] = mode;
-        savedFramesSinceLastDot[t] = framesSinceLastDot;
-        savedGlobalCount[t] = globalCount;
-        savedGhostCounts[t] = Object.assign({}, ghostCounts);
-    };
-    var load = function(t) {
-        mode = savedMode[t];
-        framesSinceLastDot = savedFramesSinceLastDot[t];
-        globalCount = savedGlobalCount[t];
-        ghostCounts = Object.assign({}, savedGhostCounts[t]);
-    };
-''' + section[save_end:]
-    source = source[:start] + section + source[end:]
     end = source.rfind('})();')
     return source[:end] + (ROOT / 'games/benchmark-hooks.js').read_text() + '\n' + source[end:]
 
@@ -70,7 +46,7 @@ def strata(state, candidates=()):
                                        (destination(maze, tile, d) for d in state['legal_moves'])),
             'late_maze_30_or_fewer': state['pellets_remaining'] <= 30,
             'revisited_over_4_times': state['visits_to_current_tile'] > 4,
-            'post_respawn': state['lives'] < 3,
+            'post_respawn': state.get('life_epoch',0)>0 if state.get('action_semantics')=='native-adjacent-tile-entry-v2' else state['lives']<3,
             'search_survival_critical': len({c['survival'] for c in candidates}) > 1}
 
 
@@ -124,9 +100,10 @@ def summarize(rows, status):
                'longest_no_pellet_frames': 0, 'simulation_frames': sum(r['action_frames'] for r in rows),
                'straight_available': 0, 'straight_chosen': 0, 'junction_straight_available': 0,
                'junction_straight_chosen': 0, 'safe_immediate_pellet_skips_at_junction': 0,
-               'multi_tile_actions': 0, 'stationary_actions': 0, 'normal_pellets': 0,
+               'multi_tile_actions': 0, 'stationary_actions': 0,
+               'nonterminal_multi_tile_actions': 0, 'nonterminal_stationary_actions': 0, 'normal_pellets': 0,
                'power_pellets': 0, 'ghosts_eaten': 0, 'fruit_eaten': 0,
-               'outcome': status, 'censored': status in ('decision_cap', 'simulation_frame_cap', 'trace_end'),
+               'outcome': status, 'censored': status in ('decision_cap', 'simulation_frame_cap', 'trace_end', 'no_progress_watchdog'),
                'level_cleared': status == 'level_cleared', 'per_life': {}}
     periods, positions, previous_life = Counter(), [], None
     stalled, stalled_frames = 0, 0
@@ -167,6 +144,8 @@ def summarize(rows, status):
         distance = dr + min(dc, 28-dc)  # Native classic maze has 28 columns.
         metrics['stationary_actions'] += distance == 0
         metrics['multi_tile_actions'] += distance > 1
+        metrics['nonterminal_stationary_actions'] += distance == 0 and not row['outcome']
+        metrics['nonterminal_multi_tile_actions'] += distance > 1 and not row['outcome']
         for name in ('normal_pellets', 'power_pellets', 'fruit_eaten'):
             metrics[name] += row['events'][name]
         metrics['ghosts_eaten'] += len(row['events']['ghosts_eaten'])
@@ -180,7 +159,7 @@ def summarize(rows, status):
             metrics['longest_no_pellet_decisions'] = max(metrics['longest_no_pellet_decisions'], stalled)
             metrics['longest_no_pellet_frames'] = max(metrics['longest_no_pellet_frames'], stalled_frames)
             for period in range(2, min(64, len(positions)//2)+1):
-                if positions[-period:] == positions[-2*period:-period] and len(set(positions[-period:])) >= 3:
+                if positions[-period:] == positions[-2*period:-period] and len(set(positions[-period:])) >= 2:
                     metrics['loop_decisions'] += 1
                     periods[period] += 1
                     break
@@ -238,22 +217,31 @@ def audit_dataset():
     return report
 
 
-def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC):
+def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC, teacher_algorithm=None, teacher_options=None):
     """Paired by fixed seed/level; three lives, no replacement policy on API errors."""
     verify_reserved_seeds(spec)
     if not spec['seeds'] or not spec['levels'] or spec['max_decisions'] <= 0 or spec['max_simulation_frames'] <= 0:
         raise ValueError('Benchmark episodes and caps must be nonempty and positive')
+    if teacher_algorithm and (predict or model_info):
+        raise ValueError('Teacher validation must be separate from trained-model inference')
+    if teacher_algorithm not in (None, 'route_heuristic', 'legacy_beam', 'rollout_mpc'):
+        raise ValueError('Unknown teacher algorithm')
     predict = predict or (lambda request: call('/v1/systemone', request)[0])
-    identity = model_info() if model_info else {'controller': 'unverified supplied predictor'}
+    identity = ({'controller': 'CPU teacher, not trained Kev', 'algorithm': teacher_algorithm,
+                 'options': teacher_options or {}} if teacher_algorithm else
+                model_info() if model_info else {'controller': 'unverified supplied predictor'})
     episodes = []
     if trace_dir is not None:
         trace_dir = Path(trace_dir)
         trace_dir.mkdir(parents=True, exist_ok=True)
-    with BenchmarkEngine() as engine:
-        for level in spec['levels']:
-            for seed in spec['seeds']:
-                state = engine.request('reset', options={'seed': seed, 'level': level})
-                rows, life, active_frames, status = [], 0, 0, 'decision_cap'
+    for level in spec['levels']:
+        for seed in spec['seeds']:
+            # A fresh native game closure prevents menu/game-over fields from
+            # a preceding episode leaking into the next initial observation.
+            with BenchmarkEngine() as engine:
+                state = engine.request('reset', options={'seed': seed, 'level': level,
+                                                       'action_version': spec.get('action_version', 1)})
+                rows, life, active_frames, status, stale = [], 0, 0, 'decision_cap', 0
                 filename = trace_dir / f'level-{level}-seed-{seed}.jsonl' if trace_dir else None
                 handle = filename.open('w') if filename else None
                 print(f"[gameplay] level {level}, seed {seed}: up to {spec['max_decisions']} decisions, all lives", flush=True)
@@ -264,7 +252,15 @@ def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC)
                         risks = engine.request('risks')
                         request = body(state)
                         started = time.perf_counter()
-                        response = predict(request)
+                        if teacher_algorithm:
+                            plan = (engine.request('teacher' if teacher_algorithm == 'rollout_mpc' else 'plan',
+                                                   options=teacher_options or {}) if teacher_algorithm != 'route_heuristic' else
+                                    {'choice': teacher(state)})
+                            choice = plan['choice']
+                            response = {'answers': {'move': {'choice': choice, 'probabilities': {
+                                d: float(d == choice) for d in state['legal_moves']}}}, 'teacher': plan}
+                        else:
+                            response = predict(request)
                         elapsed = (time.perf_counter()-started)*1000
                         distribution(response['answers']['move'], request['questions']['move']['criteria'])
                         if model_info and model_info() != identity:
@@ -277,6 +273,7 @@ def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC)
                                                      'active_checkpoint': identity, 'diagnostics': row})+'\n')
                             handle.flush()
                         active_frames += step['action_frames']
+                        stale = stale+1 if step['state']['pellets_remaining'] == state['pellets_remaining'] else 0
                         state = step['state']
                         if step['outcome'] == 'level_cleared':
                             status = 'level_cleared'; break
@@ -285,6 +282,9 @@ def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC)
                             if continuation['status'] == 'game_over':
                                 status = 'game_over'; break
                             state = continuation['state']; life += 1
+                            stale = 0
+                        if stale >= spec.get('max_no_pellet_decisions', 1000000000):
+                            status = 'no_progress_watchdog'; break
                         if active_frames >= spec['max_simulation_frames']:
                             status = 'simulation_frame_cap'; break
                         if (turn+1) % 128 == 0:
@@ -302,7 +302,7 @@ def benchmark_gameplay(predict=None, model_info=None, trace_dir=None, spec=SPEC)
     return {'protocol': spec, 'active_checkpoint': identity, 'episodes': episodes, 'means': means,
             'level_clears': sum(e['metrics']['level_cleared'] for e in episodes),
             'capped_episodes': sum(e['metrics']['censored'] for e in episodes),
-            'interpretation': 'Five-seed same-maze comparison; caps are unresolved, not victories. No broad win-rate claim.'}
+            'interpretation': 'Native full games from starting boards. Win is a level clear; death is native game-over. Watchdog exits are failures/incomplete, never victories. Scope is the listed seeds/levels.'}
 
 
 def paired_gameplay(before, after):
@@ -329,8 +329,9 @@ def audit_trace(path, seed=7, level=1):
         raise ValueError('Empty player trace')
     identity = trace[0]['active_checkpoint']
     records, life, status = [], 0, 'trace_end'
+    action_version = 2 if trace[0]['request']['state'].get('action_semantics') == 'native-adjacent-tile-entry-v2' else 1
     with BenchmarkEngine() as engine:
-        state = engine.request('reset', options={'seed': seed, 'level': level})
+        state = engine.request('reset', options={'seed': seed, 'level': level, 'action_version': action_version})
         for index, row in enumerate(trace):
             if row['active_checkpoint'] != identity or row['response'].get('active_checkpoint', identity) != identity:
                 raise ValueError(f'Adapter identity changed at trace request {index}')
@@ -350,7 +351,8 @@ def audit_trace(path, seed=7, level=1):
                     break
                 life += 1
                 state = continuation['state']
-    return {'protocol': SPEC, 'trace_sha256': hashlib.sha256(content).hexdigest(),
+    protocol = SPEC if action_version == 2 else {'version': 'legacy-v1-trace-audit', 'action_version': 1, 'engine_revision': PACMAN_REVISION}
+    return {'protocol': protocol, 'trace_sha256': hashlib.sha256(content).hexdigest(),
             'seed': seed, 'level': level, 'exact_replay_matches': len(records),
             'active_checkpoint': identity, 'metrics': summarize(records, status), 'decisions': records}
 

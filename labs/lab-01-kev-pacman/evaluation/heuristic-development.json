@@ -1,0 +1,1402 @@
+{
+  "version": "native-teacher-qualification-v2",
+  "phase": "development",
+  "algorithm": "route_heuristic",
+  "options": {},
+  "simulation_protocol": {
+    "version": "pacman-gameplay-v2",
+    "engine_revision": "7407174c1d6a38be8cd230577489e39e0873145b",
+    "action_semantics": "native-adjacent-tile-entry-v2; whole native frames, no changed physics",
+    "action_version": 2,
+    "observation_schema": "native-current-clocks-movement-and-64-position-history-v2",
+    "seeds": [
+      50021,
+      50023,
+      50033,
+      50047,
+      50051
+    ],
+    "levels": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "max_decisions": 10000,
+    "max_simulation_frames": 36000,
+    "max_no_pellet_decisions": 512,
+    "stop": "win = first native level clear; death = native game-over after all initial/bonus lives; continue after intermediate deaths. Large watchdog bounds detect stalled runs and never count as wins.",
+    "loop_definition": "repeated position sequence of period 2..64 with at least 2 distinct tiles, within one life and without consuming a pellet",
+    "avoidable_death_definition": "chosen action loses a life before entering the requested adjacent tile, while another legal action from identical native state and RNG does not; no claim of eventual survival",
+    "primary_metrics": [
+      "level clears",
+      "pellets collected",
+      "avoidable immediate deaths",
+      "no-pellet cycles",
+      "longest no-pellet interval",
+      "post-respawn progress"
+    ],
+    "secondary_metrics": [
+      "score",
+      "first-life progress",
+      "power pellets",
+      "ghosts eaten",
+      "fruit eaten",
+      "heading bias",
+      "action geometry"
+    ],
+    "censoring": "watchdog exits are stalled/incomplete failures, never wins or native game-overs; report separately and reject for teacher qualification",
+    "split_rule": "seeds reserved for evaluation, disjoint from every packaged v1 data split; never use their trajectories for new training",
+    "generalization_scope": "same classic maze, starting levels 1,2,3,5 and five seeds (20 full games per adapter); no held-out-layout or untested-level claim"
+  },
+  "qualification_spec": {
+    "version": "native-teacher-qualification-v2",
+    "development_seeds": [
+      70001,
+      71009,
+      72017,
+      73019,
+      74021
+    ],
+    "qualification_seeds": [
+      81013,
+      82021,
+      83023,
+      84029,
+      85037
+    ],
+    "levels": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "teacher": "rollout_mpc",
+    "teacher_options": {
+      "horizon_frames": 240,
+      "endgame_horizon_frames": 480,
+      "danger_horizon_frames": 480,
+      "buffers": [
+        1,
+        2,
+        4,
+        6
+      ],
+      "scenario_seeds": [
+        11117,
+        77717
+      ]
+    },
+    "gates": {
+      "minimum_clear_rate_each_level": 1.0,
+      "maximum_life_losses_total": 4,
+      "maximum_avoidable_immediate_deaths": 0,
+      "maximum_loop_decisions_per_game": 0,
+      "maximum_no_pellet_decisions_per_game": 128,
+      "maximum_nonterminal_multi_tile_actions": 0,
+      "maximum_nonterminal_stationary_actions": 0,
+      "minimum_qualification_games": 20
+    },
+    "policy": "Predeclared finite-suite gates. Do not relax after observing results. A failed gate blocks dataset creation and distillation. Passing is empirical evidence on these seeds/levels, not a mathematical guarantee for every future state.",
+    "seed_partition": "Development and qualification seeds stay out of training. The five student benchmark seeds are also reserved separately. Qualification occurs only after the candidate algorithm/configuration is fixed."
+  },
+  "episodes": [
+    {
+      "seed": 70001,
+      "level": 1,
+      "metrics": {
+        "decisions": 607,
+        "score": 4780,
+        "pellets_collected": 242,
+        "pellets_remaining": 2,
+        "life_losses": 3,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 11,
+        "avoidable_risk_decisions": 8,
+        "all_immediate_actions_fatal": 3,
+        "unsafe_immediate_choices": 3,
+        "loop_decisions": 11,
+        "longest_no_pellet_decisions": 117,
+        "longest_no_pellet_frames": 815,
+        "simulation_frames": 4813,
+        "straight_available": 507,
+        "straight_chosen": 447,
+        "junction_straight_available": 62,
+        "junction_straight_chosen": 28,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 238,
+        "power_pellets": 4,
+        "ghosts_eaten": 6,
+        "fruit_eaten": 0,
+        "outcome": "game_over",
+        "censored": false,
+        "level_cleared": false,
+        "per_life": {
+          "0": {
+            "decisions": 373,
+            "pellets_collected": 242,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 117,
+            "pellets_collected": 0,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 117,
+            "pellets_collected": 0,
+            "life_lost": true
+          }
+        },
+        "loop_periods": {
+          "2": 11
+        },
+        "first_life_pellets": 242,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.2727272727272727,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8816568047337278,
+        "mean_http_ms": 2.8900407073264436
+      },
+      "trace": null,
+      "wall_seconds": 2.683316250098869,
+      "replay_entry": "level-1-seed-70001.jsonl"
+    },
+    {
+      "seed": 71009,
+      "level": 1,
+      "metrics": {
+        "decisions": 376,
+        "score": 4400,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 2,
+        "avoidable_risk_decisions": 2,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 4,
+        "longest_no_pellet_decisions": 23,
+        "longest_no_pellet_frames": 169,
+        "simulation_frames": 3148,
+        "straight_available": 326,
+        "straight_chosen": 290,
+        "junction_straight_available": 50,
+        "junction_straight_chosen": 23,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 5,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 296,
+            "pellets_collected": 210,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 80,
+            "pellets_collected": 34,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 4
+        },
+        "first_life_pellets": 210,
+        "post_respawn_pellets": 34,
+        "unsafe_immediate_choice_rate": 0.5,
+        "avoidable_immediate_death_rate": 0.5,
+        "straight_choice_rate": 0.8895705521472392,
+        "mean_http_ms": 2.5023689925140564
+      },
+      "trace": null,
+      "wall_seconds": 1.599642709014006,
+      "replay_entry": "level-1-seed-71009.jsonl"
+    },
+    {
+      "seed": 72017,
+      "level": 1,
+      "metrics": {
+        "decisions": 449,
+        "score": 3200,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 2,
+        "avoidable_immediate_deaths": 2,
+        "immediate_risk_decisions": 6,
+        "avoidable_risk_decisions": 6,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 2,
+        "loop_decisions": 7,
+        "longest_no_pellet_decisions": 48,
+        "longest_no_pellet_frames": 336,
+        "simulation_frames": 3559,
+        "straight_available": 394,
+        "straight_chosen": 349,
+        "junction_straight_available": 57,
+        "junction_straight_chosen": 29,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 3,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 256,
+            "pellets_collected": 185,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 180,
+            "pellets_collected": 54,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 13,
+            "pellets_collected": 5,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 7
+        },
+        "first_life_pellets": 185,
+        "post_respawn_pellets": 59,
+        "unsafe_immediate_choice_rate": 0.3333333333333333,
+        "avoidable_immediate_death_rate": 0.3333333333333333,
+        "straight_choice_rate": 0.8857868020304569,
+        "mean_http_ms": 2.670252594302402
+      },
+      "trace": null,
+      "wall_seconds": 1.9417957500554621,
+      "replay_entry": "level-1-seed-72017.jsonl"
+    },
+    {
+      "seed": 73019,
+      "level": 1,
+      "metrics": {
+        "decisions": 437,
+        "score": 3200,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 2,
+        "avoidable_risk_decisions": 1,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 3,
+        "longest_no_pellet_decisions": 34,
+        "longest_no_pellet_frames": 225,
+        "simulation_frames": 3377,
+        "straight_available": 375,
+        "straight_chosen": 329,
+        "junction_straight_available": 57,
+        "junction_straight_chosen": 25,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 1,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 2,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 253,
+            "pellets_collected": 174,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 184,
+            "pellets_collected": 70,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 3
+        },
+        "first_life_pellets": 174,
+        "post_respawn_pellets": 70,
+        "unsafe_immediate_choice_rate": 0.5,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8773333333333333,
+        "mean_http_ms": 2.8818120585341065
+      },
+      "trace": null,
+      "wall_seconds": 1.9765712080989033,
+      "replay_entry": "level-1-seed-73019.jsonl"
+    },
+    {
+      "seed": 74021,
+      "level": 1,
+      "metrics": {
+        "decisions": 460,
+        "score": 3200,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 2,
+        "avoidable_immediate_deaths": 2,
+        "immediate_risk_decisions": 11,
+        "avoidable_risk_decisions": 11,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 2,
+        "loop_decisions": 6,
+        "longest_no_pellet_decisions": 60,
+        "longest_no_pellet_frames": 411,
+        "simulation_frames": 3569,
+        "straight_available": 395,
+        "straight_chosen": 354,
+        "junction_straight_available": 55,
+        "junction_straight_chosen": 25,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 2,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 321,
+            "pellets_collected": 199,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 126,
+            "pellets_collected": 40,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 13,
+            "pellets_collected": 5,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 5,
+          "4": 1
+        },
+        "first_life_pellets": 199,
+        "post_respawn_pellets": 45,
+        "unsafe_immediate_choice_rate": 0.18181818181818182,
+        "avoidable_immediate_death_rate": 0.18181818181818182,
+        "straight_choice_rate": 0.8962025316455696,
+        "mean_http_ms": 2.784607866930816
+      },
+      "trace": null,
+      "wall_seconds": 2.0374013340333477,
+      "replay_entry": "level-1-seed-74021.jsonl"
+    },
+    {
+      "seed": 70001,
+      "level": 2,
+      "metrics": {
+        "decisions": 485,
+        "score": 2900,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 2,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 4,
+        "avoidable_risk_decisions": 3,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 2,
+        "loop_decisions": 3,
+        "longest_no_pellet_decisions": 43,
+        "longest_no_pellet_frames": 289,
+        "simulation_frames": 3365,
+        "straight_available": 421,
+        "straight_chosen": 373,
+        "junction_straight_available": 65,
+        "junction_straight_chosen": 30,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 1,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 1,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 211,
+            "pellets_collected": 161,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 175,
+            "pellets_collected": 59,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 99,
+            "pellets_collected": 24,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 3
+        },
+        "first_life_pellets": 161,
+        "post_respawn_pellets": 83,
+        "unsafe_immediate_choice_rate": 0.5,
+        "avoidable_immediate_death_rate": 0.3333333333333333,
+        "straight_choice_rate": 0.8859857482185273,
+        "mean_http_ms": 2.9936015200273123
+      },
+      "trace": null,
+      "wall_seconds": 2.23460862506181,
+      "replay_entry": "level-2-seed-70001.jsonl"
+    },
+    {
+      "seed": 71009,
+      "level": 2,
+      "metrics": {
+        "decisions": 380,
+        "score": 2600,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 2,
+        "avoidable_risk_decisions": 1,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 2,
+        "longest_no_pellet_decisions": 23,
+        "longest_no_pellet_frames": 150,
+        "simulation_frames": 2676,
+        "straight_available": 332,
+        "straight_chosen": 295,
+        "junction_straight_available": 53,
+        "junction_straight_chosen": 26,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 300,
+            "pellets_collected": 210,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 80,
+            "pellets_collected": 34,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 1,
+          "4": 1
+        },
+        "first_life_pellets": 210,
+        "post_respawn_pellets": 34,
+        "unsafe_immediate_choice_rate": 0.5,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8885542168674698,
+        "mean_http_ms": 2.7839346461022565
+      },
+      "trace": null,
+      "wall_seconds": 1.7071301670512185,
+      "replay_entry": "level-2-seed-71009.jsonl"
+    },
+    {
+      "seed": 72017,
+      "level": 2,
+      "metrics": {
+        "decisions": 483,
+        "score": 3400,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 2,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 4,
+        "avoidable_risk_decisions": 3,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 2,
+        "loop_decisions": 2,
+        "longest_no_pellet_decisions": 53,
+        "longest_no_pellet_frames": 341,
+        "simulation_frames": 3530,
+        "straight_available": 415,
+        "straight_chosen": 373,
+        "junction_straight_available": 56,
+        "junction_straight_chosen": 28,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 2,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 3,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 241,
+            "pellets_collected": 178,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 174,
+            "pellets_collected": 59,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 68,
+            "pellets_collected": 7,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 2
+        },
+        "first_life_pellets": 178,
+        "post_respawn_pellets": 66,
+        "unsafe_immediate_choice_rate": 0.5,
+        "avoidable_immediate_death_rate": 0.3333333333333333,
+        "straight_choice_rate": 0.8987951807228916,
+        "mean_http_ms": 2.929363446502983
+      },
+      "trace": null,
+      "wall_seconds": 2.193821416934952,
+      "replay_entry": "level-2-seed-72017.jsonl"
+    },
+    {
+      "seed": 73019,
+      "level": 2,
+      "metrics": {
+        "decisions": 469,
+        "score": 3200,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 0,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 2,
+        "avoidable_risk_decisions": 2,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 0,
+        "loop_decisions": 2,
+        "longest_no_pellet_decisions": 49,
+        "longest_no_pellet_frames": 308,
+        "simulation_frames": 3363,
+        "straight_available": 404,
+        "straight_chosen": 358,
+        "junction_straight_available": 61,
+        "junction_straight_chosen": 31,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 2,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 469,
+            "pellets_collected": 244,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 2
+        },
+        "first_life_pellets": 244,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.0,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8861386138613861,
+        "mean_http_ms": 3.625896010450574
+      },
+      "trace": null,
+      "wall_seconds": 2.4917086249915883,
+      "replay_entry": "level-2-seed-73019.jsonl"
+    },
+    {
+      "seed": 74021,
+      "level": 2,
+      "metrics": {
+        "decisions": 552,
+        "score": 2600,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 0,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 1,
+        "avoidable_risk_decisions": 1,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 0,
+        "loop_decisions": 1,
+        "longest_no_pellet_decisions": 81,
+        "longest_no_pellet_frames": 533,
+        "simulation_frames": 3819,
+        "straight_available": 479,
+        "straight_chosen": 433,
+        "junction_straight_available": 73,
+        "junction_straight_chosen": 40,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 552,
+            "pellets_collected": 244,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 1
+        },
+        "first_life_pellets": 244,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.0,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.9039665970772442,
+        "mean_http_ms": 3.639584221831604
+      },
+      "trace": null,
+      "wall_seconds": 2.9041870000073686,
+      "replay_entry": "level-2-seed-74021.jsonl"
+    },
+    {
+      "seed": 70001,
+      "level": 3,
+      "metrics": {
+        "decisions": 560,
+        "score": 3400,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 2,
+        "avoidable_risk_decisions": 2,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 4,
+        "longest_no_pellet_decisions": 107,
+        "longest_no_pellet_frames": 718,
+        "simulation_frames": 4081,
+        "straight_available": 478,
+        "straight_chosen": 426,
+        "junction_straight_available": 63,
+        "junction_straight_chosen": 30,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 1,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 3,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 171,
+            "pellets_collected": 115,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 389,
+            "pellets_collected": 129,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 4
+        },
+        "first_life_pellets": 115,
+        "post_respawn_pellets": 129,
+        "unsafe_immediate_choice_rate": 0.5,
+        "avoidable_immediate_death_rate": 0.5,
+        "straight_choice_rate": 0.891213389121339,
+        "mean_http_ms": 3.926878564899588
+      },
+      "trace": null,
+      "wall_seconds": 3.0984335830435157,
+      "replay_entry": "level-3-seed-70001.jsonl"
+    },
+    {
+      "seed": 71009,
+      "level": 3,
+      "metrics": {
+        "decisions": 402,
+        "score": 2800,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 10,
+        "avoidable_risk_decisions": 9,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 3,
+        "longest_no_pellet_decisions": 37,
+        "longest_no_pellet_frames": 226,
+        "simulation_frames": 2935,
+        "straight_available": 350,
+        "straight_chosen": 315,
+        "junction_straight_available": 52,
+        "junction_straight_chosen": 25,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 1,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 1,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 159,
+            "pellets_collected": 139,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 243,
+            "pellets_collected": 105,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 3
+        },
+        "first_life_pellets": 139,
+        "post_respawn_pellets": 105,
+        "unsafe_immediate_choice_rate": 0.1,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.9,
+        "mean_http_ms": 3.347930763685955
+      },
+      "trace": null,
+      "wall_seconds": 2.037852791021578,
+      "replay_entry": "level-3-seed-71009.jsonl"
+    },
+    {
+      "seed": 72017,
+      "level": 3,
+      "metrics": {
+        "decisions": 443,
+        "score": 3000,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 1,
+        "avoidable_risk_decisions": 1,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 6,
+        "longest_no_pellet_decisions": 49,
+        "longest_no_pellet_frames": 288,
+        "simulation_frames": 3168,
+        "straight_available": 380,
+        "straight_chosen": 333,
+        "junction_straight_available": 50,
+        "junction_straight_chosen": 22,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 1,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 2,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 326,
+            "pellets_collected": 188,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 117,
+            "pellets_collected": 56,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 6
+        },
+        "first_life_pellets": 188,
+        "post_respawn_pellets": 56,
+        "unsafe_immediate_choice_rate": 1.0,
+        "avoidable_immediate_death_rate": 1.0,
+        "straight_choice_rate": 0.8763157894736842,
+        "mean_http_ms": 3.7557195123646654
+      },
+      "trace": null,
+      "wall_seconds": 2.434138541924767,
+      "replay_entry": "level-3-seed-72017.jsonl"
+    },
+    {
+      "seed": 73019,
+      "level": 3,
+      "metrics": {
+        "decisions": 559,
+        "score": 2600,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 2,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 8,
+        "avoidable_risk_decisions": 6,
+        "all_immediate_actions_fatal": 2,
+        "unsafe_immediate_choices": 2,
+        "loop_decisions": 10,
+        "longest_no_pellet_decisions": 57,
+        "longest_no_pellet_frames": 365,
+        "simulation_frames": 3864,
+        "straight_available": 493,
+        "straight_chosen": 430,
+        "junction_straight_available": 74,
+        "junction_straight_chosen": 34,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 2,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 261,
+            "pellets_collected": 150,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 260,
+            "pellets_collected": 74,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 38,
+            "pellets_collected": 20,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 10
+        },
+        "first_life_pellets": 150,
+        "post_respawn_pellets": 94,
+        "unsafe_immediate_choice_rate": 0.25,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8722109533468559,
+        "mean_http_ms": 3.808116821250637
+      },
+      "trace": null,
+      "wall_seconds": 3.041844458086416,
+      "replay_entry": "level-3-seed-73019.jsonl"
+    },
+    {
+      "seed": 74021,
+      "level": 3,
+      "metrics": {
+        "decisions": 411,
+        "score": 3610,
+        "pellets_collected": 215,
+        "pellets_remaining": 29,
+        "life_losses": 3,
+        "avoidable_immediate_deaths": 2,
+        "immediate_risk_decisions": 8,
+        "avoidable_risk_decisions": 7,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 3,
+        "loop_decisions": 4,
+        "longest_no_pellet_decisions": 58,
+        "longest_no_pellet_frames": 392,
+        "simulation_frames": 3081,
+        "straight_available": 359,
+        "straight_chosen": 320,
+        "junction_straight_available": 53,
+        "junction_straight_chosen": 24,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 2,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 211,
+        "power_pellets": 4,
+        "ghosts_eaten": 3,
+        "fruit_eaten": 1,
+        "outcome": "game_over",
+        "censored": false,
+        "level_cleared": false,
+        "per_life": {
+          "0": {
+            "decisions": 143,
+            "pellets_collected": 111,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 210,
+            "pellets_collected": 77,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 58,
+            "pellets_collected": 27,
+            "life_lost": true
+          }
+        },
+        "loop_periods": {
+          "2": 4
+        },
+        "first_life_pellets": 111,
+        "post_respawn_pellets": 104,
+        "unsafe_immediate_choice_rate": 0.375,
+        "avoidable_immediate_death_rate": 0.2857142857142857,
+        "straight_choice_rate": 0.8913649025069638,
+        "mean_http_ms": 3.3520788519128866
+      },
+      "trace": null,
+      "wall_seconds": 2.1001572910463437,
+      "replay_entry": "level-3-seed-74021.jsonl"
+    },
+    {
+      "seed": 70001,
+      "level": 5,
+      "metrics": {
+        "decisions": 534,
+        "score": 2800,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 7,
+        "avoidable_risk_decisions": 7,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 3,
+        "longest_no_pellet_decisions": 72,
+        "longest_no_pellet_frames": 428,
+        "simulation_frames": 3484,
+        "straight_available": 454,
+        "straight_chosen": 402,
+        "junction_straight_available": 66,
+        "junction_straight_chosen": 28,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 1,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 197,
+            "pellets_collected": 143,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 337,
+            "pellets_collected": 101,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 3
+        },
+        "first_life_pellets": 143,
+        "post_respawn_pellets": 101,
+        "unsafe_immediate_choice_rate": 0.14285714285714285,
+        "avoidable_immediate_death_rate": 0.14285714285714285,
+        "straight_choice_rate": 0.8854625550660793,
+        "mean_http_ms": 4.356573993333158
+      },
+      "trace": null,
+      "wall_seconds": 3.232581458054483,
+      "replay_entry": "level-5-seed-70001.jsonl"
+    },
+    {
+      "seed": 71009,
+      "level": 5,
+      "metrics": {
+        "decisions": 348,
+        "score": 2120,
+        "pellets_collected": 204,
+        "pellets_remaining": 40,
+        "life_losses": 3,
+        "avoidable_immediate_deaths": 2,
+        "immediate_risk_decisions": 16,
+        "avoidable_risk_decisions": 15,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 3,
+        "loop_decisions": 1,
+        "longest_no_pellet_decisions": 33,
+        "longest_no_pellet_frames": 196,
+        "simulation_frames": 2305,
+        "straight_available": 298,
+        "straight_chosen": 269,
+        "junction_straight_available": 46,
+        "junction_straight_chosen": 27,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 202,
+        "power_pellets": 2,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "game_over",
+        "censored": false,
+        "level_cleared": false,
+        "per_life": {
+          "0": {
+            "decisions": 147,
+            "pellets_collected": 110,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 68,
+            "pellets_collected": 48,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 133,
+            "pellets_collected": 46,
+            "life_lost": true
+          }
+        },
+        "loop_periods": {
+          "2": 1
+        },
+        "first_life_pellets": 110,
+        "post_respawn_pellets": 94,
+        "unsafe_immediate_choice_rate": 0.1875,
+        "avoidable_immediate_death_rate": 0.13333333333333333,
+        "straight_choice_rate": 0.9026845637583892,
+        "mean_http_ms": 4.004358383893817
+      },
+      "trace": null,
+      "wall_seconds": 2.053343083942309,
+      "replay_entry": "level-5-seed-71009.jsonl"
+    },
+    {
+      "seed": 72017,
+      "level": 5,
+      "metrics": {
+        "decisions": 483,
+        "score": 2600,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 1,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 4,
+        "avoidable_risk_decisions": 4,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 1,
+        "loop_decisions": 2,
+        "longest_no_pellet_decisions": 51,
+        "longest_no_pellet_frames": 293,
+        "simulation_frames": 3121,
+        "straight_available": 418,
+        "straight_chosen": 367,
+        "junction_straight_available": 65,
+        "junction_straight_chosen": 30,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 214,
+            "pellets_collected": 157,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 269,
+            "pellets_collected": 87,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {
+          "2": 2
+        },
+        "first_life_pellets": 157,
+        "post_respawn_pellets": 87,
+        "unsafe_immediate_choice_rate": 0.25,
+        "avoidable_immediate_death_rate": 0.25,
+        "straight_choice_rate": 0.8779904306220095,
+        "mean_http_ms": 4.129895773151307
+      },
+      "trace": null,
+      "wall_seconds": 2.8103505840990692,
+      "replay_entry": "level-5-seed-72017.jsonl"
+    },
+    {
+      "seed": 73019,
+      "level": 5,
+      "metrics": {
+        "decisions": 432,
+        "score": 2600,
+        "pellets_collected": 244,
+        "pellets_remaining": 0,
+        "life_losses": 2,
+        "avoidable_immediate_deaths": 1,
+        "immediate_risk_decisions": 13,
+        "avoidable_risk_decisions": 12,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 2,
+        "loop_decisions": 0,
+        "longest_no_pellet_decisions": 46,
+        "longest_no_pellet_frames": 278,
+        "simulation_frames": 2850,
+        "straight_available": 370,
+        "straight_chosen": 334,
+        "junction_straight_available": 57,
+        "junction_straight_chosen": 29,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 240,
+        "power_pellets": 4,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 144,
+            "pellets_collected": 108,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 68,
+            "pellets_collected": 48,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 220,
+            "pellets_collected": 88,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {},
+        "first_life_pellets": 108,
+        "post_respawn_pellets": 136,
+        "unsafe_immediate_choice_rate": 0.15384615384615385,
+        "avoidable_immediate_death_rate": 0.08333333333333333,
+        "straight_choice_rate": 0.9027027027027027,
+        "mean_http_ms": 3.7538471477563253
+      },
+      "trace": null,
+      "wall_seconds": 2.352556416997686,
+      "replay_entry": "level-5-seed-73019.jsonl"
+    },
+    {
+      "seed": 74021,
+      "level": 5,
+      "metrics": {
+        "decisions": 351,
+        "score": 2210,
+        "pellets_collected": 209,
+        "pellets_remaining": 35,
+        "life_losses": 3,
+        "avoidable_immediate_deaths": 2,
+        "immediate_risk_decisions": 9,
+        "avoidable_risk_decisions": 8,
+        "all_immediate_actions_fatal": 1,
+        "unsafe_immediate_choices": 3,
+        "loop_decisions": 3,
+        "longest_no_pellet_decisions": 32,
+        "longest_no_pellet_frames": 185,
+        "simulation_frames": 2291,
+        "straight_available": 297,
+        "straight_chosen": 263,
+        "junction_straight_available": 40,
+        "junction_straight_chosen": 24,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 2,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 206,
+        "power_pellets": 3,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "game_over",
+        "censored": false,
+        "level_cleared": false,
+        "per_life": {
+          "0": {
+            "decisions": 118,
+            "pellets_collected": 85,
+            "life_lost": true
+          },
+          "1": {
+            "decisions": 103,
+            "pellets_collected": 64,
+            "life_lost": true
+          },
+          "2": {
+            "decisions": 130,
+            "pellets_collected": 60,
+            "life_lost": true
+          }
+        },
+        "loop_periods": {
+          "2": 3
+        },
+        "first_life_pellets": 85,
+        "post_respawn_pellets": 124,
+        "unsafe_immediate_choice_rate": 0.3333333333333333,
+        "avoidable_immediate_death_rate": 0.25,
+        "straight_choice_rate": 0.8855218855218855,
+        "mean_http_ms": 3.910046065175784
+      },
+      "trace": null,
+      "wall_seconds": 1.990466917050071,
+      "replay_entry": "level-5-seed-74021.jsonl"
+    }
+  ],
+  "errors": [],
+  "wall_seconds": 12.571161124971695,
+  "source_sha256": {
+    "games/arcade-teacher.js": "66d98198b77ad5364688006ed132804fae1ccc395fb4a4536980abbdafbe2f3b",
+    "games/arcade-engine.js": "df5cf83c69810c641b65ccb533dd5da5b0ca6aca619db32090ad932fd8cd7e16",
+    "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
+    "gameplay_benchmark.py": "9186ef426fcf7a591a42c21e30904ba89d63de740474bdd649cd9086f2f71632",
+    "games/benchmark-hooks.js": "9087a8ee70d8bb25c71a84abe8f614a4ea99f897ba345e36f4a70f520dca4069",
+    "games/benchmark-worker.cjs": "1d30685f16f5c55041fc5c50156da1119bd96c2ef382e09d4c7048939f7b1df7",
+    "vendor/arcade-pacman/source.json": "a0f21cf6009b7f7ca195fb8ce5f0730609767e7ced1c9b8cf29152f5bbe52545",
+    "vendor/arcade-pacman/source.zip": "fd9ae0cbeebdfd798c609464e884f6e9c9b59673bd50083fbd0e32ea6c26a6e8",
+    "benchmark-spec.json": "223bd6b5a87fabe640bdb36f119995e2f679af4271a15f902dd05666dbacac5b",
+    "teacher-validation-spec.json": "2bd67ab9272b9d356a14c1aec45d2500b372078f40d4ed5a8c4f52cfe491faec",
+    "teacher_validation.py": "8a1a27247eac77d814d82e884afae70d386466aea0b48de40c6cf3aeb1f8c739"
+  },
+  "controller": "CPU algorithm; not trained Kev",
+  "training_data_generated": false,
+  "replay_bundle": "heuristic-development-replays.zip",
+  "replay_sha256": "d8b113df66e3c846f390344282d772bcc8a22caf601b2e4ceab9cf6aa5d92492",
+  "native_replays_verified": true,
+  "qualification": {
+    "approved_for_training": false,
+    "failures": [
+      "Development runs cannot authorize training",
+      "Qualification suite is incomplete or has duplicate/unexpected episodes",
+      "Level 1: clear rate 0.800",
+      "Level 3: clear rate 0.800",
+      "Level 5: clear rate 0.600",
+      "Too many lives lost",
+      "Avoidable immediate deaths",
+      "level 1 seed 70001: no-pellet cycle",
+      "level 1 seed 70001: maze incomplete",
+      "level 1 seed 71009: no-pellet cycle",
+      "level 1 seed 72017: no-pellet cycle",
+      "level 1 seed 73019: no-pellet cycle",
+      "level 1 seed 74021: no-pellet cycle",
+      "level 2 seed 70001: no-pellet cycle",
+      "level 2 seed 71009: no-pellet cycle",
+      "level 2 seed 72017: no-pellet cycle",
+      "level 2 seed 73019: no-pellet cycle",
+      "level 2 seed 74021: no-pellet cycle",
+      "level 3 seed 70001: no-pellet cycle",
+      "level 3 seed 71009: no-pellet cycle",
+      "level 3 seed 72017: no-pellet cycle",
+      "level 3 seed 73019: no-pellet cycle",
+      "level 3 seed 74021: no-pellet cycle",
+      "level 3 seed 74021: maze incomplete",
+      "level 5 seed 70001: no-pellet cycle",
+      "level 5 seed 71009: no-pellet cycle",
+      "level 5 seed 71009: maze incomplete",
+      "level 5 seed 72017: no-pellet cycle",
+      "level 5 seed 74021: no-pellet cycle",
+      "level 5 seed 74021: maze incomplete",
+      "Algorithm/configuration differs from the fixed candidate"
+    ],
+    "interpretation": "Empirical complete-game qualification on the declared finite suite; no universal optimality proof."
+  }
+}

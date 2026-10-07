@@ -9,6 +9,7 @@ const context={Audio,parent,document:{},localStorage:{},console:{log(){},error()
  setTimeout(){return 1;},clearTimeout(){},setInterval(){},clearInterval(){},
  requestAnimationFrame(fn){drawFrame=fn;return 1;},cancelAnimationFrame(){}};
 vm.createContext(context);
+context.LAB_ACTION_VERSION=Number(process.argv[4]||1);
 let engine=fs.readFileSync(process.argv[2],'utf8'),end=engine.lastIndexOf('})();');
 engine=engine.slice(0,end)+fs.readFileSync(process.argv[3],'utf8')+'\n'+engine.slice(end);
 vm.runInContext(engine,context);context.labArcade.headless();
@@ -36,6 +37,13 @@ async function runToDecision(){
  for(let i=0;i<12;i++){now+=1000/60;drawFrame(now);await Promise.resolve();}
  assert.equal(context.labArcade.observe().turn,1);
  const firstState=context.labArcade.observe();
+ let reverseState;
+ if(context.LAB_ACTION_VERSION===2){
+  await reply(callback(),{answers:{move:{choice:'right',probabilities:Object.fromEntries(callback().argument.legal_moves.map(d=>[d,d==='right'?1:0]))}},active_checkpoint:identity});
+  for(let i=0;i<12;i++){now+=1000/60;drawFrame(now);await Promise.resolve();}
+  reverseState=context.labArcade.observe();
+  assert.equal(reverseState.turn,2);
+ }
  assert.ok(messages.some(m=>m.type==='decision'&&m.data.active_checkpoint.checkpoint===identity.checkpoint));
  const stale=callback();
  assert.equal(stale.callback,'pacman.decide');await send('command','reset');
@@ -48,5 +56,5 @@ async function runToDecision(){
  for(let i=0;i<30;i++){now+=1000/60;drawFrame(now);}
  assert.equal(JSON.stringify(context.labArcade.observe()),stopped);
  assert.ok(messages.some(m=>m.type==='error'&&m.data.includes('fixture API failed')));
- process.stdout.write(JSON.stringify({status:'Browser/native parity, adapter transport, wait, reset and API-error pause passed.',firstState}));
+ process.stdout.write(JSON.stringify({status:'Browser/native parity, adapter transport, wait, reset and API-error pause passed.',firstState,reverseState}));
 })().catch(error=>{console.error(error);process.exitCode=1;});

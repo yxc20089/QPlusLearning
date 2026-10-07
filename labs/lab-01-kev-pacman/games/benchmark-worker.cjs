@@ -8,6 +8,7 @@ const context = {console: {log() {}, error() {}}, Audio, localStorage: {},
 vm.createContext(context); vm.runInContext(fs.readFileSync(process.argv[2], 'utf8'), context);
 context.labArcade.headless();
 let plan;
+let teacher;
 readline.createInterface({input: process.stdin}).on('line', line => {
     try {
         const input = JSON.parse(line), api = context.labArcade, bench = context.labBenchmark;
@@ -23,6 +24,13 @@ readline.createInterface({input: process.stdin}).on('line', line => {
                 plan = context.createArcadePlanner(api);
             }
             result = plan(input.options);
+        }
+        else if (input.command === 'teacher') {
+            if (!teacher) {
+                vm.runInContext(fs.readFileSync(require('node:path').join(__dirname, 'arcade-teacher.js'), 'utf8'), context);
+                teacher = context.createArcadeTeacher(api);
+            }
+            result = teacher(input.options);
         }
         else throw new Error('Unknown benchmark command');
         process.stdout.write(JSON.stringify({result}) + '\n');

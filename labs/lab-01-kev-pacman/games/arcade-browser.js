@@ -53,7 +53,7 @@
         if (cmd === 'pause') { generation++; running = false; waiting = false; needDecision = true; audio.silence(); }
         if (cmd === 'reset') {
             generation++; running = false; waiting = false; needDecision = true;
-            audio.silence(); labArcade.reset({seed: 7}); labArcade.draw();
+            audio.silence(); labArcade.reset({seed: 7, action_version: globalThis.LAB_ACTION_VERSION || 1}); labArcade.draw();
         }
         if (cmd === 'human' || cmd === 'kev') {
             generation++; mode = cmd; waiting = false; needDecision = true; running = false;
@@ -94,9 +94,9 @@
             if (mode === 'kev' && !needDecision) {
                 actionFrames++;
                 moved = moved || pacman.pixel.x !== startPixel.x || pacman.pixel.y !== startPixel.y;
-                if (labArcade.outcome() || (moved && labArcade.atCenter())) {
+                if (labArcade.outcome() || labArcade.actionDone(moved)) {
                     labArcade.finishMove(); needDecision = true;
-                } else if (actionFrames > 180) { fail(new Error('Player action did not reach a tile center.')); }
+                } else if (actionFrames >= (globalThis.LAB_ACTION_VERSION === 2 ? 600 : 180)) { fail(new Error('Player action did not reach its declared tile boundary.')); }
             }
         }
         labArcade.draw();
@@ -114,7 +114,7 @@
         executive.stop();
         // Upstream focus handlers call start; our clock owns all subsequent updates.
         executive.start = function() {};
-        labArcade.reset({seed: 7});
+        labArcade.reset({seed: 7, action_version: globalThis.LAB_ACTION_VERSION || 1});
         post('ready', null); requestAnimationFrame(frame);
     });
 })();

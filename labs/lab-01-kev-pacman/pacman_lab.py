@@ -56,6 +56,39 @@ def upstream_files():
 
 def engine_script():
     source = upstream_files()['pacman.js'].decode()
+    # Complete native rewind without changing forward physics. Expose current
+    # clocks for v2 observations; seeds and private RNG never enter the request.
+    start, stop = source.index('var ghostReleaser = (function(){'), source.index('var elroyTimer = (function(){')
+    section = source[start:stop]
+    begin = section.index('    var save = function(t) {')
+    end = section.index('\n    return {', begin)
+    section = section[:begin] + '''    var savedMode = {};
+    var save = function(t) {
+        savedMode[t] = mode;
+        savedFramesSinceLastDot[t] = framesSinceLastDot;
+        savedGlobalCount[t] = globalCount;
+        savedGhostCounts[t] = Object.assign({}, ghostCounts);
+    };
+    var load = function(t) {
+        mode = savedMode[t];
+        framesSinceLastDot = savedFramesSinceLastDot[t];
+        globalCount = savedGlobalCount[t];
+        ghostCounts = Object.assign({}, savedGhostCounts[t]);
+    };
+''' + section[end:]
+    section = section.replace('    return {', '''    return {
+        currentState: function() { return {mode: mode === MODE_GLOBAL ? 'global' : 'personal',
+            frames_since_last_dot: framesSinceLastDot, global_count: globalCount,
+            personal_counts: Object.assign({}, ghostCounts)}; },''', 1)
+    source = source[:start] + section + source[stop:]
+    for anchor, getter in (
+        ('var ghostCommander = (function()', "currentState: function() { return {phase_clock_frames: frame}; },"),
+        ('var energizer = (function()', "currentState: function() { return {remaining_frames: active ? Math.max(0,getDuration()-count) : 0, ghost_points: points, eating_pause_frames: pointsFramesLeft}; },"),
+        ('var elroyTimer = (function()', "currentState: function() { return {wait_for_clyde: waitForClyde}; },"),
+    ):
+        begin = source.index(anchor)
+        at = source.index('    return {', begin) + len('    return {')
+        source = source[:at] + '\n        ' + getter + source[at:]
     end = source.rfind('})();')
     if end < 0:
         raise ValueError('Pinned arcade closure was not found')
@@ -314,7 +347,7 @@ class NotebookBridge:
         return response
 
 
-def notebook_game():
+def notebook_game(action_version=1):
     """Embed upstream renderer/font/audio in a Colab callback-controlled board."""
     files = upstream_files()
     source = engine_script()
@@ -323,7 +356,7 @@ def notebook_game():
         if name.startswith('sounds/') and name.endswith('.mp3'):
             source = source.replace(name, 'data:audio/mpeg;base64,' + base64.b64encode(content).decode())
     end = source.rfind('})();')
-    source = source[:end] + (ROOT / 'games/arcade-browser.js').read_text() + '\n' + source[end:]
+    source = source[:end] + f'\nglobalThis.LAB_ACTION_VERSION = {int(action_version)};\n' + (ROOT / 'games/arcade-browser.js').read_text() + '\n' + source[end:]
     inner = files['index.html'].decode()
     inner = inner.replace('font/ARCADE_R.TTF', 'data:font/ttf;base64,' + base64.b64encode(files['font/ARCADE_R.TTF']).decode())
     inner = inner.replace('<script src="pacman.js"></script>', '<script>' + source.replace('</script', '<\\/script') + '</script>')

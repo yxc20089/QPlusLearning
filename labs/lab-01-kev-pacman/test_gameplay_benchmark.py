@@ -96,7 +96,7 @@ class GameplayTests(unittest.TestCase):
                 audit_trace(path)
 
     def test_gameplay_cap_is_censored_and_paired_protocol_must_match(self):
-        spec = {**SPEC, 'seeds': [50021], 'max_decisions': 12}
+        spec = {**SPEC, 'seeds': [50021], 'levels': [1], 'max_decisions': 12}
         with contextlib.redirect_stdout(io.StringIO()):
             before = benchmark_gameplay(rule_predict, spec=spec)
             after = benchmark_gameplay(rule_predict, spec=spec)

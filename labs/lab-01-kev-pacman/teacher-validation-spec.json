@@ -1,0 +1,20 @@
+{
+  "version": "native-teacher-qualification-v2",
+  "development_seeds": [70001, 71009, 72017, 73019, 74021],
+  "qualification_seeds": [81013, 82021, 83023, 84029, 85037],
+  "levels": [1, 2, 3, 5],
+  "teacher": "rollout_mpc",
+  "teacher_options": {"horizon_frames": 240, "endgame_horizon_frames": 480, "danger_horizon_frames": 480, "buffers": [1, 2, 4, 6], "scenario_seeds": [11117, 77717]},
+  "gates": {
+    "minimum_clear_rate_each_level": 1.0,
+    "maximum_life_losses_total": 4,
+    "maximum_avoidable_immediate_deaths": 0,
+    "maximum_loop_decisions_per_game": 0,
+    "maximum_no_pellet_decisions_per_game": 128,
+    "maximum_nonterminal_multi_tile_actions": 0,
+    "maximum_nonterminal_stationary_actions": 0,
+    "minimum_qualification_games": 20
+  },
+  "policy": "Predeclared finite-suite gates. Do not relax after observing results. A failed gate blocks dataset creation and distillation. Passing is empirical evidence on these seeds/levels, not a mathematical guarantee for every future state.",
+  "seed_partition": "Development and qualification seeds stay out of training. The five student benchmark seeds are also reserved separately. Qualification occurs only after the candidate algorithm/configuration is fixed."
+}
