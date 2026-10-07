@@ -135,6 +135,22 @@ def save_backup(output, snapshot, backup_root, workspace, training_data=None):
     data = Path(training_data).resolve() if training_data else None
     if data is not None and (not data.is_relative_to(workspace) or not data.is_file()):
         raise ValueError('Training data backup must be a file in the lab workspace')
+    artifacts = []
+    # The correction round generates private evidence at runtime. Restore its
+    # dataset receipt/development/replays together with the exact training file.
+    if data is not None and data.name == 'pacman-native-v3-train.jsonl':
+        manifest_path = data.with_name('pacman-native-v3-manifest.json')
+        manifest = json.loads(manifest_path.read_text())
+        for artifact_name, expected in manifest['files'].items():
+            artifact = data.parent / artifact_name
+            if (Path(artifact_name).name != artifact_name or artifact.is_symlink()
+                    or not artifact.resolve().is_relative_to(workspace) or file_hash(artifact) != expected):
+                raise ValueError('Correction dataset evidence changed; Drive backup not published')
+            if artifact != data:
+                artifacts.append(artifact)
+        artifacts.append(manifest_path)
+    artifact_info = [{'path': str(p.resolve()), 'sha256': file_hash(p),
+                      'entry': 'inputs/artifacts/' + p.name} for p in artifacts]
     folder = Path(backup_root).resolve() / output.name
     folder.mkdir(parents=True, exist_ok=True)
     name = f'backup-{time.time_ns()}-{uuid.uuid4().hex[:8]}.zip'
@@ -152,6 +168,8 @@ def save_backup(output, snapshot, backup_root, workspace, training_data=None):
                 saved.writestr(recovery_root.name + '/latest.json', json.dumps(recovery) + '\n')
             if data is not None:
                 saved.write(data, 'inputs/training.jsonl')
+            for artifact, info in zip(artifacts, artifact_info):
+                saved.write(artifact, info['entry'])
         checksum = file_hash(archive)
         uploading = folder / ('.uploading-' + name)
         shutil.copyfile(archive, uploading)
@@ -162,7 +180,8 @@ def save_backup(output, snapshot, backup_root, workspace, training_data=None):
                'output_path': str(output), 'workspace_path': str(workspace), 'step': step,
                'snapshot': snapshot.name if snapshot else None,
                'completed_stage': (output / 'run-evidence.json').is_file(),
-               'training_data': {'path': str(data), 'sha256': file_hash(data)} if data else None}
+               'training_data': {'path': str(data), 'sha256': file_hash(data)} if data else None,
+               'training_artifacts': artifact_info}
     atomic_json(folder / (name + '.json'), receipt)
     atomic_json(folder / 'latest.json', receipt)
     # Keep the two most recently published backups, including an older selected
@@ -199,6 +218,12 @@ def restore_backup(output, backup_root, workspace):
     if data is not None and (not data.is_relative_to(workspace) or
                             (data.exists() and file_hash(data) != data_info['sha256'])):
         raise ValueError('Restore training data at its original path without replacing changed labels')
+    artifacts = receipt.get('training_artifacts', [])
+    for info in artifacts:
+        path = Path(info['path']).resolve()
+        if (not path.is_relative_to(workspace) or info['entry'] != 'inputs/artifacts/' + path.name
+                or (path.exists() and file_hash(path) != info['sha256'])):
+            raise ValueError('Restore correction evidence without replacing changed local files')
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='.restoring-', dir=output.parent) as temporary:
         staging = Path(temporary)
@@ -225,9 +250,14 @@ def restore_backup(output, backup_root, workspace):
             source = staging / 'inputs/training.jsonl'
             if file_hash(source) != data_info['sha256']:
                 raise ValueError('Restored training data checksum mismatch')
-            if not data.exists():
-                data.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(source, data)
+        for info in artifacts:
+            if file_hash(staging / info['entry']) != info['sha256']:
+                raise ValueError('Restored correction evidence checksum mismatch')
+        for destination, source in ([ (data, staging / 'inputs/training.jsonl') ] if data is not None else []) + [
+                (Path(info['path']), staging / info['entry']) for info in artifacts]:
+            if not destination.exists():
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, destination)
         (staging / output.name).rename(output)
         if (staging / recovery_root.name).is_dir():
             (staging / recovery_root.name).rename(recovery_root)

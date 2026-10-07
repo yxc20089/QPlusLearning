@@ -24,4 +24,4 @@ jobs:
       - name: Check notebook syntax and pinned sources
         run: python3 scripts/check_notebook.py
       - name: Confirm generated artifacts are current
-        run: git diff --exit-code -- labs/lab-01-kev-pacman/notebooks/pacman_kev_lab.ipynb labs/lab-01-kev-pacman/games/pacman.html
+        run: git diff --exit-code -- labs/lab-01-kev-pacman/notebooks labs/lab-01-kev-pacman/games/pacman.html

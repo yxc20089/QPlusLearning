@@ -113,7 +113,7 @@ class CloudRuntime:
             return result
         self.backup_root.mkdir(parents=True, exist_ok=True)
         result['backup_root'] = str(self.backup_root)
-        for name in ('kev-4b-initial', 'kev-4b-dates', 'kev-4b-documents', 'kev-4b-skills', 'kev-4b-pacman-arcade', 'kev-4b-pacman-planner-v1', 'kev-4b-pacman-native-v2'):
+        for name in ('kev-4b-initial', 'kev-4b-dates', 'kev-4b-documents', 'kev-4b-skills', 'kev-4b-pacman-arcade', 'kev-4b-pacman-planner-v1', 'kev-4b-pacman-native-v2', 'kev-4b-pacman-native-v3'):
             output = Path(checkpoint_root).resolve() / name
             restored = restore_backup(output, self.backup_root, self.workspace)
             if restored:
