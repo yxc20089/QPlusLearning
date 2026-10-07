@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Native classic game and planning dataset prepared; GPU task training pending",
+  "state": "Slides 1–3 redesigned; completed native-v3 experiment analyzed; slides 4–15 pending approved redesign",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
   "revision_id": "-RfjvhcIOWohXw",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-07",
-  "visual_qa": "Slides 1–3 inspected in native PDF exports. Slide 3 mathematical text, native branch diagram, notes and animated projection highlights verified in Google Slides. Slides 4–15 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1–3 inspected in native PDF exports. Slide 3 mathematical text, native branch diagram, notes and animated projection highlights verified in Google Slides. Its published interactive Play/Pause, Next, Reset and direct Train controls were verified in Chrome. Slides 4–15 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -127,7 +127,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–2 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–3 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [

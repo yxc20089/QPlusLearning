@@ -1,0 +1,447 @@
+{
+  "schema": "native-v3-training-coverage-audit-v1",
+  "data_sha256": "35474b35c6106da5578a0900fe8f9391c3d5350ce8cba68098ffe37e4964ef6b",
+  "mixture": {
+    "new_learner_roots": 134,
+    "new_teacher_suffix": 1914,
+    "old_expert": 2048,
+    "generic_replay": 2000,
+    "total": 6096
+  },
+  "origins": {
+    "learner_visited": {
+      "n": 134,
+      "coverage": {
+        "junction": 23,
+        "danger_within_3_tiles": 32,
+        "danger_within_1_tile": 11,
+        "frightened": 39,
+        "power_pellet_adjacent": 0,
+        "late_maze_30_or_fewer": 0,
+        "revisited_over_4_times": 11,
+        "post_respawn": 91,
+        "learner_visited": 134,
+        "learner_disagreement": 71,
+        "immediate_survival_critical": 30,
+        "critical_reverse": 27,
+        "stalled_current": 79,
+        "power_expiry": 39,
+        "level_1": 39,
+        "level_2": 36,
+        "level_3": 30,
+        "level_5": 29
+      },
+      "labels": {
+        "up": 25,
+        "right": 41,
+        "down": 39,
+        "left": 29
+      },
+      "reverse_labels": 64,
+      "straight_labels": 53,
+      "critical_learner_disagreements": 26
+    },
+    "teacher_recovery": {
+      "n": 1914,
+      "coverage": {
+        "junction": 325,
+        "danger_within_3_tiles": 695,
+        "danger_within_1_tile": 153,
+        "frightened": 450,
+        "power_pellet_adjacent": 10,
+        "late_maze_30_or_fewer": 659,
+        "revisited_over_4_times": 90,
+        "post_respawn": 1368,
+        "learner_visited": 0,
+        "learner_disagreement": 0,
+        "immediate_survival_critical": 482,
+        "critical_reverse": 262,
+        "stalled_current": 234,
+        "power_expiry": 158,
+        "level_1": 351,
+        "level_2": 543,
+        "level_3": 459,
+        "level_5": 561
+      },
+      "labels": {
+        "up": 374,
+        "right": 523,
+        "left": 546,
+        "down": 471
+      },
+      "reverse_labels": 349,
+      "straight_labels": 1212,
+      "critical_learner_disagreements": 0
+    },
+    "v2_expert_replay": {
+      "n": 2048,
+      "coverage": {
+        "junction": 356,
+        "danger_within_3_tiles": 534,
+        "danger_within_1_tile": 34,
+        "frightened": 908,
+        "power_pellet_adjacent": 23,
+        "late_maze_30_or_fewer": 796,
+        "revisited_over_4_times": 38,
+        "post_respawn": 1104,
+        "learner_visited": 0,
+        "learner_disagreement": 0,
+        "immediate_survival_critical": 109,
+        "critical_reverse": 39,
+        "stalled_current": 129,
+        "power_expiry": 211,
+        "level_1": 496,
+        "level_2": 455,
+        "level_3": 485,
+        "level_5": 612
+      },
+      "labels": {
+        "left": 566,
+        "down": 465,
+        "right": 544,
+        "up": 473
+      },
+      "reverse_labels": 149,
+      "straight_labels": 1488,
+      "critical_learner_disagreements": 0
+    }
+  },
+  "attempts": {
+    "train": {
+      "counts": {
+        "all": 384,
+        "accepted": 362,
+        "rejected": 22
+      },
+      "cohorts": {
+        "risk_opportunity": {
+          "all": 85,
+          "accepted": 77,
+          "selected_training_root": 30
+        },
+        "power_expiry": {
+          "all": 55,
+          "accepted": 55,
+          "selected_training_root": 39
+        },
+        "stalled": {
+          "all": 125,
+          "accepted": 117,
+          "selected_training_root": 79
+        },
+        "avoidable_fatal": {
+          "all": 44,
+          "accepted": 40,
+          "selected_training_root": 24
+        },
+        "post_respawn": {
+          "all": 262,
+          "accepted": 242,
+          "selected_training_root": 91
+        }
+      },
+      "life_epochs": {
+        "0": 122,
+        "1": 130,
+        "2": 132
+      }
+    },
+    "development": {
+      "counts": {
+        "all": 192,
+        "accepted": 171,
+        "rejected": 21
+      },
+      "cohorts": {
+        "risk_opportunity": {
+          "all": 31,
+          "accepted": 27,
+          "selected_training_root": 0
+        },
+        "power_expiry": {
+          "all": 30,
+          "accepted": 28,
+          "selected_training_root": 0
+        },
+        "stalled": {
+          "all": 74,
+          "accepted": 66,
+          "selected_training_root": 0
+        },
+        "avoidable_fatal": {
+          "all": 18,
+          "accepted": 15,
+          "selected_training_root": 0
+        },
+        "post_respawn": {
+          "all": 143,
+          "accepted": 122,
+          "selected_training_root": 0
+        }
+      },
+      "life_epochs": {
+        "0": 49,
+        "1": 74,
+        "2": 69
+      }
+    }
+  },
+  "rejection_reasons": {
+    "maze incomplete": 33,
+    "pellet stall": 10
+  },
+  "selection_note": "Cohorts overlap. Selected training roots apply only to train, because this audit rows are training. Each branch has one exact learner root; all later states are teacher-owned.",
+  "expiry_overlap": {
+    "teacher_recovery": {
+      "16_to_60": {
+        "n": 109,
+        "critical": 2,
+        "learner_disagreement": 0
+      },
+      "0_to_5": {
+        "n": 23,
+        "critical": 4,
+        "learner_disagreement": 0
+      },
+      "6_to_15": {
+        "n": 26,
+        "critical": 0,
+        "learner_disagreement": 0
+      }
+    },
+    "learner_visited": {
+      "0_to_5": {
+        "n": 4,
+        "critical": 0,
+        "learner_disagreement": 1
+      },
+      "16_to_60": {
+        "n": 33,
+        "critical": 0,
+        "learner_disagreement": 8
+      },
+      "6_to_15": {
+        "n": 2,
+        "critical": 0,
+        "learner_disagreement": 1
+      }
+    },
+    "v2_expert_replay": {
+      "16_to_60": {
+        "n": 158,
+        "critical": 0,
+        "learner_disagreement": 0
+      },
+      "0_to_5": {
+        "n": 26,
+        "critical": 0,
+        "learner_disagreement": 0
+      },
+      "6_to_15": {
+        "n": 27,
+        "critical": 1,
+        "learner_disagreement": 0
+      }
+    }
+  },
+  "nearby_frightened_expiry_15": [
+    {
+      "origin": "teacher_recovery",
+      "measure": "frightened_nearby_expiry15",
+      "n": 10
+    },
+    {
+      "origin": "teacher_recovery",
+      "measure": "critical_expiry15",
+      "n": 4
+    },
+    {
+      "origin": "v2_expert_replay",
+      "measure": "frightened_nearby_expiry15",
+      "n": 5
+    },
+    {
+      "origin": "v2_expert_replay",
+      "measure": "critical_expiry15",
+      "n": 1
+    },
+    {
+      "origin": "learner_visited",
+      "measure": "frightened_nearby_expiry15",
+      "n": 1
+    },
+    {
+      "origin": "learner_visited",
+      "measure": "critical_expiry15",
+      "n": 0
+    }
+  ],
+  "qualified_teacher": {
+    "games": 20,
+    "totals": {
+      "decisions": 8900,
+      "life_losses": 0,
+      "avoidable_immediate_deaths": 0,
+      "loop_decisions": 0,
+      "pellets_collected": 4880,
+      "power_pellets": 80,
+      "ghosts_eaten": 44,
+      "clears": 20
+    },
+    "maximum_pellet_free_decisions": 67,
+    "wall_seconds": 511.53459075000137,
+    "actual_seeds": [
+      91009,
+      92021,
+      93031,
+      94033,
+      95047
+    ],
+    "levels": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "native_replays_verified": true,
+    "paired_with_student_benchmark": false
+  },
+  "actual_training_log_evidence": {
+    "stdout_sha256": "9f019923748dee794d3aada73c848ecebef57cf1484d71413ecd0106dc0c5a05",
+    "warm_start": "delta: warm start from /content/pacman-kev-lab/checkpoints/kev-4b-pacman-native-v2: 496 lora tensors and the pointer head loaded",
+    "replay": "replay: 2000 of 12576 suite training records mixed with 4096 from /content/pacman-kev-lab/data/pacman-native-v3-train.jsonl",
+    "declared_training_requests": "6096 training requests (holdout=[]), questions by type {'choice': 5221, 'noul': 855, 'score': 515}",
+    "filter_or_truncation_messages": [],
+    "metric_rows": 762,
+    "final_metric": {
+      "step": 762,
+      "steps": 762,
+      "epoch": 1.0,
+      "loss_cross_entropy": 0.12524733456039883,
+      "learning_rate_next_step": 1.8492338459528493e-10,
+      "grad_norm_before_clip": 2.919618844985962,
+      "step_seconds": 9.055,
+      "records_seen": 6096,
+      "peak_memory_gib": 30.23874568939209,
+      "allocated_memory_gib": 16.257781505584717,
+      "reserved_memory_gib": 31.14453125,
+      "free_memory_gib": 62.83184814453125
+    },
+    "batch_rows": 1524,
+    "record_ids_total": 6096,
+    "unique_record_ids": 6096,
+    "maximum_id_repeats": 1,
+    "unique_task_ids": 4096,
+    "expected_all_task_ids_present": true,
+    "saved_line": "saved /content/pacman-kev-lab/checkpoints/kev-4b-pacman-native-v3",
+    "elapsed_seconds": 3990.3234772739997,
+    "checkpoint_stored_training_metrics_independently_inspected": false,
+    "parent_checkpoint_hash_independently_inspected": false,
+    "encoded_batch_lengths": {
+      "batch_rows": 1524,
+      "maximum_row_tokens": 2658,
+      "training_encoder_strict": true,
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "interpretation": "All admitted requests were encoded once with strict=True, below the 4096 state-token ceiling; batch maxima are post-encoding row lengths, not an independent tokenizer rerun.",
+      "batch_maxima_at_least_4096_tokens": 0
+    }
+  },
+  "training_loss_analysis": {
+    "whole_epoch": {
+      "n": 762,
+      "mean_logged_loss": 0.339249669951486,
+      "median_logged_loss": 0.2270383200555237,
+      "mean_grad_before_clip": 7.698427266130845,
+      "median_grad_before_clip": 6.23451042175293,
+      "clipped_steps": 683,
+      "mean_generic_records_per_step": 2.6246719160104988,
+      "root_records": 134,
+      "all_task_steps": 30
+    },
+    "first_100": {
+      "n": 100,
+      "mean_logged_loss": 0.34387660695730204,
+      "median_logged_loss": 0.26898396494470944,
+      "mean_grad_before_clip": 6.622319433391095,
+      "median_grad_before_clip": 5.222289085388184,
+      "clipped_steps": 90,
+      "mean_generic_records_per_step": 2.78,
+      "root_records": 13,
+      "all_task_steps": 2
+    },
+    "last_100": {
+      "n": 100,
+      "mean_logged_loss": 0.3923251671810796,
+      "median_logged_loss": 0.2814204623145784,
+      "mean_grad_before_clip": 9.0669321590662,
+      "median_grad_before_clip": 7.233765602111816,
+      "clipped_steps": 92,
+      "mean_generic_records_per_step": 2.58,
+      "root_records": 17,
+      "all_task_steps": 4
+    },
+    "first_200": {
+      "n": 200,
+      "mean_logged_loss": 0.3355862861882085,
+      "median_logged_loss": 0.23756331089663085,
+      "mean_grad_before_clip": 7.455230572409928,
+      "median_grad_before_clip": 6.554538249969482,
+      "clipped_steps": 182,
+      "mean_generic_records_per_step": 2.725,
+      "root_records": 38,
+      "all_task_steps": 4
+    },
+    "last_200": {
+      "n": 200,
+      "mean_logged_loss": 0.3804361979973927,
+      "median_logged_loss": 0.2696391695502314,
+      "mean_grad_before_clip": 9.03713740453124,
+      "median_grad_before_clip": 7.09367036819458,
+      "clipped_steps": 183,
+      "mean_generic_records_per_step": 2.45,
+      "root_records": 37,
+      "all_task_steps": 9
+    },
+    "all_task_first_200": {
+      "n": 4,
+      "mean_logged_loss": 0.7085316776901891,
+      "median_logged_loss": 0.5082015878360835,
+      "mean_grad_before_clip": 16.844961762428284,
+      "median_grad_before_clip": 12.908279418945312,
+      "clipped_steps": 4,
+      "mean_generic_records_per_step": 0,
+      "root_records": 1,
+      "all_task_steps": 4
+    },
+    "all_task_last_200": {
+      "n": 9,
+      "mean_logged_loss": 0.4192175603626917,
+      "median_logged_loss": 0.3480722854437772,
+      "mean_grad_before_clip": 7.682094487879011,
+      "median_grad_before_clip": 7.7891058921813965,
+      "clipped_steps": 8,
+      "mean_generic_records_per_step": 0,
+      "root_records": 2,
+      "all_task_steps": 9
+    },
+    "all_task_whole_epoch": {
+      "n": 30,
+      "mean_logged_loss": 0.40397479164773054,
+      "median_logged_loss": 0.3631489795880043,
+      "mean_grad_before_clip": 8.028698816895485,
+      "median_grad_before_clip": 6.658187389373779,
+      "clipped_steps": 27,
+      "mean_generic_records_per_step": 0,
+      "root_records": 7,
+      "all_task_steps": 30
+    },
+    "all_generic_steps": 0,
+    "all_roots_steps": 0,
+    "steps_with_root": 124,
+    "peak_next_learning_rate": 1.9999932848991584e-05,
+    "peak_lr_step": 76,
+    "initial_next_learning_rate": 8.083761054658154e-07,
+    "last_next_learning_rate": 1.8492338459528493e-10,
+    "semantics": "Logged loss is record-weighted mean over both microbatches of an optimizer step (8 source records); each record averages its questions. Score questions include ordinal penalty if enabled. Cohort-level losses cannot be attributed within mixed batches."
+  }
+}

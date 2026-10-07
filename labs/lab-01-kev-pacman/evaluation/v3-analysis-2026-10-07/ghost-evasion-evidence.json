@@ -1,0 +1,821 @@
+{
+  "source_session": "20261007-194339-69e9e579",
+  "source_archive_sha256": "77e9efd81c41d076fe54757d5ce93639e7ae0e9dd33dbeeb77e00a97251825b9",
+  "comparison_run": "comparison-v2-v3-20261007-190200-41f4f71f",
+  "report_sha256": {
+    "native-v2": "1f6564af9b8facccd52bd92d8c8100e43e770d991ffecaa92b009ea0266a4e42",
+    "native-v3": "e200d6bdafc55e4856372ad502166dc61afbdd51be47bc25884ffbd9558bd1b8"
+  },
+  "teacher_options": {
+    "horizon_frames": 240,
+    "endgame_horizon_frames": 480,
+    "danger_horizon_frames": 480,
+    "buffers": [
+      1,
+      2,
+      4,
+      6
+    ],
+    "scenario_seeds": [
+      11117,
+      77717
+    ]
+  },
+  "models": {
+    "native-v2": {
+      "active_checkpoint": {
+        "checkpoint": "/content/pacman-kev-lab/checkpoints/kev-4b-pacman-native-v2",
+        "checkpoint_name": "kev-4b-pacman-native-v2",
+        "stage": "pacman",
+        "optimizer_steps": 762,
+        "checkpoint_sha256": "c100872bd94f9869807ed33bdb4617cc38867abf61c551a6ac507e8f38106d33",
+        "adapter_sha256": "02ca8afd4c6edcd7b28a75a2e01e252f3c5eacacd0ba2408405dfe4e27d6d605",
+        "base": "Qwen/Qwen3.5-4B-Base",
+        "base_revision": "1001bb4d826a52d1f399e183466143f4da7b741b",
+        "lora_rank": 16,
+        "dtype": "bfloat16",
+        "temperature": 1.0,
+        "api_alias": "kev-latest",
+        "pacman_fine_tuned": true
+      },
+      "counts": {
+        "decisions": 7959,
+        "danger_within_1": 74,
+        "danger_within_3": 962,
+        "danger_within_6": 2475,
+        "life_losses": 60,
+        "forced_immediate_fatal": 8,
+        "mixed_risk_opportunities": 174,
+        "mixed_risk_safe_reverse": 106,
+        "mixed_risk_reverse_chosen": 6,
+        "power_expiry_decisions": 301,
+        "avoidable_fatal": 52,
+        "avoidable_fatal_safe_reverse": 52,
+        "confident_avoidable_fatal_ge_0_9": 29,
+        "confident_avoidable_fatal_ge_0_99": 0,
+        "avoidable_fatal_straight": 46,
+        "avoidable_fatal_power_active": 0,
+        "avoidable_fatal_power_expiry": 0,
+        "safe_reverse_selected": 6
+      },
+      "level_clears": 0,
+      "capped_episodes": 0,
+      "conditional_avoidable_fatal_rate": 0.2988505747126437,
+      "by_level": {
+        "1": {
+          "life_losses": 15,
+          "avoidable_fatal": 15,
+          "forced_immediate_fatal": 0,
+          "mixed_risk_opportunities": 71
+        },
+        "2": {
+          "life_losses": 15,
+          "avoidable_fatal": 14,
+          "forced_immediate_fatal": 1,
+          "mixed_risk_opportunities": 23
+        },
+        "3": {
+          "life_losses": 15,
+          "avoidable_fatal": 14,
+          "forced_immediate_fatal": 1,
+          "mixed_risk_opportunities": 36
+        },
+        "5": {
+          "life_losses": 15,
+          "avoidable_fatal": 9,
+          "forced_immediate_fatal": 6,
+          "mixed_risk_opportunities": 44
+        }
+      }
+    },
+    "native-v3": {
+      "active_checkpoint": {
+        "checkpoint": "/content/pacman-kev-lab/checkpoints/kev-4b-pacman-native-v3",
+        "checkpoint_name": "kev-4b-pacman-native-v3",
+        "stage": "pacman",
+        "optimizer_steps": 762,
+        "checkpoint_sha256": "c7c5c8326f74e86e161e05730db5004efdfd3b2351c6f2f9478581cfc13550b0",
+        "adapter_sha256": "23056f9c069a278e86c055a2cae8c3ecdfafa5ae39c2ed9d0ea34dff2693c93a",
+        "base": "Qwen/Qwen3.5-4B-Base",
+        "base_revision": "1001bb4d826a52d1f399e183466143f4da7b741b",
+        "lora_rank": 16,
+        "dtype": "bfloat16",
+        "temperature": 1.0,
+        "api_alias": "kev-latest",
+        "pacman_fine_tuned": true
+      },
+      "counts": {
+        "decisions": 11129,
+        "danger_within_1": 142,
+        "danger_within_3": 1510,
+        "danger_within_6": 3915,
+        "life_losses": 60,
+        "forced_immediate_fatal": 38,
+        "mixed_risk_opportunities": 365,
+        "mixed_risk_safe_reverse": 176,
+        "mixed_risk_reverse_chosen": 133,
+        "power_expiry_decisions": 292,
+        "avoidable_fatal": 22,
+        "avoidable_fatal_safe_reverse": 20,
+        "confident_avoidable_fatal_ge_0_9": 11,
+        "confident_avoidable_fatal_ge_0_99": 0,
+        "avoidable_fatal_straight": 6,
+        "avoidable_fatal_power_active": 1,
+        "avoidable_fatal_power_expiry": 1,
+        "safe_reverse_selected": 131
+      },
+      "level_clears": 0,
+      "capped_episodes": 0,
+      "conditional_avoidable_fatal_rate": 0.06027397260273973,
+      "by_level": {
+        "1": {
+          "life_losses": 15,
+          "avoidable_fatal": 8,
+          "forced_immediate_fatal": 7,
+          "mixed_risk_opportunities": 27
+        },
+        "2": {
+          "life_losses": 15,
+          "avoidable_fatal": 3,
+          "forced_immediate_fatal": 12,
+          "mixed_risk_opportunities": 117
+        },
+        "3": {
+          "life_losses": 15,
+          "avoidable_fatal": 3,
+          "forced_immediate_fatal": 12,
+          "mixed_risk_opportunities": 92
+        },
+        "5": {
+          "life_losses": 15,
+          "avoidable_fatal": 8,
+          "forced_immediate_fatal": 7,
+          "mixed_risk_opportunities": 129
+        }
+      }
+    }
+  },
+  "native_v3_rows_exactly_replayed": 11129,
+  "teacher_precursor_queries": {
+    "queries": 114,
+    "disagreements": 42,
+    "teacher_immediate_fatal": 0,
+    "offset_8_queries": 38,
+    "offset_8_disagreements": 21,
+    "offset_4_queries": 38,
+    "offset_4_disagreements": 9,
+    "offset_1_queries": 38,
+    "offset_1_disagreements": 12
+  },
+  "same_state_teacher_at_avoidable_deaths": [
+    {
+      "level": 1,
+      "seed": 50021,
+      "turn": 77,
+      "life_index": 0,
+      "learner_choice": "up",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.033,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50021,
+      "turn": 226,
+      "life_index": 1,
+      "learner_choice": "left",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.1439,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50023,
+      "turn": 77,
+      "life_index": 0,
+      "learner_choice": "up",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.033,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50023,
+      "turn": 262,
+      "life_index": 1,
+      "learner_choice": "left",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.356,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50033,
+      "turn": 77,
+      "life_index": 0,
+      "learner_choice": "up",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.033,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50047,
+      "turn": 77,
+      "life_index": 0,
+      "learner_choice": "up",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.033,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50051,
+      "turn": 77,
+      "life_index": 0,
+      "learner_choice": "up",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.033,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 1,
+      "seed": 50051,
+      "turn": 405,
+      "life_index": 1,
+      "learner_choice": "down",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.0403,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 2,
+      "seed": 50033,
+      "turn": 1031,
+      "life_index": 2,
+      "learner_choice": "left",
+      "teacher_choice": "right",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.1143,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 2,
+      "seed": 50047,
+      "turn": 919,
+      "life_index": 2,
+      "learner_choice": "right",
+      "teacher_choice": "left",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.4946,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 2,
+      "seed": 50051,
+      "turn": 861,
+      "life_index": 2,
+      "learner_choice": "right",
+      "teacher_choice": "left",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.1348,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 3,
+      "seed": 50021,
+      "turn": 246,
+      "life_index": 0,
+      "learner_choice": "right",
+      "teacher_choice": "left",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.0564,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 3,
+      "seed": 50033,
+      "turn": 591,
+      "life_index": 2,
+      "learner_choice": "down",
+      "teacher_choice": "left",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.0045,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 3,
+      "seed": 50047,
+      "turn": 218,
+      "life_index": 0,
+      "learner_choice": "right",
+      "teacher_choice": "left",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.0239,
+      "horizon_frames": 240,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50021,
+      "turn": 92,
+      "life_index": 0,
+      "learner_choice": "left",
+      "teacher_choice": "up",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.2336,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50021,
+      "turn": 226,
+      "life_index": 1,
+      "learner_choice": "right",
+      "teacher_choice": "left",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.0731,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50023,
+      "turn": 92,
+      "life_index": 0,
+      "learner_choice": "left",
+      "teacher_choice": "up",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.2336,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50023,
+      "turn": 352,
+      "life_index": 2,
+      "learner_choice": "left",
+      "teacher_choice": "down",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.0326,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50033,
+      "turn": 92,
+      "life_index": 0,
+      "learner_choice": "left",
+      "teacher_choice": "up",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.2336,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50047,
+      "turn": 92,
+      "life_index": 0,
+      "learner_choice": "left",
+      "teacher_choice": "up",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.2336,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50051,
+      "turn": 92,
+      "life_index": 0,
+      "learner_choice": "left",
+      "teacher_choice": "up",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.2336,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        false,
+        false
+      ]
+    },
+    {
+      "level": 5,
+      "seed": 50051,
+      "turn": 251,
+      "life_index": 1,
+      "learner_choice": "left",
+      "teacher_choice": "down",
+      "teacher_choice_immediate_fatal": false,
+      "teacher_choice_probability": 0.2434,
+      "horizon_frames": 480,
+      "teacher_short_rollout_survived": [
+        true,
+        true
+      ]
+    }
+  ],
+  "scope": "CPU-native diagnostics on 20 reserved starts. Raw private trajectories excluded. Future training must use fresh learner seeds.",
+  "same_state_teacher_summary": {
+    "queries": 22,
+    "immediately_fatal_teacher_choices": 0
+  },
+  "four_selected_complete_teacher_rescues": [
+    {
+      "level": 1,
+      "seed": 50021,
+      "index": 335,
+      "root_pellets_remaining": 162,
+      "root_lives": 1,
+      "root_life_epoch": 2,
+      "first_teacher_choice": "right",
+      "metrics": {
+        "decisions": 322,
+        "score": 3100,
+        "pellets_collected": 162,
+        "pellets_remaining": 0,
+        "life_losses": 0,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 2,
+        "avoidable_risk_decisions": 2,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 0,
+        "loop_decisions": 0,
+        "longest_loop_streak_decisions": 0,
+        "longest_no_pellet_decisions": 30,
+        "longest_no_pellet_frames": 253,
+        "simulation_frames": 2492,
+        "straight_available": 279,
+        "straight_chosen": 244,
+        "junction_straight_available": 42,
+        "junction_straight_chosen": 18,
+        "safe_immediate_pellet_skips_at_junction": 1,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 159,
+        "power_pellets": 3,
+        "ghosts_eaten": 1,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 322,
+            "pellets_collected": 162,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {},
+        "first_life_pellets": 162,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.0,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8745519713261649,
+        "mean_http_ms": 0.0
+      },
+      "cpu_seconds": 62.36164849996567,
+      "teacher_options": {
+        "horizon_frames": 240,
+        "endgame_horizon_frames": 480,
+        "danger_horizon_frames": 480,
+        "buffers": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "scenario_seeds": [
+          11117,
+          77717
+        ]
+      },
+      "native_prefix_verified": 336,
+      "note": "Full CPU teacher continuation from a held-out v3 state. Diagnostic only; excluded from training."
+    },
+    {
+      "level": 2,
+      "seed": 50021,
+      "index": 127,
+      "root_pellets_remaining": 185,
+      "root_lives": 3,
+      "root_life_epoch": 0,
+      "first_teacher_choice": "right",
+      "metrics": {
+        "decisions": 350,
+        "score": 3600,
+        "pellets_collected": 185,
+        "pellets_remaining": 0,
+        "life_losses": 0,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 8,
+        "avoidable_risk_decisions": 8,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 0,
+        "loop_decisions": 0,
+        "longest_loop_streak_decisions": 0,
+        "longest_no_pellet_decisions": 31,
+        "longest_no_pellet_frames": 246,
+        "simulation_frames": 2597,
+        "straight_available": 304,
+        "straight_chosen": 254,
+        "junction_straight_available": 44,
+        "junction_straight_chosen": 16,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 181,
+        "power_pellets": 4,
+        "ghosts_eaten": 4,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 350,
+            "pellets_collected": 185,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {},
+        "first_life_pellets": 185,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.0,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8355263157894737,
+        "mean_http_ms": 0.0
+      },
+      "cpu_seconds": 80.35059458296746,
+      "teacher_options": {
+        "horizon_frames": 240,
+        "endgame_horizon_frames": 480,
+        "danger_horizon_frames": 480,
+        "buffers": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "scenario_seeds": [
+          11117,
+          77717
+        ]
+      },
+      "native_prefix_verified": 128,
+      "note": "Full CPU teacher continuation from a held-out v3 state. Diagnostic only; excluded from training."
+    },
+    {
+      "level": 3,
+      "seed": 50023,
+      "index": 649,
+      "root_pellets_remaining": 62,
+      "root_lives": 2,
+      "root_life_epoch": 1,
+      "first_teacher_choice": "right",
+      "metrics": {
+        "decisions": 210,
+        "score": 3400,
+        "pellets_collected": 62,
+        "pellets_remaining": 0,
+        "life_losses": 0,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 12,
+        "avoidable_risk_decisions": 12,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 0,
+        "loop_decisions": 0,
+        "longest_loop_streak_decisions": 0,
+        "longest_no_pellet_decisions": 49,
+        "longest_no_pellet_frames": 355,
+        "simulation_frames": 1392,
+        "straight_available": 184,
+        "straight_chosen": 147,
+        "junction_straight_available": 30,
+        "junction_straight_chosen": 13,
+        "safe_immediate_pellet_skips_at_junction": 0,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 60,
+        "power_pellets": 2,
+        "ghosts_eaten": 1,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 210,
+            "pellets_collected": 62,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {},
+        "first_life_pellets": 62,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.0,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.7989130434782609,
+        "mean_http_ms": 0.0
+      },
+      "cpu_seconds": 59.21435079094954,
+      "teacher_options": {
+        "horizon_frames": 240,
+        "endgame_horizon_frames": 480,
+        "danger_horizon_frames": 480,
+        "buffers": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "scenario_seeds": [
+          11117,
+          77717
+        ]
+      },
+      "native_prefix_verified": 650,
+      "note": "Full CPU teacher continuation from a held-out v3 state. Diagnostic only; excluded from training."
+    },
+    {
+      "level": 5,
+      "seed": 50023,
+      "index": 264,
+      "root_pellets_remaining": 126,
+      "root_lives": 2,
+      "root_life_epoch": 1,
+      "first_teacher_choice": "right",
+      "metrics": {
+        "decisions": 360,
+        "score": 2600,
+        "pellets_collected": 126,
+        "pellets_remaining": 0,
+        "life_losses": 0,
+        "avoidable_immediate_deaths": 0,
+        "immediate_risk_decisions": 28,
+        "avoidable_risk_decisions": 28,
+        "all_immediate_actions_fatal": 0,
+        "unsafe_immediate_choices": 0,
+        "loop_decisions": 0,
+        "longest_loop_streak_decisions": 0,
+        "longest_no_pellet_decisions": 44,
+        "longest_no_pellet_frames": 271,
+        "simulation_frames": 2218,
+        "straight_available": 310,
+        "straight_chosen": 267,
+        "junction_straight_available": 49,
+        "junction_straight_chosen": 25,
+        "safe_immediate_pellet_skips_at_junction": 3,
+        "multi_tile_actions": 0,
+        "stationary_actions": 0,
+        "nonterminal_multi_tile_actions": 0,
+        "nonterminal_stationary_actions": 0,
+        "normal_pellets": 124,
+        "power_pellets": 2,
+        "ghosts_eaten": 0,
+        "fruit_eaten": 0,
+        "outcome": "level_cleared",
+        "censored": false,
+        "level_cleared": true,
+        "per_life": {
+          "0": {
+            "decisions": 360,
+            "pellets_collected": 126,
+            "life_lost": false
+          }
+        },
+        "loop_periods": {},
+        "first_life_pellets": 126,
+        "post_respawn_pellets": 0,
+        "unsafe_immediate_choice_rate": 0.0,
+        "avoidable_immediate_death_rate": 0.0,
+        "straight_choice_rate": 0.8612903225806452,
+        "mean_http_ms": 0.0
+      },
+      "cpu_seconds": 88.1564874999458,
+      "teacher_options": {
+        "horizon_frames": 240,
+        "endgame_horizon_frames": 480,
+        "danger_horizon_frames": 480,
+        "buffers": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "scenario_seeds": [
+          11117,
+          77717
+        ]
+      },
+      "native_prefix_verified": 265,
+      "note": "Full CPU teacher continuation from a held-out v3 state. Diagnostic only; excluded from training."
+    }
+  ],
+  "exact_power_expiry_case": {
+    "level": 3,
+    "seed": 50047,
+    "turn": 218,
+    "choice": "right",
+    "choice_probability": 0.9761,
+    "teacher_choice": "left",
+    "teacher_choice_probability": 0.0239,
+    "power_frames_before": 3,
+    "power_frames_after": 0,
+    "frightened_before": true,
+    "frightened_after": false,
+    "action_frames": 7,
+    "outcome": "life_lost",
+    "method": "Exact native replay through saved learner prefix, then chosen action. Current frightened flag did not persist through movement."
+  }
+}
