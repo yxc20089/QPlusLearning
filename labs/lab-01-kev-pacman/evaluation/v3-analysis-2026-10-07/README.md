@@ -226,6 +226,85 @@ adapter update checks whether the new policy creates different mistakes.
 Keep v2 and v3 immutable. Use v3 as the main warm start so its learned retreats
 are retained; include a matched v2 warm-start control if resources permit.
 
+The next correction dataset should be **mostly hard cases**, with a small replay
+set for retention. The following is a starting hypothesis to tune on fresh
+development games, not a validated optimum. Keep the total at 6,096 requests
+and rank 16 so the first experiment changes selection rather than model size
+or the number of optimizer updates.
+
+| Proposed training source | Requests | Share |
+| --- | ---: | ---: |
+| Verified critical/progress-relevant v3–teacher disagreements | 3,660 | About 60% |
+| Informative hard lead-in/recovery-to-progress states | 1,220 | About 20% |
+| Representative previous Pac-Man routing/power/recovery examples | 912 | About 15% |
+| Generic decision replay | 304 | About 5% |
+
+The first two rows form the 80% hard pool; at least three quarters of that pool
+must be verified disagreement roots, not neighboring ordinary teacher steps.
+The pool combines targeted off-policy native scenarios with fresh
+v3-visited states. Both require coherent native history, qualified teacher
+continuations and source/cohort receipts. A practical initial source mix inside
+this pool is roughly 60% targeted off-policy and 40% v3-derived examples;
+development evidence should determine subsequent allocation. Neither source
+may be replaced with long ordinary teacher suffixes to satisfy its quota. If
+there are too few distinct qualifying cases, collect more episodes or report a
+smaller admitted dataset rather than fill the hard budget with duplicates or
+easy records.
+
+**Hard is defined by a decision problem and evidence, not high CE alone.**
+Prioritize a wrong student decision with a verified better continuation,
+an early trap-entry or expiry crossing, a stalled food junction with proven
+progress available, and unseen sparse-food cleanup. Preserve safe retreats
+that temporarily consume no pellet, followed by renewed food progress.
+Student/teacher disagreement between two demonstrably useful safe routes is
+not automatically a mistake. Do not label the nearest pellet as mandatory
+when its route later becomes unsafe.
+
+The central correction record is the **same-state contrast**: the frozen v3
+checkpoint's selected move and probability, the teacher's recommended move,
+and the evidence supporting the correction. Offline generation determines
+which native states to explore; batch-scoring those candidates with v3 reveals
+whether the learner actually gets them wrong. This screening needs model
+inference, but does not require a complete learner rollout for every offline
+candidate. Deduplicate and screen before expensive complete teacher recovery
+verification. A task-defined hazardous state that v3 already handles belongs
+in a small robustness/replay quota, not the verified-disagreement count.
+
+Retain separate evidence types: immediate action safety can be established by
+exact counterfactual transitions; an earlier route correction can be supported
+by full continuations. A successful teacher suffix versus a failed student
+suffix does not by itself prove that every different first action is intrinsically
+bad, because later policies differ. When a negative action's cost is ambiguous,
+compare forced-first-action branches with the same subsequent controller or
+exclude it from the critical-negative cohort. Do not convert a harmless
+teacher preference between viable routes into a claimed fatal alternative.
+
+This is **hard-negative mining for decision imitation**. Kev's existing loss
+`L(s) = -log(exp(z_teacher) / sum_a exp(z_a))` already increases the teacher
+move's score relative to competing legal moves, including the learner's wrong
+choice. The verified disagreement is the main sampling signal; retain that
+negative option instead of filtering it from the request. Record teacher-move
+probability, learner/teacher score margin and per-cohort agreement for fixed
+training/development probes. An explicit pairwise loss or CLM-style objective
+is a separate later ablation; improved disagreement coverage can be tested with
+the existing published CE recipe first.
+
+Save entire trajectories for verification; select short informative windows
+around the mistake, missed escape or recovery-to-progress junction for CE
+training. Each selected state remains an independent request with its native
+recent history. Keep the full legal option set, including the wrong alternatives.
+Thin repeated easy corridor steps, cap contributions from one branch, and
+deduplicate states before sampling. When an offline candidate is probed with
+v3, an ordinary safe state already matching the teacher can be skipped from the
+hard pool; retain representative cases only through the replay budget. A
+confident wrong prediction remains a priority correction, not an easy example.
+
+Report counts by hard-behavior cohort, distinct root, source episode and
+learner/teacher disagreement. Related lead-ins, perturbations and recovery
+forks belong in the same partition. These counts and fixed-cohort fit checks
+are needed to show that 4,880 selected rows contain diverse hard decisions,
+rather than thousands of correlated frames from a few incidents.
+
 1. Audit v3 agreement on the actual existing training corrections and on fresh
    development states. This first separates failure to fit known examples from
    failure to generalize to learner trajectories.
@@ -237,14 +316,11 @@ are retained; include a matched v2 warm-start control if resources permit.
    safe food-route choices, retreat-to-progress sequences and late-maze cleanup.
    Related episodes and forks stay in the same data partition.
 3. Keep rank 16 and the CE recipe fixed for the first data-selection experiment.
-   A concrete starting budget keeps the 2,048 old expert requests and 2,000
-   generic replay requests unchanged. Reserve at least 1,024 of the 2,048 new
-   requests for distinct, verified v3 learner roots. A starting allocation for
-   the other half is 512 targeted off-policy native roots and 512 qualified
-   teacher recovery/progress states. That raises exact learner exposure from 2.2% to at
-   least 16.8% of the same 6,096-request budget. Collect more training episodes
-   if necessary rather than meeting the quota by copying the same roots.
-   Preserve critical and disagreement coverage within this budget.
+   Use the hard-case-focused mixture above, preserving qualified critical and
+   disagreement roots before sampling the informative windows. This reduces
+   ordinary replay while retaining a bounded routing and general-decision set.
+   Measure generic holdout retention as well as Pac-Man behavior because the
+   reduced replay can trade off against previous decision capabilities.
    Then test modest critical-case weighting and deterministic current-state
    features separately: destination food/power flags, BFS food distances,
    heading/escape summaries and power/action timing ingredients. Match training
