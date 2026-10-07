@@ -8705,6 +8705,7 @@ var ghostCommander = (function() {
     };
 
     return {
+        currentState: function() { return {phase_clock_frames: frame}; },
         save: save,
         load: load,
         reset: function() { 
@@ -8776,33 +8777,24 @@ var ghostReleaser = (function(){
     var savedGhostCounts = {};
 
     // save state at time t
+    var savedMode = {};
     var save = function(t) {
+        savedMode[t] = mode;
         savedFramesSinceLastDot[t] = framesSinceLastDot;
-        if (mode == MODE_GLOBAL) {
-            savedGlobalCount[t] = globalCount;
-        }
-        else if (mode == MODE_PERSONAL) {
-            savedGhostCounts[t] = {};
-            savedGhostCounts[t][PINKY] = ghostCounts[PINKY];
-            savedGhostCounts[t][INKY] = ghostCounts[INKY];
-            savedGhostCounts[t][CLYDE] = ghostCounts[CLYDE];
-        }
+        savedGlobalCount[t] = globalCount;
+        savedGhostCounts[t] = Object.assign({}, ghostCounts);
     };
-
-    // load state at time t
     var load = function(t) {
+        mode = savedMode[t];
         framesSinceLastDot = savedFramesSinceLastDot[t];
-        if (mode == MODE_GLOBAL) {
-            globalCount = savedGlobalCount[t];
-        }
-        else if (mode == MODE_PERSONAL) {
-            ghostCounts[PINKY] = savedGhostCounts[t][PINKY];
-            ghostCounts[INKY] = savedGhostCounts[t][INKY];
-            ghostCounts[CLYDE] = savedGhostCounts[t][CLYDE];
-        }
+        globalCount = savedGlobalCount[t];
+        ghostCounts = Object.assign({}, savedGhostCounts[t]);
     };
 
     return {
+        currentState: function() { return {mode: mode === MODE_GLOBAL ? &#x27;global&#x27; : &#x27;personal&#x27;,
+            frames_since_last_dot: framesSinceLastDot, global_count: globalCount,
+            personal_counts: Object.assign({}, ghostCounts)}; },
         save: save,
         load: load,
         onNewLevel: function() {
@@ -8922,6 +8914,7 @@ var elroyTimer = (function(){
     };
 
     return {
+        currentState: function() { return {wait_for_clyde: waitForClyde}; },
         onNewLevel: function() {
             waitForClyde = false;
         },
@@ -9013,6 +9006,7 @@ var energizer = (function() {
     };
 
     return {
+        currentState: function() { return {remaining_frames: active ? Math.max(0,getDuration()-count) : 0, ghost_points: points, eating_pause_frames: pointsFramesLeft}; },
         save: save,
         load: load,
         reset: function() {
@@ -13598,6 +13592,7 @@ var labArcade = (function () {
     var modes = [&#x27;outside&#x27;, &#x27;eaten&#x27;, &#x27;going_home&#x27;, &#x27;entering_home&#x27;, &#x27;pacing_home&#x27;, &#x27;leaving_home&#x27;];
     var seed = 7, startLevel = 1, actions = [], history = [], visits = {}, frames = 0;
     var randomState = 7;
+    var actionVersion = 1, targetTile = null, lifeEpoch = 0, lastPelletTurn = 0, lastPellets = 244;
     var nativeRandom = Math.random;
     function seededRandom() {
         randomState ^= randomState &lt;&lt; 13; randomState ^= randomState &gt;&gt;&gt; 17; randomState ^= randomState &lt;&lt; 5;
@@ -13607,7 +13602,7 @@ var labArcade = (function () {
     function remember() {
         var tile = key(); visits[tile] = (visits[tile] || 0) + 1;
         history.push({row: pacman.tile.y, column: (pacman.tile.x + map.numCols) % map.numCols, heading: names[pacman.dirEnum]});
-        if (history.length &gt; 12) history.shift();
+        if (history.length &gt; (actionVersion === 2 ? 64 : 12)) history.shift();
     }
     function legalMoves() {
         return names.filter(function (name, index) {
@@ -13625,7 +13620,7 @@ var labArcade = (function () {
             }
             maze.push(row);
         }
-        return {
+        var observation = {
             game: &#x27;classic-pacman&#x27;, engine_revision: &#x27;7407174c1d6a38be8cd230577489e39e0873145b&#x27;,
             maze: maze, legend: {&#x27;#&#x27;: &#x27;wall/ghost house&#x27;, &#x27;.&#x27;: &#x27;10-point pellet&#x27;, &#x27;o&#x27;: &#x27;50-point power pellet&#x27;, &#x27; &#x27;: &#x27;empty corridor&#x27;},
             player: {row: pacman.tile.y, column: (pacman.tile.x + map.numCols) % map.numCols, heading: names[pacman.dirEnum]},
@@ -13640,9 +13635,39 @@ var labArcade = (function () {
             turn: actions.length, simulation_frames: frames, recent_positions: history.slice(), visits_to_current_tile: visits[key()] || 0,
             objective: &#x27;Collect pellets, use power pellets to eat frightened ghosts, avoid dangerous ghosts and repeated loops.&#x27;
         };
+        if (actionVersion === 2) {
+            observation.action_semantics = &#x27;native-adjacent-tile-entry-v2&#x27;;
+            observation.player.pixel_offset = {x: pacman.tilePixel.x-midTile.x, y: pacman.tilePixel.y-midTile.y};
+            observation.player.speed_phase = pacman.frames % 16;
+            observation.player.eat_pause_frames = pacman.eatPauseFramesLeft;
+            observation.player.stopped = !!pacman.stopped;
+            observation.player.next_heading = names[pacman.nextDirEnum];
+            observation.player.queued_heading = names[pacman.inputDirEnum] || null;
+            observation.ghosts.forEach(function(g, i) {
+                var native = ghosts[i];
+                g.pixel_offset = {x: native.tilePixel.x-midTile.x, y: native.tilePixel.y-midTile.y};
+                g.speed_phase = native.frames % 16; g.next_heading = names[native.faceDirEnum];
+                g.pending_reverse = !!native.sigReverse; g.pending_release = !!native.sigLeaveHome;
+            });
+            observation.timing = {power: energizer.currentState(), commander: ghostCommander.currentState(),
+                release: ghostReleaser.currentState(), elroy: elroyTimer.currentState(),
+                blinky_elroy: blinky.elroy, fruit_remaining_frames: fruit.framesLeft || 0};
+            observation.life_epoch = lifeEpoch;
+            observation.decisions_since_last_pellet = actions.length-lastPelletTurn;
+            observation.destination_visits = {};
+            legalMoves().forEach(function(name, index) {
+                var d = {}; setDirFromEnum(d, names.indexOf(name));
+                var k = (pacman.tile.y+d.y)+&#x27;,&#x27;+((pacman.tile.x+d.x+map.numCols)%map.numCols);
+                observation.destination_visits[name] = visits[k] || 0;
+            });
+        }
+        return observation;
     }
     function reset(options) {
         options = options || {}; seed = options.seed || 7; randomState = seed;
+        actionVersion = options.action_version || 1;
+        if (actionVersion !== 1 &amp;&amp; actionVersion !== 2) throw new Error(&#x27;Unknown action version&#x27;);
+        targetTile = null; lifeEpoch = 0; lastPelletTurn = 0;
         Math.random = options.seeded === false ? nativeRandom : seededRandom;
         actions = []; history = []; visits = {}; frames = 0;
         gameMode = GAME_PACMAN; practiceMode = false; turboMode = false;
@@ -13653,16 +13678,34 @@ var labArcade = (function () {
             for (var i = 0; state !== playState &amp;&amp; i &lt; 600; i++) state.update();
             if (state !== playState) throw new Error(&#x27;The upstream engine did not enter play state.&#x27;);
         }
-        remember(); return observe();
+        lastPellets = map.dotsLeft(); remember(); return observe();
     }
     function atCenter() { return pacman.distToMid.x === 0 &amp;&amp; pacman.distToMid.y === 0; }
-    function tick() { if (state === playState) frames++; state.update(); }
+    function tick() {
+        var lives = extraLives, previousState = state;
+        if (state === playState) frames++;
+        state.update();
+        if (extraLives &lt; lives &amp;&amp; previousState !== newGameState) lifeEpoch++;
+        if (actionVersion === 2 &amp;&amp; previousState !== playState &amp;&amp; state === playState &amp;&amp; actions.length) {
+            history = []; lastPelletTurn = actions.length; lastPellets = map.dotsLeft(); remember();
+        }
+    }
     function setMove(direction) {
         if (legalMoves().indexOf(direction) === -1) throw new Error(&#x27;Illegal arcade player direction: &#x27; + direction);
         pacman.ai = false; pacman.setInputDir(names.indexOf(direction));
+        var d = {}; setDirFromEnum(d, names.indexOf(direction));
+        targetTile = {row: pacman.tile.y+d.y, column: (pacman.tile.x+d.x+map.numCols)%map.numCols};
         actions.push(direction);
     }
-    function finishMove() { remember(); }
+    function finishMove() {
+        if (map.dotsLeft() &lt; lastPellets) lastPelletTurn = actions.length;
+        lastPellets = map.dotsLeft(); remember();
+    }
+    function actionDone(moved) {
+        if (actionVersion === 1) return moved &amp;&amp; atCenter();
+        return targetTile &amp;&amp; pacman.tile.y === targetTile.row &amp;&amp;
+            (pacman.tile.x+map.numCols)%map.numCols === targetTile.column;
+    }
     function outcome() {
         if (state === deadState || state === readyRestartState || state === overState) return &#x27;life_lost&#x27;;
         if (state === finishState || state === readyNewState) return &#x27;level_cleared&#x27;;
@@ -13671,23 +13714,25 @@ var labArcade = (function () {
     function replayRecord() {
         var record = {seed: seed, actions: actions.slice()};
         if (startLevel !== 1) record.level = startLevel;
+        if (actionVersion !== 1) record.action_version = actionVersion;
         return record;
     }
     function step(direction, quiet) {
         if (state !== playState) throw new Error(&#x27;Arcade is not in play state.&#x27;);
         setMove(direction);
-        var moved = false, start = {x: pacman.pixel.x, y: pacman.pixel.y}, count = 0;
+        // Native consecutive ghost-eating pauses can exceed 180 frames.
+        var moved = false, start = {x: pacman.pixel.x, y: pacman.pixel.y}, count = 0, limit = actionVersion === 2 ? 600 : 180;
         do {
             tick(); count++;
             moved = moved || pacman.pixel.x !== start.x || pacman.pixel.y !== start.y;
             if (outcome()) break;
-        } while ((!moved || !atCenter()) &amp;&amp; count &lt; 180);
-        if (!outcome() &amp;&amp; !moved) throw new Error(&#x27;The arcade player did not move.&#x27;);
+        } while (!actionDone(moved) &amp;&amp; count &lt; limit);
+        if (actionVersion === 2 &amp;&amp; !outcome() &amp;&amp; !actionDone(moved)) throw new Error(&#x27;The arcade action did not reach its declared boundary: &#x27;+JSON.stringify({direction:direction,target:targetTile,player:observe().player,power:energizer.currentState(),start:start,count:count}));
         finishMove();
         return quiet ? outcome() : {state: observe(), outcome: outcome(), action_frames: count, replay: replayRecord()};
     }
     function replay(record) {
-        reset({seed: record.seed, level: record.level || 1, skipReady: true});
+        reset({seed: record.seed, level: record.level || 1, action_version: record.action_version || 1, skipReady: true});
         for (var i = 0; i &lt; record.actions.length; i++) {
             var result = step(record.actions[i]);
             if (result.outcome &amp;&amp; i !== record.actions.length - 1) throw new Error(&#x27;Replay continues beyond a terminal state.&#x27;);
@@ -13703,7 +13748,9 @@ var labArcade = (function () {
         return {slot: slot, tiles: map.currentTiles.slice(), eaten: map.dotsEaten,
             timeEaten: Object.assign({}, map.timeEaten), input: pacman.inputDirEnum,
             random: randomState, frames: frames, actions: actions.slice(),
-            history: history.slice(), visits: Object.assign({}, visits)};
+            history: history.slice(), visits: Object.assign({}, visits), actionVersion: actionVersion,
+            targetTile: targetTile &amp;&amp; Object.assign({}, targetTile), lifeEpoch: lifeEpoch,
+            lastPelletTurn: lastPelletTurn, lastPellets: lastPellets};
     }
     function restore(s) {
         actors.forEach(function(a) { a.load(s.slot); });
@@ -13714,13 +13761,16 @@ var labArcade = (function () {
         pacman.inputDirEnum = s.input;
         randomState = s.random; frames = s.frames; actions = s.actions.slice();
         history = s.history.slice(); visits = Object.assign({}, s.visits);
+        actionVersion = s.actionVersion; targetTile = s.targetTile &amp;&amp; Object.assign({}, s.targetTile);
+        lifeEpoch = s.lifeEpoch; lastPelletTurn = s.lastPelletTurn; lastPellets = s.lastPellets;
     }
-    return {reset: reset, observe: observe, legalMoves: legalMoves, atCenter: atCenter,
+    return {reset: reset, observe: observe, legalMoves: legalMoves, atCenter: atCenter, actionDone: actionDone,
         tick: tick, setMove: setMove, finishMove: finishMove, outcome: outcome, step: step, replay: replay,
         searchSave: save, searchRestore: restore,
         searchRandom: function(value) { randomState = value || 1; },
         searchFeatures: function() { return {pixel: {x: pacman.pixel.x, y: pacman.pixel.y},
             row: pacman.tile.y, column: (pacman.tile.x + map.numCols) % map.numCols,
+            heading: names[pacman.dirEnum], frames: frames, action_version: actionVersion,
             score: getScore(), pellets: map.dotsLeft(), tiles: map.currentTiles,
             visits: visits, frightened: energizer.isActive(), ghosts: ghosts.map(function(g) {
                 return {row:g.tile.y, column:(g.tile.x + map.numCols) % map.numCols,
@@ -13736,6 +13786,8 @@ var labArcade = (function () {
 })();
 globalThis.labArcade = labArcade;
 
+
+globalThis.LAB_ACTION_VERSION = 2;
 // Colab player controller for the unchanged upstream game. GPL-3.0.
 (function () {
     var mode = &#x27;human&#x27;, running = false, waiting = false, needDecision = true;
@@ -13791,7 +13843,7 @@ globalThis.labArcade = labArcade;
         if (cmd === &#x27;pause&#x27;) { generation++; running = false; waiting = false; needDecision = true; audio.silence(); }
         if (cmd === &#x27;reset&#x27;) {
             generation++; running = false; waiting = false; needDecision = true;
-            audio.silence(); labArcade.reset({seed: 7}); labArcade.draw();
+            audio.silence(); labArcade.reset({seed: 7, action_version: globalThis.LAB_ACTION_VERSION || 1}); labArcade.draw();
         }
         if (cmd === &#x27;human&#x27; || cmd === &#x27;kev&#x27;) {
             generation++; mode = cmd; waiting = false; needDecision = true; running = false;
@@ -13832,9 +13884,9 @@ globalThis.labArcade = labArcade;
             if (mode === &#x27;kev&#x27; &amp;&amp; !needDecision) {
                 actionFrames++;
                 moved = moved || pacman.pixel.x !== startPixel.x || pacman.pixel.y !== startPixel.y;
-                if (labArcade.outcome() || (moved &amp;&amp; labArcade.atCenter())) {
+                if (labArcade.outcome() || labArcade.actionDone(moved)) {
                     labArcade.finishMove(); needDecision = true;
-                } else if (actionFrames &gt; 180) { fail(new Error(&#x27;Player action did not reach a tile center.&#x27;)); }
+                } else if (actionFrames &gt;= (globalThis.LAB_ACTION_VERSION === 2 ? 600 : 180)) { fail(new Error(&#x27;Player action did not reach its declared tile boundary.&#x27;)); }
             }
         }
         labArcade.draw();
@@ -13852,7 +13904,7 @@ globalThis.labArcade = labArcade;
         executive.stop();
         // Upstream focus handlers call start; our clock owns all subsequent updates.
         executive.start = function() {};
-        labArcade.reset({seed: 7});
+        labArcade.reset({seed: 7, action_version: globalThis.LAB_ACTION_VERSION || 1});
         post(&#x27;ready&#x27;, null); requestAnimationFrame(frame);
     });
 })();
