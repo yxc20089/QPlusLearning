@@ -7,10 +7,42 @@
   "finetuning_minutes": 30,
   "state": "Native classic game and planning dataset prepared; GPU task training pending",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "Ptlq_fwby1RmGQ",
+  "revision_id": "cNudgPM37n3f6Q",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
-  "synced_at": "2026-10-05",
-  "visual_qa": "All 15 PDF slides inspected; no clipping or unintended overlaps. Native image aspect ratios, GIF frame counts, links and all 15 scripts verified.",
+  "synced_at": "2026-10-07",
+  "visual_qa": "Slide 1 revised and inspected in the native PDF export, editor and slideshow. Editable diagram/formulas and speaker notes verified; embedded GIF plays; its link opens live interactive controls. Slides 2–15 retain the previous version pending the approved redesign.",
+  "redesign": {
+    "approved_slide_count": 13,
+    "completed_slides": [1],
+    "workflow": "Create and review one slide at a time",
+    "outline": [
+      "Kev architecture",
+      "State, options and hidden representations",
+      "LoRA mathematics and configuration",
+      "Pointer-head computation",
+      "Softmax and action selection",
+      "Why decision output is fast",
+      "Curriculum and checkpoint lineage",
+      "Pac-Man behaviors and state information",
+      "Native rollout MPC teacher",
+      "Teacher qualification",
+      "Learner states and verified teacher corrections",
+      "How a teacher decision changes Kev",
+      "Does the learned policy survive?"
+    ],
+    "slide_1": {
+      "object_id": "kev_lab_01",
+      "title": "Kev architecture",
+      "formulae": ["H = f(x; W₀ + ΔW)", "p = softmax(z)"],
+      "speaker_notes": "speaker-notes/slide-01.md",
+      "diagram_source": "../../../docs/animations/kev-architecture.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-architecture.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/fce35a6587e121d6b135c71e33b54d39408704ce/docs/animations/assets/kev-architecture-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "Behind the native diagram, to preserve PDF rendering"
+    },
+    "exports": {"pdf": "Updated native deck snapshot", "pptx": "Previous version; regenerate after the redesign is complete"}
+  },
   "initial_training_prework": true,
   "lab_route": "Initial → dates/evidence → documents → skills/devtools → Pac-Man",
   "general_stages_prework": true,
@@ -47,6 +79,7 @@
   },
   "embedded_animations": {
     "embedded_slides": [
+      1,
       2,
       6,
       13
@@ -56,6 +89,7 @@
     "clm_source": "Original reference deck, course_slide_21A; byte-preserved 520-frame GIF"
   },
   "mathematics_slides": [
+    1,
     6,
     11,
     12,
