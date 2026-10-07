@@ -5,18 +5,19 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1–3 redesigned; completed native-v3 experiment analyzed; slides 4–15 pending approved redesign",
+  "state": "Slides 1–4 redesigned; completed native-v3 experiment analyzed; slides 5–15 pending approved redesign",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "-RfjvhcIOWohXw",
+  "revision_id": "SwM79lAEeMieyA",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-07",
-  "visual_qa": "Slides 1–3 inspected in native PDF exports. Slide 3 mathematical text, native branch diagram, notes and animated projection highlights verified in Google Slides. Its published interactive Play/Pause, Next, Reset and direct Train controls were verified in Chrome. Slides 4–15 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1–4 inspected in native PDF exports. Slide 4 affine projections, option-boundary readouts, shared key layer, scaling and notes were independently reviewed against pinned Kev source. Its editable diagram and animated highlights were verified in the native Google Slides editor and slideshow. Published Play/Pause, Next, Reset and direct stage controls worked in Chrome. Native issue checker returned zero issues. Slides 5–15 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
       1,
       2,
-      3
+      3,
+      4
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -52,7 +53,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 4–15 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 5–15 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -93,6 +94,33 @@
         "targets": "all",
         "trainable_count_includes_pointer_head": true
       }
+    },
+    "slide_4": {
+      "object_id": "decision_lab_performance",
+      "title": "The pointer head scores every option",
+      "formulae": [
+        "q = W_q h_decide + b_q",
+        "k_i = W_k h_end,i + b_k",
+        "z_i = qᵀ k_i / √d_p"
+      ],
+      "speaker_notes": "speaker-notes/slide-04.md",
+      "diagram_source": "../../../docs/animations/kev-pointer.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-pointer.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/5772063a2710a8d7d314118204727e2d35608e86/docs/animations/assets/kev-pointer-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed highlights behind the native affine-projection and scaled-dot-product diagram",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "configuration": {
+        "backbone_hidden_dim": 2560,
+        "pointer_dim": 256,
+        "scaling_divisor": 16,
+        "affine_bias": true,
+        "query_reused_per_question": true,
+        "key_projection_shared": true,
+        "vector_normalization": "none",
+        "head_parameters": 1311232,
+        "output": "One raw scalar score per supplied option"
+      }
     }
   },
   "initial_training_prework": true,
@@ -127,13 +155,14 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–3 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–4 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
       1,
       2,
       3,
+      4,
       6,
       13
     ],
@@ -145,6 +174,7 @@
     1,
     2,
     3,
+    4,
     6,
     11,
     12,
