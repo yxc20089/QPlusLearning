@@ -651,7 +651,7 @@ The v2 audit found substantially better food routing but zero maze clears, nearl
 Run setup/storage, load v2, collect fresh trajectories, verify/build labels, train v3, then compare full games and play. On a restored completed v3 run, skip collection/build/training and go straight to comparison or interactive play.""")
     md("""## Prepare the optimized runtime and restore Drive checkpoints
 
-Use the same RTX PRO 6000 Blackwell runtime as the main lab. The following cells reuse its pinned dependencies and optimized FLA/convolution/fused-AdamW stack. Drive backup is enabled by default. Storage automatically restores available v2/v3 checkpoints and recovery; v3 backups also contain its exact training input, development labels, dataset receipt and native replay bundle.""")
+Use the same RTX PRO 6000 Blackwell runtime as the main lab. The following cells reuse its pinned dependencies and optimized FLA/convolution/fused-AdamW stack. Drive backup is enabled by default. Storage automatically restores available v2/v3 checkpoints and recovery; v3 backups also contain its exact training input, development labels, dataset receipt and native replay bundle. The adapter-loading cell below also restores teacher-generation prework into an absent collection directory.""")
     reuse('from pathlib import Path\nfrom urllib.request')
     reuse('import subprocess\nsubprocess.check_call')
     reuse('runtime.setup()')
@@ -662,12 +662,18 @@ Use the same RTX PRO 6000 Blackwell runtime as the main lab. The following cells
 The default path is restored by the storage cell from `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/kev-4b-pacman-native-v2`. The active model identity must identify this completed adapter. Keep v2 intact: it supplies both the learner policy for data collection and the before-model for comparison.""")
     code("""from v3_data import collect, build, validate_dataset, behavior_summary, PREFIX as V3_PREFIX, COUNTS as V3_COUNTS, MINIMUMS
 from training_stages import checkpoint_fingerprint
+from checkpoint_backup import restore_teacher_collection
 V2 = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v2'
 V3 = CHECKPOINT_ROOT / 'kev-4b-pacman-native-v3'
 V3_DATA = LAB_DIR / 'data'
 V3_TRAINING = V3_DATA / f'{V3_PREFIX}-train.jsonl'
 QUALIFICATION = LAB_DIR / 'evaluation/teacher-qualification.json'
 COLLECTION_DIR = LAB_DIR / 'results/v3-collection'
+TEACHER_BACKUP_ROOT = (runtime.backup_root.parent / 'prework-backups/v3-collection'
+                       if runtime.backup_root is not None else None)
+if TEACHER_BACKUP_ROOT is not None:
+    restore_teacher_collection(COLLECTION_DIR, TEACHER_BACKUP_ROOT)
+print('Teacher prework Drive backup:', TEACHER_BACKUP_ROOT)
 if not (V2 / 'run-evidence.json').is_file():
     raise RuntimeError(f'Restore the completed native-v2 checkpoint to {V2}. This round does not start from Skills.')
 runtime.start(V2)
@@ -698,12 +704,15 @@ Training mixes **2,048 unchanged canonical v2 expert examples + 2,048 newly veri
 
 Full native replays independently verify teacher recoveries before the dataset receipt is published. Search plans, future diagnostics and teacher targets remain outside Kev's inference input. The loss remains the published option softmax cross-entropy; all legal competing actions, including dangerous ones, remain options.
 
-The native JavaScript teacher runs on CPU. `TEACHER_WORKERS=None` automatically uses available physical cores, respecting CPU affinity and cgroup quotas; set a positive integer to override. A VM with 48 available logical CPUs / 24 physical cores selects 24 workers. The cell prints its allocation and a generation-only ETA after the first worker wave; recovery lengths vary, so this is an estimate. Interrupt stops submissions and lets active workers close after their current native query. Rerunning reuses completed attempt receipts and retries incomplete attempts. This interrupt behavior applies to this updated helper; a cell already running an older helper keeps its old pool.""")
+The native JavaScript teacher runs on CPU. `TEACHER_WORKERS=None` automatically uses available physical cores, respecting CPU affinity and cgroup quotas; set a positive integer to override. A VM with 48 available logical CPUs / 24 physical cores selects 24 workers. The cell prints its allocation and a generation-only ETA after the first worker wave; recovery lengths vary, so this is an estimate. Interrupt stops submissions and lets active workers close after their current native query. Rerunning reuses completed attempt receipts and retries incomplete attempts. This interrupt behavior applies to this updated helper; a cell already running an older helper keeps its old pool.
+
+With Drive enabled, teacher prework backs up at generation start, every five minutes, and on orderly interruption/completion. Incremental verified ZIPs contain the learner inputs and completed accepted/rejected teacher attempts under `MyDrive/QPlusLearning/lab-01-kev-pacman/prework-backups/v3-collection/`; active attempts are retried. Wait for **Teacher Drive backup complete**. A failed periodic backup stops generation while retaining local progress. After a runtime replacement, run setup, Drive storage and the adapter-loading cell to restore an absent collection, then rerun this generation cell. Backups are checked before restore and existing local collections are preserved. A hard runtime loss can lose work since the last acknowledged backup. The older running helper needs to be reloaded to enable this automatic schedule.""")
     code("""# Offline teacher corrections, full recovery proof and balanced dataset
 runtime.stop()  # GPU is not needed for the frozen CPU teacher
 TEACHER_WORKERS = None  # Automatic physical-core allocation; use 24 for an explicit override
 if not (V3 / 'run-evidence.json').is_file():
-    v3_manifest = build(COLLECTION_DIR, V3_DATA, QUALIFICATION, workers=TEACHER_WORKERS)
+    v3_manifest = build(COLLECTION_DIR, V3_DATA, QUALIFICATION, workers=TEACHER_WORKERS,
+                        backup_directory=TEACHER_BACKUP_ROOT)
     assert v3_manifest['learner']['checkpoint_sha256'] == checkpoint_fingerprint(V2), 'Dataset used another v2 adapter'
     print('Accepted teacher recoveries:', sum(a['accepted'] for a in v3_manifest['attempts']))
     print('Rejected attempts retained:', sum(not a['accepted'] for a in v3_manifest['attempts']))

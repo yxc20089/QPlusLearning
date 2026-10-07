@@ -77,10 +77,13 @@ class V3CorrectionTests(unittest.TestCase):
             attempts = [{'id': 'already-committed'}]
             with patch.object(v3_data, 'ProcessPoolExecutor', return_value=pool), \
                     patch.object(v3_data.multiprocessing, 'get_context') as context, \
+                    patch.object(v3_data, 'backup_teacher_collection') as backup, \
                     patch.object(v3_data, 'wait', side_effect=KeyboardInterrupt):
                 context.return_value.Event.return_value = cancelled
                 with self.assertRaises(KeyboardInterrupt):
-                    run_recoveries(pending, attempts, folder, 24)
+                    run_recoveries(pending, attempts, folder, 24, backup_directory='drive-fixture')
+                self.assertEqual(backup.call_count, 2, 'Protect cached input at start and completed work after orderly interrupt')
+                backup.assert_called_with(folder, 'drive-fixture')
             self.assertEqual(pool.submit.call_count, 24, 'An interrupt must not leave 576 queued jobs')
             cancelled.set.assert_called_once()
             pool.shutdown.assert_called_once_with(wait=True, cancel_futures=True)

@@ -20,6 +20,7 @@ from gameplay_benchmark import BenchmarkEngine, SPEC, benchmark_gameplay, diagno
 from pacman_lab import ROOT, body, distribution
 from planner_data import RECIPE
 from teacher_validation import VALIDATION, episode_quality_failures, fingerprint, require_qualified_teacher, source_hashes
+from checkpoint_backup import backup_teacher_collection
 
 PREFIX = 'pacman-native-v3'
 TRAIN_SEEDS = [300017, 300029, 300043, 300059]
@@ -389,8 +390,17 @@ def continuation_job(job):
     return receipt
 
 
-def run_recoveries(pending, attempts, directory, workers):
+def run_recoveries(pending, attempts, directory, workers, backup_directory=None):
     """Bound submissions and stop cooperatively; reruns reuse committed attempts."""
+    last_backup = 0
+
+    def backup_due(force=False):
+        nonlocal last_backup
+        if backup_directory is not None and (force or time.monotonic() - last_backup >= 300):
+            backup_teacher_collection(directory, backup_directory)
+            last_backup = time.monotonic()
+
+    backup_due(force=True)  # Protect the learner inputs and any already-cached attempts first.
     if not pending:
         return []
     started, finished, errors = time.monotonic(), 0, []
@@ -401,6 +411,7 @@ def run_recoveries(pending, attempts, directory, workers):
     pool = ProcessPoolExecutor(max_workers=workers, mp_context=context,
                                initializer=_initialize_recovery_worker, initargs=(cancelled,))
     futures = {}
+    interrupted = False
 
     def submit_next():
         job = next(jobs, None)
@@ -436,7 +447,9 @@ def run_recoveries(pending, attempts, directory, workers):
                 print('[v3] ' + recovery_progress(started, finished, len(pending) - finished, workers), flush=True)
                 record_progress()
                 submit_next()
+            backup_due()
     except BaseException:
+        interrupted = True
         cancelled.set()
         for future in futures:
             future.cancel()
@@ -446,6 +459,12 @@ def run_recoveries(pending, attempts, directory, workers):
         raise
     finally:
         pool.shutdown(wait=True, cancel_futures=True)
+        try:
+            backup_due(force=True)
+        except Exception as error:
+            print(f'[v3] Teacher Drive backup failed: {error}. Local progress remains at {directory}.', flush=True)
+            if not interrupted:
+                raise
     return errors
 
 
@@ -573,7 +592,7 @@ def old_expert_records():
     return result
 
 
-def build(directory, output_directory, qualification_path, workers=None):
+def build(directory, output_directory, qualification_path, workers=None, backup_directory=None):
     """Generate the mixture only after teacher recovery and split checks pass."""
     directory, output_directory = Path(directory), Path(output_directory)
     target = output_directory / f'{PREFIX}-manifest.json'
@@ -624,7 +643,7 @@ def build(directory, output_directory, qualification_path, workers=None):
     workers = recovery_workers(workers, len(pending), capacity)
     print(f'[v3] Native JavaScript CPU teacher: {json.dumps(capacity)}; selected workers={workers}. '
           'GPU acceleration is not implemented for this native simulator.', flush=True)
-    errors = run_recoveries(pending, attempts, directory, workers)
+    errors = run_recoveries(pending, attempts, directory, workers, backup_directory=backup_directory)
     if errors:
         raise ValueError('Native recovery jobs failed; evidence retained. Rerun to finish missing attempts.')
     attempts.sort(key=lambda x: x['id'])

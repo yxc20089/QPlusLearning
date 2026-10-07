@@ -37,6 +37,167 @@ def new_run_directory(results_root, label, **metadata):
     return directory
 
 
+def _teacher_collection_inputs(collection, original=None):
+    metadata = collection / 'collection.json'
+    info = json.loads(metadata.read_text())
+    files = {metadata}
+    for name in info['reports'].values():
+        report = collection / name
+        files.add(report)
+        for episode in json.loads(report.read_text())['episodes']:
+            # Restored report bytes retain the original Colab absolute paths.
+            relative = Path(episode['trace']).resolve().relative_to(original or collection)
+            files.add(collection / relative)
+    for file in files:
+        if file.is_symlink() or not file.resolve().is_relative_to(collection):
+            raise ValueError('Teacher collection input is outside its collection directory')
+    return {str(file.relative_to(collection)): file_hash(file) for file in sorted(files)}
+
+
+def _completed_teacher_files(folder):
+    """Old helpers wrote the receipt before labels; verify that labels are complete."""
+    marker, trace = folder / 'attempt.json', folder / 'teacher.jsonl'
+    receipt = json.loads(marker.read_text())
+    if file_hash(trace) != receipt['trace_sha256']:
+        raise ValueError('Completed teacher trace checksum mismatch')
+    proofs = [json.loads(line) for line in trace.read_text().splitlines()]
+    if len(proofs) != receipt['metrics']['decisions']:
+        raise ValueError('Completed teacher trace length differs from its receipt')
+    files = [marker, trace]
+    if receipt['accepted']:
+        candidates = folder / 'candidates.jsonl'
+        if not candidates.is_file():
+            return None  # A currently-running older helper may still be writing labels.
+        expected = {i for i, proof in enumerate(proofs) if any(
+            not risk['life_lost'] for risk in proof['diagnostics']['immediate_counterfactuals'].values())}
+        seen = set()
+        for line in candidates.read_text().splitlines():
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                return None
+            index = record['_meta']['suffix_index']
+            digest = hashlib.sha256(json.dumps(record['state'], sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+            if (index not in expected or index in seen or digest != proofs[index]['state_sha256']
+                    or record['questions']['move']['label'] != proofs[index]['choice']):
+                raise ValueError('Completed teacher labels disagree with their native trace')
+            seen.add(index)
+        if seen != expected:
+            return None
+        files.append(candidates)
+    return files
+
+
+def backup_teacher_collection(collection, backup_directory):
+    """Incremental, verified Drive archives of immutable inputs/completed attempts."""
+    collection, backup_directory = Path(collection).resolve(), Path(backup_directory).resolve()
+    if not collection.is_dir() or backup_directory.is_relative_to(collection):
+        raise ValueError('Use an existing teacher collection and a separate backup directory')
+    base = _teacher_collection_inputs(collection)
+    pointer = backup_directory / 'latest.json'
+    previous = json.loads(pointer.read_text()) if pointer.is_file() else None
+    if previous and (previous['version'] != 1 or previous['collection_path'] != str(collection)
+                     or previous['base_files'] != base):
+        raise ValueError('Drive teacher backup belongs to a different learner collection')
+    backed = dict(previous['attempts']) if previous else {}
+    files = [] if previous else [collection / name for name in base]
+    newly_backed = {}
+    for marker in sorted((collection / 'teacher-recoveries').glob('*/attempt.json')):
+        name = marker.parent.name
+        if name in backed:
+            if file_hash(marker) != backed[name]:
+                raise ValueError('An already-backed-up teacher receipt changed')
+            continue
+        complete = _completed_teacher_files(marker.parent)
+        if complete is not None:
+            files.extend(complete)
+            newly_backed[name] = file_hash(marker)
+    if not files:
+        return previous
+    backup_directory.mkdir(parents=True, exist_ok=True)
+    name = f'collection-{time.time_ns()}-{uuid.uuid4().hex[:8]}.zip'
+    entries = []
+    print(f'Teacher Drive backup starting: {len(newly_backed)} new completed attempts', flush=True)
+    with tempfile.TemporaryDirectory(prefix='kev-teacher-backup-') as temporary:
+        archive = Path(temporary) / name
+        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=1) as saved:
+            for file in sorted(files):
+                if file.is_symlink() or not file.resolve().is_relative_to(collection):
+                    raise ValueError('Teacher backup contains a symbolic link or external file')
+                relative = str(file.relative_to(collection))
+                digest, size = hashlib.sha256(), 0
+                with file.open('rb') as source, saved.open(relative, 'w', force_zip64=True) as target:
+                    for block in iter(lambda: source.read(1024 * 1024), b''):
+                        target.write(block)
+                        digest.update(block)
+                        size += len(block)
+                entries.append({'path': relative, 'bytes': size, 'sha256': digest.hexdigest()})
+        copied = {entry['path']: entry['sha256'] for entry in entries}
+        if any(copied[path] != checksum for path, checksum in base.items() if path in copied) or any(
+                copied[f'teacher-recoveries/{attempt}/attempt.json'] != checksum
+                for attempt, checksum in newly_backed.items()):
+            raise ValueError('Teacher collection changed during backup; previous backup retained')
+        checksum = file_hash(archive)
+        uploading = backup_directory / ('.uploading-' + name)
+        shutil.copyfile(archive, uploading)
+        if file_hash(uploading) != checksum:
+            raise ValueError('Teacher Drive archive checksum mismatch; previous backup retained')
+        os.replace(uploading, backup_directory / name)
+    receipt = {'version': 1, 'collection_path': str(collection), 'created_ns': time.time_ns(),
+               'base_files': base, 'attempts': {**backed, **newly_backed},
+               'archives': [*(previous['archives'] if previous else []),
+                            {'archive': name, 'sha256': checksum, 'files': entries}]}
+    atomic_json(backup_directory / (name + '.json'), receipt)
+    atomic_json(pointer, receipt)
+    print(f'Teacher Drive backup complete: {len(receipt["attempts"])} completed attempts; {backup_directory}', flush=True)
+    return receipt
+
+
+def restore_teacher_collection(collection, backup_directory):
+    """Restore a verified collection at its original path, never over local work."""
+    collection, backup_directory = Path(collection).resolve(), Path(backup_directory).resolve()
+    pointer = backup_directory / 'latest.json'
+    if collection.exists() or not pointer.is_file():
+        return None
+    receipt = json.loads(pointer.read_text())
+    if receipt['version'] != 1 or receipt['collection_path'] != str(collection):
+        raise ValueError('Restore the teacher collection at its original absolute path')
+    print(f'Teacher Drive restore starting: {len(receipt["attempts"])} completed attempts', flush=True)
+    collection.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.restoring-teacher-', dir=collection.parent) as temporary:
+        staging = Path(temporary) / 'collection'
+        staging.mkdir()
+        seen = set()
+        for chunk in receipt['archives']:
+            archive = backup_directory / chunk['archive']
+            if archive.parent != backup_directory or file_hash(archive) != chunk['sha256']:
+                raise ValueError('Teacher Drive archive checksum mismatch')
+            with zipfile.ZipFile(archive) as saved:
+                names = [info['path'] for info in chunk['files']]
+                if len(set(saved.namelist())) != len(saved.namelist()) or set(saved.namelist()) != set(names):
+                    raise ValueError('Teacher archive entries differ from its receipt')
+                for info in chunk['files']:
+                    relative = Path(info['path'])
+                    if relative.is_absolute() or '..' in relative.parts or info['path'] in seen:
+                        raise ValueError('Invalid or duplicate teacher archive path')
+                    seen.add(info['path'])
+                    target = staging / relative
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    with saved.open(info['path']) as source, target.open('wb') as output:
+                        shutil.copyfileobj(source, output)
+                    if target.stat().st_size != info['bytes'] or file_hash(target) != info['sha256']:
+                        raise ValueError('Restored teacher file checksum mismatch')
+        if _teacher_collection_inputs(staging, original=collection) != receipt['base_files']:
+            raise ValueError('Restored teacher inputs differ from the backup')
+        for name, checksum in receipt['attempts'].items():
+            folder = staging / 'teacher-recoveries' / name
+            if file_hash(folder / 'attempt.json') != checksum or _completed_teacher_files(folder) is None:
+                raise ValueError('Restored teacher attempt is incomplete')
+        os.replace(staging, collection)
+    print(f'Teacher Drive restore complete: {len(receipt["attempts"])} attempts reused at {collection}', flush=True)
+    return receipt
+
+
 def backup_lab_to_drive(workspace, drive_root, checkpoint_root=None):
     """Publish restore-compatible checkpoints and a dated archive of all recordings.
 
