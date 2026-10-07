@@ -7,13 +7,16 @@
   "finetuning_minutes": 30,
   "state": "Native classic game and planning dataset prepared; GPU task training pending",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "cNudgPM37n3f6Q",
+  "revision_id": "Bq-KVL2ywqK_AA",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-07",
-  "visual_qa": "Slide 1 revised and inspected in the native PDF export, editor and slideshow. Editable diagram/formulas and speaker notes verified; embedded GIF plays; its link opens live interactive controls. Slides 2–15 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1–2 inspected in the native PDF export and Google Slides presentation. Native diagram and mathematical text verified; speaker notes read back; slide 2 embedded highlights animate and its live Play, Next and Reset controls work. Slides 3–15 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
-    "completed_slides": [1],
+    "completed_slides": [
+      1,
+      2
+    ],
     "workflow": "Create and review one slide at a time",
     "outline": [
       "Kev architecture",
@@ -33,15 +36,40 @@
     "slide_1": {
       "object_id": "kev_lab_01",
       "title": "Kev architecture",
-      "formulae": ["H = f(x; W₀ + ΔW)", "p = softmax(z)"],
+      "formulae": [
+        "H = f_θ(x)",
+        "p = softmax(z)"
+      ],
       "speaker_notes": "speaker-notes/slide-01.md",
       "diagram_source": "../../../docs/animations/kev-architecture.js",
       "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-architecture.html",
-      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/fce35a6587e121d6b135c71e33b54d39408704ce/docs/animations/assets/kev-architecture-flow.gif",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/5c4eb383edbb4bc9465673ed15714b1bb1b4fdb0/docs/animations/assets/kev-architecture-flow.gif",
       "static_diagram_editable": true,
-      "animation_layer": "Behind the native diagram, to preserve PDF rendering"
+      "animation_layer": "White-backed highlights behind the native diagram for consistent PDF rendering"
     },
-    "exports": {"pdf": "Updated native deck snapshot", "pptx": "Previous version; regenerate after the redesign is complete"}
+    "exports": {
+      "pdf": "Updated native deck snapshot",
+      "pptx": "Previous version; regenerate after the redesign is complete"
+    },
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 3–15 and their legacy lab metadata have not yet been revised.",
+    "slide_2": {
+      "object_id": "decision_lab_pros",
+      "title": "From board state to hidden vectors",
+      "formulae": [
+        "x = encode(s, u, A)",
+        "H ∈ ℝ^(L×d)"
+      ],
+      "speaker_notes": "speaker-notes/slide-02.md",
+      "diagram_source": "../../../docs/animations/kev-input.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-input.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/5c4eb383edbb4bc9465673ed15714b1bb1b4fdb0/docs/animations/assets/kev-input-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed highlights behind native token groups and vector readouts",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "readouts": "Option closing-marker vectors plus the final decide-marker vector",
+      "marker_labels": "Readable names for existing Qwen special tokens; token spans and counts are schematic",
+      "configuration": "Qwen3.5 causal row form, option_isolation=false"
+    }
   },
   "initial_training_prework": true,
   "lab_route": "Initial → dates/evidence → documents → skills/devtools → Pac-Man",
@@ -75,7 +103,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Original CLM GIF embedded on slide 2; public interactive CLM/softmax/LoRA controls; typeset maths with editable variable keys and spoken scripts."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–2 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -86,10 +114,11 @@
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
     "illustrative_values": true,
-    "clm_source": "Original reference deck, course_slide_21A; byte-preserved 520-frame GIF"
+    "clm_source": "Original reference deck, course_slide_21A; byte-preserved GIF remains archived in the repository. Its previous slide-2 placement has been replaced with the Kev input animation."
   },
   "mathematics_slides": [
     1,
+    2,
     6,
     11,
     12,
