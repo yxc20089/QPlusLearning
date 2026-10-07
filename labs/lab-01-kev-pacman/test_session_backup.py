@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import tempfile
+import types
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -14,6 +15,11 @@ from checkpoint_backup import backup_lab_to_drive, new_run_directory, restore_ba
 
 
 class SessionBackupTests(unittest.TestCase):
+    def cell(self, prefix):
+        notebook = json.loads((Path(__file__).parent / 'notebooks/pacman_kev_lab.ipynb').read_text())
+        return next(''.join(cell['source']) for cell in notebook['cells']
+                    if cell['cell_type'] == 'code' and ''.join(cell['source']).startswith(prefix))
+
     def checkpoint(self, workspace, name, stage='pacman'):
         output = workspace / 'checkpoints' / name
         output.mkdir(parents=True)
@@ -142,6 +148,50 @@ class SessionBackupTests(unittest.TestCase):
                     backup_lab_to_drive(workspace, drive)
             self.assertEqual(pointer.read_bytes(), expected)
             self.assertTrue(Path(previous['archive']).is_file())
+
+    def test_interrupted_notebook_comparison_preserves_baseline_and_partial_task_run(self):
+        source = self.cell('# This comparison can also evaluate')
+        with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+            workspace = Path(folder) / 'lab'
+            runtime = types.SimpleNamespace(start=lambda _: None, active_model_info=lambda: {'adapter': 'fixture'})
+            def interrupted_benchmark(*, model_info, trace_dir):
+                trace_dir.mkdir(parents=True)
+                (trace_dir / 'episode.jsonl').write_text('recorded decisions\n')
+                if trace_dir.name == 'gameplay-fine-tuned':
+                    raise RuntimeError('benchmark interrupted')
+                return {'active_checkpoint': model_info(), 'completed': True}
+            scope = {'LAB_DIR': workspace, 'CHECKPOINT_ROOT': workspace / 'checkpoints',
+                     'runtime': runtime, 'new_run_directory': new_run_directory, 'json': json,
+                     'benchmark_gameplay': interrupted_benchmark, 'print': lambda *args: None}
+            for _ in range(2):
+                with self.assertRaisesRegex(RuntimeError, 'benchmark interrupted'):
+                    exec(source, scope)
+            runs = sorted((workspace / 'results').iterdir())
+            self.assertEqual(len(runs), 2)
+            for run in runs:
+                self.assertTrue(json.loads((run / 'general.json').read_text())['completed'])
+                for name in ('gameplay-general', 'gameplay-fine-tuned'):
+                    self.assertEqual((run / name / 'episode.jsonl').read_text(), 'recorded decisions\n')
+            receipt = backup_lab_to_drive(workspace, Path(folder) / 'drive')
+            with zipfile.ZipFile(receipt['archive']) as saved:
+                self.assertEqual(sum(name.endswith('episode.jsonl') for name in saved.namelist()), 4)
+
+    def test_final_notebook_drive_cell_requires_no_benchmark_or_training_results(self):
+        source = self.cell('# Back up all available checkpoints, trajectories and traces')
+        colab = types.ModuleType('google.colab')
+        colab.drive = types.SimpleNamespace(mount=lambda _: None)
+        google = types.ModuleType('google')
+        google.colab = colab
+        receipt = {'checkpoint_errors': {}}
+        scope = {'LAB_DIR': Path('/content/pacman-kev-lab'),
+                 'CHECKPOINT_ROOT': Path('/content/pacman-kev-lab/checkpoints'),
+                 'runtime': types.SimpleNamespace(stop=lambda: None), 'SAVE_TO_DRIVE': False,
+                 'print': lambda *args: None}
+        with patch.dict('sys.modules', {'google': google, 'google.colab': colab}), \
+                patch('checkpoint_backup.backup_lab_to_drive', return_value=receipt) as backup:
+            exec(source, scope)
+        backup.assert_called_once_with(scope['LAB_DIR'],
+            Path('/content/drive/MyDrive/QPlusLearning/lab-01-kev-pacman'), checkpoint_root=scope['CHECKPOINT_ROOT'])
 
 
 if __name__ == '__main__':

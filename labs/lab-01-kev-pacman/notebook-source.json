@@ -1,13 +1,13 @@
 {
   "repository": "yxc20089/QPlusLearning",
-  "revision": "9a7d84d12765f3e65e144016b893d2ad5be539fc",
+  "revision": "d999f9ab18e4649d7a9bd8e8c88b9de6cb15434d",
   "files": {
     "api_client.py": "0e48a2dfb4e3bb6d07228341c08cde6c92bf25bc311c91bfcae4bcbf19a8d51e",
     "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
     "cloud_runtime.py": "42985cfebf2c6890c6468372d70b04db52fe36c4ea269eb652a47e27172499e0",
     "training_monitor.py": "816f46da63ab7e936d55e85425ab9213145f2276fe6f2a260248307b45fbe681",
     "lora_recovery.py": "d01bc4f336b17948dc89fa8e931761c766fed979349a310d19f23e5ce0d6e274",
-    "checkpoint_backup.py": "6df69d0ecf887026c22573d0477d780aadbed8a8d3927d8d17bfede9ddd55056",
+    "checkpoint_backup.py": "fdfc1b48c1c10c9bf2893933c39706a715e716f38388c6a2b8b45f6509aef724",
     "optimized_training.py": "5c33fac17ec6ad6439193737aea650f85cdfb4445a0d346bb5bed10b858fcdfa",
     "training-kernels.json": "24dff024433f61c4a571f16326f4f16c5666297e6514089e66e721b39765e56c",
     "training_stages.py": "96fdd59285b8872b946523a88d95393decb73536322ca35e8f67f79cb2a7ef5c",
