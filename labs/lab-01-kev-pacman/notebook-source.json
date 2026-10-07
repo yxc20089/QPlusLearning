@@ -1,13 +1,13 @@
 {
   "repository": "yxc20089/QPlusLearning",
-  "revision": "d999f9ab18e4649d7a9bd8e8c88b9de6cb15434d",
+  "revision": "a77bab5b2132e8427137f01314f011fa3b364e7f",
   "files": {
     "api_client.py": "0e48a2dfb4e3bb6d07228341c08cde6c92bf25bc311c91bfcae4bcbf19a8d51e",
     "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
-    "cloud_runtime.py": "42985cfebf2c6890c6468372d70b04db52fe36c4ea269eb652a47e27172499e0",
+    "cloud_runtime.py": "2620fc28f4d159c9571b201cf7d93f3cbdb1f27c587c1b15906457e3fbcdf903",
     "training_monitor.py": "816f46da63ab7e936d55e85425ab9213145f2276fe6f2a260248307b45fbe681",
     "lora_recovery.py": "d01bc4f336b17948dc89fa8e931761c766fed979349a310d19f23e5ce0d6e274",
-    "checkpoint_backup.py": "fdfc1b48c1c10c9bf2893933c39706a715e716f38388c6a2b8b45f6509aef724",
+    "checkpoint_backup.py": "f0d5f00bb7116bcd6e1f1afbba8e1c0c76ce87ee46280b60ebb1ea356e258e4b",
     "optimized_training.py": "5c33fac17ec6ad6439193737aea650f85cdfb4445a0d346bb5bed10b858fcdfa",
     "training-kernels.json": "24dff024433f61c4a571f16326f4f16c5666297e6514089e66e721b39765e56c",
     "training_stages.py": "96fdd59285b8872b946523a88d95393decb73536322ca35e8f67f79cb2a7ef5c",
@@ -36,6 +36,7 @@
     "data/pacman-native-v2.zip": "8327bd809c86172283366cf018321e59ba91ceafc2d798555b28cb0aab6e7651",
     "data/pacman-native-v2-manifest.json": "8cc0a7b26b010ff4bb1866e37f5bb3f5841c3c4a6f81d932d9ae52ba4971ae0f",
     "data/pacman-native-v2-replays.zip": "6cfb6378951af88039f9503c13964a47cf83f7adaeb3d32245e69342b9652545",
-    "data/pacman-native-v2-generator.py": "31b7d5dcd4f750db0698f22535f13667f79e77e97cee525f373b8f99a9326be9"
+    "data/pacman-native-v2-generator.py": "31b7d5dcd4f750db0698f22535f13667f79e77e97cee525f373b8f99a9326be9",
+    "v3_data.py": "d28b31e3f8c1f6a19435dbf0cf9143ff17f3ba108251c1901a143c5e8a1847d1"
   }
 }
