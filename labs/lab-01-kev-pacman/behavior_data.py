@@ -32,11 +32,11 @@ MAX_WINDOWS_PER_ROOT = 4
 WINDOW_LIMIT = 24
 ROLES = ('immediate_evasion', 'anticipatory_escape', 'actual_expiry_evasion',
          'retreat_to_food', 'productive_routing', 'cleanup', 'broad_exposure')
-# Provisional allocation. A caller may supply another explicit full-budget plan
-# after the CPU yield scout; it is recorded and validated, never silently filled.
+# Measured-yield allocation. Exact source matching, windows and all admission
+# constraints must still pass; missing cases are never silently filled.
 DEFAULT_PLAN = {
-    'train': dict(zip(ROLES, (512, 256, 128, 512, 1152, 700, 400))),
-    'development': dict(zip(ROLES, (64, 24, 12, 48, 128, 72, 36))),
+    'train': dict(zip(ROLES, (640, 64, 16, 512, 1408, 888, 132))),
+    'development': dict(zip(ROLES, (96, 16, 4, 48, 128, 78, 14))),
 }
 OPPOSITE = {'left': 'right', 'right': 'left', 'up': 'down', 'down': 'up'}
 CLAIMS = {

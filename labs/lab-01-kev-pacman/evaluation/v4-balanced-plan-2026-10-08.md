@@ -53,13 +53,46 @@ exclude identical model inputs across splits, and cap level/seed families at
 one successful game. Development must cover the admitted behavior roles and
 rare joint situations; zero examples means no per-role generalization claim.
 
-An initial allocation under investigation is 512 immediate evasion, 256
-anticipatory escape, 128 dangerous expiry, 512 escape-to-food, 1,152 productive
-branch choices, 700 cleanup and 400 broad exposure roots. **These are provisional
-collection targets, not available counts or a published dataset.** The pilot
-will measure qualified yield and source-family diversity before an exact plan
-is frozen. A shortage stops export; it must not be silently filled with easy
-states, duplicate records or weakened evidence.
+The first collection targets were 512 immediate evasions, 256 anticipatory
+escapes, 128 expiry evasions, 512 escape-to-food cases, 1,152 productive choices,
+700 cleanup cases and 400 exposure cases. These were collection targets, not
+published counts. Completed native simulations measured a much lower yield for
+paired anticipation and expiry than for immediate avoidance and food routing.
+We therefore freeze this explicit, measured-yield selection plan:
+
+| Primary root role | Train | Development |
+| --- | ---: | ---: |
+| Immediate evasion | 640 | 96 |
+| Anticipatory escape | 64 | 16 |
+| Actual native power-expiry evasion | 16 | 4 |
+| Retreat followed by food | 512 | 48 |
+| Productive routing | 1,408 | 128 |
+| Sparse-pellet cleanup | 888 | 78 |
+| Residual broad exposure | 132 | 14 |
+| **Targeted roots** | **3,660** | **384** |
+
+The 16/4 expiry allocation is a genuine evidence limit, not broad coverage of
+expiry behavior. Four development examples cannot support a strong independent
+generalization claim. All quotas still require exact-input uniqueness, the
+family cap and measured post-escape windows. A shortage stops export; easy
+states, duplicate records and weakened evidence cannot fill it.
+
+## Completed local collection
+
+The frozen core has 376 completed proofs: 145 unique admissions and 231 rejected
+recoveries. Admissions comprise 81 training / 38 development anticipatory
+escapes, 16 / 6 expiry evasions, and 4 / 0 productive retreats. These source
+states span levels 1, 2, 3 and 5, with 42 training and 15 development source
+families. The separate recorded-v3 recovery catalog admitted 11 of 12 proofs:
+four immediate-evasion corrections and seven productive-junction corrections.
+Those roots retain the original checkpoint-bound predictions; surrounding
+teacher states do not claim new learner disagreement.
+
+Every admission passed complete zero-loss native recovery, the original loop
+and stall gates, independent cold replay and source/hash checks. This is teacher
+qualification evidence. It is not evidence that a new learned adapter improves.
+The export still has to pass exact selection, portable provenance validation
+and a token-length audit before it is ready for training.
 
 ## Local evidence available before the new pilot
 

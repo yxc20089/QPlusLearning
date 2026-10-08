@@ -180,7 +180,10 @@ class BalancedBehaviorTests(unittest.TestCase):
 
     def test_explicit_full_plan_rejects_broad_filler_and_rare_zero(self):
         self.assertEqual(balanced.validate_plan(balanced.DEFAULT_PLAN), balanced.DEFAULT_PLAN)
-        bad = copy.deepcopy(balanced.DEFAULT_PLAN); bad['train']['broad_exposure'] += 200; bad['train']['productive_routing'] -= 200
+        bad = copy.deepcopy(balanced.DEFAULT_PLAN)
+        increase = int(balanced.BROAD_MAX_FRACTION * balanced.TARGETS['train']['targeted']) + 1 - bad['train']['broad_exposure']
+        bad['train']['broad_exposure'] += increase
+        bad['train']['productive_routing'] -= increase
         with self.assertRaisesRegex(ValueError, 'full budgets'):
             balanced.validate_plan(bad)
         bad = copy.deepcopy(balanced.DEFAULT_PLAN); bad['train']['productive_routing'] += bad['train']['actual_expiry_evasion']; bad['train']['actual_expiry_evasion'] = 0
