@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1\u20136 redesigned; completed native-v3 experiment analyzed; slides 7\u201315 pending approved redesign",
+  "state": "Slides 1\u20137 redesigned; completed native-v3 experiment analyzed; slides 8\u201315 pending approved redesign",
   "title": "Decision models for Pac-Man \u2014 Kev, CLM and the lab",
-  "revision_id": "9vDDuAfJLx7etQ",
+  "revision_id": "x6ZwKfmfUG6YJw",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-08",
-  "visual_qa": "Slides 1\u20136 inspected in native PDF exports. Slide 6 inference pipeline, readout operation counts and natural narration were independently checked against pinned Kev. Its editable diagrams and mathematics fit in the native PDF and Google Slides presentation. Native GIF motion and published Play/Pause, Previous/Next, Reset, direct-stage and 1/4/8 answer-token controls were checked in Chrome. The one-token view correctly shows zero extra decode passes. Native issue checker returned zero issues. Full readback confirmed only slide 6 content changed and native notes match the repository. Slides 7\u201315 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1\u20137 inspected in native PDF exports. Slide 7 stage counts, parent lineage and natural narration were checked against the pinned recipe and lab runtime and reviewed before writing. Its editable diagrams and handoff mathematics fit in the native PDF and Google Slides presentation. Native GIF motion and published Play/Pause, Previous/Next, Reset and direct-stage controls were checked in Chrome. Native issue checker returned zero issues. Full readback confirmed only slide 7 content changed and native notes match the repository. Slides 8\u201315 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -19,7 +19,8 @@
       3,
       4,
       5,
-      6
+      6,
+      7
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -55,7 +56,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 7\u201315 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 8\u201315 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -182,6 +183,39 @@
         "single_token_caveat": "Constrained single-token classification has no extra decode loop; a custom choice head can also score options directly",
         "animation_times_are_gpu_measurements": false
       }
+    },
+    "slide_7": {
+      "object_id": "kev_lab_03",
+      "title": "A curriculum, then task checkpoints",
+      "formulae": [
+        "\u03c6_child^0 = \u03c6_parent",
+        "D_train = D_new \u228e D_replay"
+      ],
+      "speaker_notes": "speaker-notes/slide-07.md",
+      "diagram_source": "../../../docs/animations/kev-curriculum.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-curriculum.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/f458ca745cc80e36c47d053bdf8a6ddc87d1e6ae/docs/animations/assets/kev-curriculum-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed looping highlights behind native general stages, task lineage and handoff mathematics",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "configuration": {
+        "general_lineage": [
+          "initial",
+          "dates",
+          "documents",
+          "skills"
+        ],
+        "native_task_lineage": [
+          "skills",
+          "native-v2",
+          "native-v3"
+        ],
+        "base_fixed": true,
+        "warm_start": "Copy compatible LoRA and pointer-head parameters; create a fresh optimizer/schedule for each new stage",
+        "recovery": "Restore the interrupted stage with optimizer and step state",
+        "data_symbol": "Multiset combination preserving repeated training requests",
+        "v4_trained_claim": false
+      }
     }
   },
   "initial_training_prework": true,
@@ -216,7 +250,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20136 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20137 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -226,6 +260,7 @@
       4,
       5,
       6,
+      7,
       13
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
@@ -239,6 +274,7 @@
     4,
     5,
     6,
+    7,
     11,
     12,
     13,
