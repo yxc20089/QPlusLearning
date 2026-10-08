@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Native rollout MPC teacher</title>
+<style>
+:root{font:17px/1.5 Arial,sans-serif;color:#111827;background:white;color-scheme:light}body{max-width:1120px;margin:24px auto;padding:0 20px}a{color:#167985}.intro{font-size:15px;color:#5e6e80}svg{display:block;width:100%;height:auto;border-bottom:1px solid #e5eaed}.controls,.stages,.choices{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}button{font:inherit;border:1px solid #b5c4cc;background:white;border-radius:3px;padding:7px 16px;cursor:pointer}button:hover,button:focus-visible{outline:2px solid #167985;outline-offset:2px}button:disabled{opacity:.45;cursor:default}button[aria-current=step],button[aria-pressed=true]{color:white;background:#167985;border-color:#167985}.stages button{font-size:15px}h1{font-size:25px}#explanation{max-width:1000px;min-height:76px}pre{font:14px/1.4 monospace;white-space:pre-wrap;background:#eff8f8;padding:18px}table{border-collapse:collapse;width:100%;font-size:15px}td{padding:7px 12px;border-bottom:1px solid #d7e2e5}td:last-child{font-family:monospace;text-align:right}footer{font-size:14px;color:#5e6e80;border-top:1px solid #e5eaed;padding-top:14px;margin:28px 0}
+</style>
+<p class="intro"><a href="https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit?slide=id.kev_lab_09">Slide 9</a> · <a href="kev-state.html">Previous: game state</a>. Recorded native forecasts from a fresh educational example. No live game, model or teacher runs here.</p>
+<svg id="teacher" viewBox="0 0 720 405" role="img" aria-label="A native snapshot branches into legal first directions. Four routing buffers and two independently resampled future scenarios feed a native arcade simulation. The teacher compares ordered ranks, executes one first direction and replans."></svg>
+<div class="controls" aria-label="Animation controls"><button id="play" aria-pressed="false">Play</button><button id="previous">Previous step</button><button id="next">Next step</button><button id="reset">Reset</button></div>
+<nav class="stages" aria-label="Teacher stages"><button data-stage="0">1 Snapshot</button><button data-stage="1">2 First moves</button><button data-stage="2">3 Policies</button><button data-stage="3">4 Native dynamics</button><button data-stage="4">5 Ranking</button><button data-stage="5">6 Replan</button></nav>
+<section aria-live="polite" aria-atomic="true"><h1 id="stage-title">1. Save the current native game</h1><p id="explanation">The teacher restores the same root for every forecast.</p></section>
+<h2>Inspect a recorded first-move forecast</h2>
+<p>Fresh seed 7, level 1, after one Left move. Pac-Man is at row 26, column 12. The nominal horizon is 240 native frames. These are CPU teacher forecasts, not student model performance. Early in this example the two future scenarios happen to match. We do not infer zero future uncertainty from that agreement.</p>
+<div class="choices" aria-label="First direction"><button data-move="up">Up</button><button data-move="left">Left</button><button data-move="right">Right</button></div>
+<div class="choices" aria-label="Routing buffer"><button data-buffer="1">Buffer 1</button><button data-buffer="2">Buffer 2</button><button data-buffer="4">Buffer 4</button><button data-buffer="6">Buffer 6</button></div>
+<div class="choices" aria-label="Future scenario"><button data-scenario="0">Future seed 11117</button><button data-scenario="1">Future seed 77717</button></div>
+<h3 id="forecast-title"></h3><pre id="forecast" aria-live="polite"></pre>
+<h3>Ordered rank for both futures under this buffer</h3>
+<p>Compare from top to bottom. The first unequal component decides. The source chooses the best buffer for each direction, then the best direction. The slide’s next-pellet values use each direction’s selected buffer: Up 1, Left 1 and Right 4.</p>
+<table aria-label="Lexicographic teacher rank"><tbody id="rank"></tbody></table>
+<footer>Recorded from the unchanged <a href="https://github.com/yxc20089/QPlusLearning/blob/e96f50372ad970d0077b86daf8ed781b69d968e5/labs/lab-01-kev-pacman/games/arcade-teacher.js">native-rollout-mpc-food-routing-v2 teacher</a>, <a href="https://github.com/yxc20089/QPlusLearning/blob/e96f50372ad970d0077b86daf8ed781b69d968e5/labs/lab-01-kev-pacman/games/arcade-engine.js">native transition/rewind adapter</a> and <a href="https://github.com/yxc20089/QPlusLearning/blob/e96f50372ad970d0077b86daf8ed781b69d968e5/labs/lab-01-kev-pacman/teacher-validation-spec.json">frozen search options</a>. The first action finishes at a native boundary, so forecasts can run slightly beyond the frame horizon. This is a finite policy portfolio, not an optimality proof. Full-game qualification is a separate requirement. No learner telemetry or trained-v4 results appear here.</footer>
+<script src="kev-teacher.js?v=1"></script>
+</html>
