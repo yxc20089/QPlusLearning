@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1\u20138 redesigned; completed native-v3 experiment analyzed; slides 9\u201315 pending approved redesign",
+  "state": "Slides 1\u20139 redesigned; completed native-v3 experiment analyzed; slides 10\u201315 pending approved redesign",
   "title": "Decision models for Pac-Man \u2014 Kev, CLM and the lab",
-  "revision_id": "TJbNl_D3X1uYqA",
+  "revision_id": "pljRvSraWcrvOQ",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-08",
-  "visual_qa": "Slides 1\u20138 inspected in native PDF exports. Slide 8 observation fields, power-clock pauses/update nuance and natural variable explanations were checked against native-v2 engine/request code and reviewed before writing. Its editable tile-map excerpt, actor/timer/history cards and mathematics fit in the native PDF and Google Slides presentation. Native GIF motion and published Play/Pause, Previous/Next, Reset, direct section controls and Blinky/Clyde state inspectors were checked in Chrome. Native issue checker returned zero issues. Full readback confirmed only slide 8 content changed and native notes match the repository. Slides 9\u201315 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1\u20139 inspected in native PDF exports. Slide 9 explains the unchanged native rollout MPC teacher with editable forecast/replan drawing and mathematics. All 24 buffer/scenario forecasts in its fresh seed-7 example replayed exactly against the frozen teacher, and planning left the root observation unchanged. Slides 8 and 9 fit in the native PDF. Slide 8 now explicitly separates the display crop from the full maze passed to Kev. Full readback confirms only these two pages changed and both native notes match the repository. The 120-frame GIF animates in native slideshow mode. Published Play/Pause, Previous/Next, Reset, stage controls and direction/buffer/future inspectors passed in Chrome after successful Pages deployment. The published slide 8 full-maze clarification also fits. Slides 10\u201315 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -21,7 +21,8 @@
       5,
       6,
       7,
-      8
+      8,
+      9
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -57,7 +58,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 9\u201315 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 10\u201315 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -245,7 +246,7 @@
           ],
           "fresh_level": 1,
           "seed": 7,
-          "type": "Native tile-data excerpt; not a gameplay screenshot"
+          "type": "Display-only native tile-data crop; Kev receives the complete maze"
         },
         "distinct_ghosts": [
           "blinky",
@@ -270,8 +271,84 @@
         "teacher_futures_and_labels_in_input": false,
         "private_rng_in_input": false,
         "fresh_snapshot_is_learner_trace": false,
-        "v4_trained_claim": false
+        "v4_trained_claim": false,
+        "full_maze_in_model_input": true,
+        "maze_crop_applies_to_model_input": false
       }
+    },
+    "slide_9": {
+      "object_id": "kev_lab_09",
+      "title": "Native rollout MPC teacher",
+      "formulae": [
+        "(a_t^T, b_t*) = argmin_lex \u03c1(g_t, a, b)",
+        "a \u2208 A_t",
+        "b \u2208 {1, 2, 4, 6}"
+      ],
+      "speaker_notes": "speaker-notes/slide-09.md",
+      "diagram_source": "../../../docs/animations/kev-teacher.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-teacher.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/d9dd85c80bea63d808963bb06226a0ec3f59529e/docs/animations/assets/kev-teacher-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed stage highlights behind native snapshot, legal-first-action branches, simulation, rank and replanning diagram",
+      "teacher_source_commit": "e96f50372ad970d0077b86daf8ed781b69d968e5",
+      "teacher_sha256": "66d98198b77ad5364688006ed132804fae1ccc395fb4a4536980abbdafbe2f3b",
+      "configuration": {
+        "algorithm": "native-rollout-mpc-food-routing-v2",
+        "first_actions": "All supplied wall-legal directions",
+        "buffers": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "scenario_seeds": [
+          11117,
+          77717
+        ],
+        "normal_horizon_native_frames": 240,
+        "extended_horizon_native_frames": 480,
+        "extend_when": "Dangerous ghost within six cached maze steps, or at most 30 pellets remain",
+        "max_forecast_decisions": 192,
+        "ranking": "Ascending lexicographic comparison over the unchanged 12-component teacher rank",
+        "receding_horizon": "Restore root, execute the selected first direction only, observe and replan",
+        "continuation_immediate_survival_filter": "Inside teacher forecasts only; never filters Kev serving options",
+        "future_rng": "Independently resampled planning scenarios; no real episode RNG lookup",
+        "full_game_qualification": "Separate requirement before training labels are trusted",
+        "optimality": "Finite heuristic policy portfolio, not a global optimum or universal guarantee",
+        "v4_trained_claim": false
+      },
+      "recorded_example": {
+        "kind": "Fresh CPU-only educational example; no learner trace",
+        "seed": 7,
+        "level": 1,
+        "action_version": 2,
+        "prefix": [
+          "left"
+        ],
+        "player_row": 26,
+        "player_column": 12,
+        "legal_directions": [
+          "up",
+          "left",
+          "right"
+        ],
+        "chosen_direction": "up",
+        "next_pellet_native_frames": {
+          "up": 7,
+          "left": 9,
+          "right": 31
+        },
+        "selected_buffers": {
+          "up": 1,
+          "left": 1,
+          "right": 4
+        },
+        "first_five_rank_components": "Tie at zero",
+        "policy_scenario_forecasts_verified": 24,
+        "root_observation_unchanged": true,
+        "both_futures_agree_in_this_example": true
+      },
+      "public_assets_verified_commit": "7302aee2109fc09c7897c70a4f8413c89af6496f"
     }
   },
   "initial_training_prework": true,
@@ -306,7 +383,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20138 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20139 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -318,6 +395,7 @@
       6,
       7,
       8,
+      9,
       13
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
@@ -333,6 +411,7 @@
     6,
     7,
     8,
+    9,
     11,
     12,
     13,
