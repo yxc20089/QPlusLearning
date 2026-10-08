@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1\u20137 redesigned; completed native-v3 experiment analyzed; slides 8\u201315 pending approved redesign",
+  "state": "Slides 1\u20138 redesigned; completed native-v3 experiment analyzed; slides 9\u201315 pending approved redesign",
   "title": "Decision models for Pac-Man \u2014 Kev, CLM and the lab",
-  "revision_id": "x6ZwKfmfUG6YJw",
+  "revision_id": "TJbNl_D3X1uYqA",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-08",
-  "visual_qa": "Slides 1\u20137 inspected in native PDF exports. Slide 7 stage counts, parent lineage and natural narration were checked against the pinned recipe and lab runtime and reviewed before writing. Its editable diagrams and handoff mathematics fit in the native PDF and Google Slides presentation. Native GIF motion and published Play/Pause, Previous/Next, Reset and direct-stage controls were checked in Chrome. Native issue checker returned zero issues. Full readback confirmed only slide 7 content changed and native notes match the repository. Slides 8\u201315 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1\u20138 inspected in native PDF exports. Slide 8 observation fields, power-clock pauses/update nuance and natural variable explanations were checked against native-v2 engine/request code and reviewed before writing. Its editable tile-map excerpt, actor/timer/history cards and mathematics fit in the native PDF and Google Slides presentation. Native GIF motion and published Play/Pause, Previous/Next, Reset, direct section controls and Blinky/Clyde state inspectors were checked in Chrome. Native issue checker returned zero issues. Full readback confirmed only slide 8 content changed and native notes match the repository. Slides 9\u201315 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -20,7 +20,8 @@
       4,
       5,
       6,
-      7
+      7,
+      8
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -56,7 +57,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 8\u201315 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 9\u201315 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -216,6 +217,61 @@
         "data_symbol": "Multiset combination preserving repeated training requests",
         "v4_trained_claim": false
       }
+    },
+    "slide_8": {
+      "object_id": "kev_lab_04",
+      "title": "The game state Kev actually receives",
+      "formulae": [
+        "s_t = O(g_t)",
+        "a_t \u2208 A_t"
+      ],
+      "speaker_notes": "speaker-notes/slide-08.md",
+      "diagram_source": "../../../docs/animations/kev-state.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-state.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/1978c2683025bd56ac2a245a16aac36f8dc4d8f4/docs/animations/assets/kev-state-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed looping highlights behind the native tile-map excerpt, actor fields, clocks, history and observation/action equations",
+      "source_upstream_game_revision": "7407174c1d6a38be8cd230577489e39e0873145b",
+      "configuration": {
+        "observation_protocol": "native-adjacent-tile-entry-v2",
+        "maze_crop": {
+          "rows_inclusive": [
+            3,
+            14
+          ],
+          "columns_inclusive": [
+            0,
+            11
+          ],
+          "fresh_level": 1,
+          "seed": 7,
+          "type": "Native tile-data excerpt; not a gameplay screenshot"
+        },
+        "distinct_ghosts": [
+          "blinky",
+          "pinky",
+          "inky",
+          "clyde"
+        ],
+        "actor_motion_fields": [
+          "pixel_offset",
+          "speed_phase",
+          "next_heading"
+        ],
+        "remaining_power_field": "timing.power.remaining_frames",
+        "power_clock_nuance": "Ghost-eating pauses can hold the native clock; per-ghost flags can change on a different update. Safety requires full native transition/collision simulation.",
+        "recent_history_cap": 64,
+        "history_fields": [
+          "recent_positions",
+          "destination_visits",
+          "decisions_since_last_pellet",
+          "visits_to_current_tile"
+        ],
+        "teacher_futures_and_labels_in_input": false,
+        "private_rng_in_input": false,
+        "fresh_snapshot_is_learner_trace": false,
+        "v4_trained_claim": false
+      }
     }
   },
   "initial_training_prework": true,
@@ -250,7 +306,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20137 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20138 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -261,6 +317,7 @@
       5,
       6,
       7,
+      8,
       13
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
@@ -275,6 +332,7 @@
     5,
     6,
     7,
+    8,
     11,
     12,
     13,
