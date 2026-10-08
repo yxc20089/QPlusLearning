@@ -9,7 +9,7 @@
   const texts=[
     {id:'title',x:36,y:25,w:648,h:42,size:30,bold:true,text:'The game state Kev actually receives'},
     {id:'subtitle',x:36,y:76,w:648,h:25,size:17,text:'A structured board, moving actors, native timers and memory.'},
-    {id:'map-label',x:36,y:99,w:232,h:24,size:10,color:C.muted,text:'Display crop only\nKev receives the full maze'},
+    {id:'map-label',x:36,y:97,w:232,h:24,size:10,color:C.muted,text:'Display crop only\nKev receives the full maze'},
     {id:'legend',x:36,y:322,w:212,h:24,size:12,color:C.muted,text:'. pellet · o power pellet'},
     {id:'actors-title',x:280,y:123,w:392,h:22,size:16,bold:true,color:C.teal,text:'Player + four distinct ghosts'},
     {id:'blinky',x:280,y:145,w:82,h:18,size:12,bold:true,color:'#c02929',text:'Blinky'},
