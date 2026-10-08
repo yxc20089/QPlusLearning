@@ -15,7 +15,7 @@ HELPERS = ["api_client.py", "pacman_lab.py", "cloud_runtime.py", "training_monit
            "games/arcade-teacher.js", "teacher_validation.py", "teacher-validation-spec.json", "teacher_data.py",
            "evaluation/teacher-qualification.json", "evaluation/teacher-qualification-replays.zip",
            "data/pacman-native-v2.zip", "data/pacman-native-v2-manifest.json", "data/pacman-native-v2-replays.zip", "data/pacman-native-v2-generator.py", "v3_data.py",
-           "v4_data.py", "collection_backup.py", "hard_case_evaluation.py",
+           "v4_data.py", "teacher_offline_data.py", "scenario_catalog.py", "collection_backup.py", "hard_case_evaluation.py",
            "evaluation/v3-analysis-2026-10-07/teacher-reference.json"]
 
 

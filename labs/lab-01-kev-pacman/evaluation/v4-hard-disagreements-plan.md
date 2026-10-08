@@ -4,6 +4,31 @@ Status: implementation/prework plan. No v4 dataset or trained v4 result is
 claimed. Preserve completed v1/v2/v3 checkpoints. Warm-start v4 from the completed
 native-v3 LoRA and pointer head, with a new optimizer/schedule and separate output.
 
+For the requested **local teacher-only generation**, use the separate
+[offline hard-scenario plan](v4-offline-hard-scenarios-plan.md). CPU teacher
+labels do not require Colab or a student query. They must not be reported as
+measured v3 disagreements; the checkpoint-bound protocol below remains a
+separate filtering experiment.
+
+## Why continue from v3
+
+Use v3 as the main parent: it learned substantially better immediate retreat and
+ghost evasion than v2. Its worse food routing is a behavior to correct with the
+new data, not evidence that those useful safety updates should be discarded.
+This is a provisional experiment choice; neither model clears a benchmark maze.
+Keep the completed v2 adapter as a comparator. If we test parent choice directly,
+train separate children from v2 and v3 on the exact same admitted v4 dataset,
+shuffle seed and update budget, with fresh optimizers, then compare untouched
+full games and fixed hard development states. Switching both the parent and
+the dataset would not isolate which change helped.
+
+Actual local collection began on October 7. Its candidates are not admitted
+training rows until the real frozen v3 probes, native continuation evidence,
+deduplication and quotas pass. See [the collection sizing review](v4-collection-sizing-2026-10-07.md):
+the first eight-training-seed wave cannot supply all 4,880 fresh requests under
+the per-family cap. Preserve that wave and add fresh families according to the
+observed admitted yield. Never make up the shortfall with easy suffixes.
+
 ## What the existing games establish
 
 On the same 20 native benchmark starts, v3 reduced avoidable immediate deaths

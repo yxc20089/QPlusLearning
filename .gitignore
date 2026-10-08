@@ -15,3 +15,5 @@ runs/
 *.bin
 *.gguf
 *.log
+labs/lab-01-kev-pacman/data/pacman-native-v2-train.jsonl
+labs/lab-01-kev-pacman/data/pacman-native-v2-development.jsonl

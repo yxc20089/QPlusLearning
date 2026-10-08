@@ -1,0 +1,262 @@
+{
+  "dataset": "pacman-native-v4-offline",
+  "schema": "selected-teacher-scenario-catalog-v1",
+  "manifest_sha256": "11ecd2ed672dc22f8976c12e954285aced8e4f11abf1146924dd4ae1f1c77abc",
+  "data_sha256": {
+    "pacman-native-v4-offline-development.jsonl": "b83e19c9e7929ee646ad8ada6a83b9dac50b4edb2b86a48a78310cb310d94242",
+    "pacman-native-v4-offline-train.jsonl": "bda4152d9e82704578ef7991e89984796a45d842b6c4a4a59f7d024f54da25b9"
+  },
+  "catalog_sha256": "9a3840958aa38bffd3699b3150eec3a1b90a7eeae5578f481ac8a1c3d424b5b2",
+  "classifier_sha256": "1962c676744570214a6d369ecd8f10a9343db16e039a85e2f73468c04f3570b4",
+  "primary_priority": [
+    {
+      "id": "immediate_collision_avoidance",
+      "name": "Immediate collision avoidance",
+      "predicate": "immediate_critical"
+    },
+    {
+      "id": "actual_power_expiry_near_ghost",
+      "name": "Power expires during the chosen move near a ghost",
+      "predicate": "actual_power_expiry_during_teacher_action_near_ghost"
+    },
+    {
+      "id": "potential_power_expiry_near_ghost",
+      "name": "Power may expire during a move near a ghost",
+      "predicate": "potential_expiry_during_action_near_ghost"
+    },
+    {
+      "id": "low_power_clock",
+      "name": "Low remaining power clock, other positions",
+      "predicate": "power_expiry"
+    },
+    {
+      "id": "nearby_dangerous_ghost",
+      "name": "Nearby dangerous ghost",
+      "predicate": "ghost_intercept"
+    },
+    {
+      "id": "pellet_stall_routing",
+      "name": "Routing after a pellet-free interval",
+      "predicate": "food_dry"
+    },
+    {
+      "id": "sparse_pellet_cleanup",
+      "name": "Remaining-pellet cleanup",
+      "predicate": "sparse_food"
+    }
+  ],
+  "rules": [
+    "First matching scenario in the stated priority; each request has exactly one primary category.",
+    "Informative windows inherit the selected parent root category; their own tags are recorded separately.",
+    "Respawn is an overlapping context tag; it alone is not a hard scenario.",
+    "Game counts overlap across categories; example totals do not.",
+    "These categories do not claim measured v3 mistakes, optimality, or learned v4 performance."
+  ],
+  "partitions": {
+    "train": {
+      "total_examples": 5792,
+      "primary_scenarios": {
+        "immediate_collision_avoidance": {
+          "targeted": 164,
+          "informative": 53,
+          "replay": 0,
+          "total_examples": 217,
+          "contributing_source_games": 62,
+          "source_families": 42,
+          "window_types": {
+            "lead_in": 52,
+            "recovery_followthrough": 1
+          }
+        },
+        "actual_power_expiry_near_ghost": {
+          "targeted": 14,
+          "informative": 2,
+          "replay": 0,
+          "total_examples": 16,
+          "contributing_source_games": 13,
+          "source_families": 13,
+          "window_types": {
+            "lead_in": 2
+          }
+        },
+        "potential_power_expiry_near_ghost": {
+          "targeted": 12,
+          "informative": 5,
+          "replay": 0,
+          "total_examples": 17,
+          "contributing_source_games": 12,
+          "source_families": 12,
+          "window_types": {
+            "lead_in": 5
+          }
+        },
+        "low_power_clock": {
+          "targeted": 1047,
+          "informative": 353,
+          "replay": 0,
+          "total_examples": 1400,
+          "contributing_source_games": 83,
+          "source_families": 46,
+          "window_types": {
+            "lead_in": 345,
+            "recovery_followthrough": 8
+          }
+        },
+        "nearby_dangerous_ghost": {
+          "targeted": 1586,
+          "informative": 534,
+          "replay": 0,
+          "total_examples": 2120,
+          "contributing_source_games": 82,
+          "source_families": 46,
+          "window_types": {
+            "lead_in": 527,
+            "recovery_followthrough": 7
+          }
+        },
+        "pellet_stall_routing": {
+          "targeted": 167,
+          "informative": 49,
+          "replay": 0,
+          "total_examples": 216,
+          "contributing_source_games": 54,
+          "source_families": 38,
+          "window_types": {
+            "lead_in": 48,
+            "recovery_followthrough": 1
+          }
+        },
+        "sparse_pellet_cleanup": {
+          "targeted": 670,
+          "informative": 224,
+          "replay": 0,
+          "total_examples": 894,
+          "contributing_source_games": 82,
+          "source_families": 46,
+          "window_types": {
+            "lead_in": 222,
+            "recovery_followthrough": 2
+          }
+        },
+        "prior_pacman_replay": {
+          "targeted": 0,
+          "informative": 0,
+          "replay": 912,
+          "total_examples": 912,
+          "contributing_source_games": null,
+          "source_families": 16,
+          "window_types": {}
+        }
+      },
+      "overlapping_tags": {
+        "actual_power_expiry_during_teacher_action_near_ghost": 14,
+        "food_dry": 549,
+        "post_respawn": 1705,
+        "potential_expiry_during_action_near_ghost": 26,
+        "power_expiry": 1074,
+        "sparse_food": 1770,
+        "ghost_intercept": 1760,
+        "immediate_critical": 164
+      }
+    },
+    "development": {
+      "total_examples": 512,
+      "primary_scenarios": {
+        "immediate_collision_avoidance": {
+          "targeted": 22,
+          "informative": 8,
+          "replay": 0,
+          "total_examples": 30,
+          "contributing_source_games": 12,
+          "source_families": 11,
+          "window_types": {
+            "lead_in": 8
+          }
+        },
+        "actual_power_expiry_near_ghost": {
+          "targeted": 4,
+          "informative": 2,
+          "replay": 0,
+          "total_examples": 6,
+          "contributing_source_games": 4,
+          "source_families": 4,
+          "window_types": {
+            "lead_in": 2
+          }
+        },
+        "potential_power_expiry_near_ghost": {
+          "targeted": 0,
+          "informative": 0,
+          "replay": 0,
+          "total_examples": 0,
+          "contributing_source_games": 0,
+          "source_families": 0,
+          "window_types": {}
+        },
+        "low_power_clock": {
+          "targeted": 102,
+          "informative": 35,
+          "replay": 0,
+          "total_examples": 137,
+          "contributing_source_games": 30,
+          "source_families": 16,
+          "window_types": {
+            "lead_in": 35
+          }
+        },
+        "nearby_dangerous_ghost": {
+          "targeted": 172,
+          "informative": 61,
+          "replay": 0,
+          "total_examples": 233,
+          "contributing_source_games": 31,
+          "source_families": 16,
+          "window_types": {
+            "lead_in": 61
+          }
+        },
+        "pellet_stall_routing": {
+          "targeted": 13,
+          "informative": 4,
+          "replay": 0,
+          "total_examples": 17,
+          "contributing_source_games": 8,
+          "source_families": 7,
+          "window_types": {
+            "lead_in": 4
+          }
+        },
+        "sparse_pellet_cleanup": {
+          "targeted": 71,
+          "informative": 18,
+          "replay": 0,
+          "total_examples": 89,
+          "contributing_source_games": 26,
+          "source_families": 16,
+          "window_types": {
+            "lead_in": 18
+          }
+        },
+        "prior_pacman_replay": {
+          "targeted": 0,
+          "informative": 0,
+          "replay": 0,
+          "total_examples": 0,
+          "contributing_source_games": null,
+          "source_families": 0,
+          "window_types": {}
+        }
+      },
+      "overlapping_tags": {
+        "actual_power_expiry_during_teacher_action_near_ghost": 4,
+        "food_dry": 54,
+        "ghost_intercept": 201,
+        "potential_expiry_during_action_near_ghost": 4,
+        "power_expiry": 106,
+        "sparse_food": 180,
+        "post_respawn": 203,
+        "immediate_critical": 22
+      }
+    }
+  }
+}
