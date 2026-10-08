@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1–5 redesigned; completed native-v3 experiment analyzed; slides 6–15 pending approved redesign",
-  "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "bHtLgQBpGYYlLA",
+  "state": "Slides 1\u20136 redesigned; completed native-v3 experiment analyzed; slides 7\u201315 pending approved redesign",
+  "title": "Decision models for Pac-Man \u2014 Kev, CLM and the lab",
+  "revision_id": "9vDDuAfJLx7etQ",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
-  "synced_at": "2026-10-07",
-  "visual_qa": "Slides 1–5 inspected in native PDF exports. Slide 5 softmax, temperature and argmax mathematics and natural narration were independently checked against pinned Kev. Its editable fraction, probability bars and action equations fit in the native PDF and Google Slides editor. Native GIF motion and published Play/Pause, Next, Reset and temperature controls were checked in Chrome. Native issue checker returned zero issues. Full readback confirmed only slide 5 content changed and native notes match the repository. Slides 6–15 retain the previous version pending the approved redesign.",
+  "synced_at": "2026-10-08",
+  "visual_qa": "Slides 1\u20136 inspected in native PDF exports. Slide 6 inference pipeline, readout operation counts and natural narration were independently checked against pinned Kev. Its editable diagrams and mathematics fit in the native PDF and Google Slides presentation. Native GIF motion and published Play/Pause, Previous/Next, Reset, direct-stage and 1/4/8 answer-token controls were checked in Chrome. The one-token view correctly shows zero extra decode passes. Native issue checker returned zero issues. Full readback confirmed only slide 6 content changed and native notes match the repository. Slides 7\u201315 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -18,7 +18,8 @@
       2,
       3,
       4,
-      5
+      5,
+      6
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -40,7 +41,7 @@
       "object_id": "kev_lab_01",
       "title": "Kev architecture",
       "formulae": [
-        "H = f_θ(x)",
+        "H = f_\u03b8(x)",
         "p = softmax(z)"
       ],
       "speaker_notes": "speaker-notes/slide-01.md",
@@ -54,13 +55,13 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 6–15 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 7\u201315 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
       "formulae": [
         "x = encode(s, u, A)",
-        "H ∈ ℝ^(L×d)"
+        "H \u2208 \u211d^(L\u00d7d)"
       ],
       "speaker_notes": "speaker-notes/slide-02.md",
       "diagram_source": "../../../docs/animations/kev-input.js",
@@ -77,8 +78,8 @@
       "object_id": "decision_lab_training_cost",
       "title": "LoRA inside Kev",
       "formulae": [
-        "y = W₀v + (α/r)BAv",
-        "ΔW = (α/r)BA"
+        "y = W\u2080v + (\u03b1/r)BAv",
+        "\u0394W = (\u03b1/r)BA"
       ],
       "speaker_notes": "speaker-notes/slide-03.md",
       "diagram_source": "../../../docs/animations/kev-lora.js",
@@ -102,7 +103,7 @@
       "formulae": [
         "q = W_q h_decide + b_q",
         "k_i = W_k h_end,i + b_k",
-        "z_i = qᵀ k_i / √d_p"
+        "z_i = q\u1d40 k_i / \u221ad_p"
       ],
       "speaker_notes": "speaker-notes/slide-04.md",
       "diagram_source": "../../../docs/animations/kev-pointer.js",
@@ -150,10 +151,41 @@
         },
         "probability_display": "Option preference, not API confidence or survival probability"
       }
+    },
+    "slide_6": {
+      "object_id": "kev_lab_06",
+      "title": "Why Kev avoids the answer-token loop",
+      "formulae": [
+        "R_Kev \u2248 (K + 1) d d_p + K d_p",
+        "R_text \u2248 M d V"
+      ],
+      "speaker_notes": "speaker-notes/slide-06.md",
+      "diagram_source": "../../../docs/animations/kev-speed.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-speed.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/2d92d160691854d3f48bd8edce8dafcab77a4f1a/docs/animations/assets/kev-speed-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed looping highlights behind native state/question passes, option scores, answer-token dependencies and readout formulas",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "configuration": {
+        "cold_hybrid_path": "State-prefix pass followed by one question row containing all supplied options",
+        "generated_answer_tokens": false,
+        "illustrative_answer_tokens": 4,
+        "extra_text_decode_passes": "M \u2212 1 after prefill",
+        "cost_measure": "Approximate readout multiplications after hidden states, excluding backbone work and small bias/scaling/normalization terms",
+        "backbone_hidden_dim": 2560,
+        "pointer_dim": 256,
+        "controls_answer_lengths": [
+          1,
+          4,
+          8
+        ],
+        "single_token_caveat": "Constrained single-token classification has no extra decode loop; a custom choice head can also score options directly",
+        "animation_times_are_gpu_measurements": false
+      }
     }
   },
   "initial_training_prework": true,
-  "lab_route": "Initial → dates/evidence → documents → skills/devtools → Pac-Man",
+  "lab_route": "Initial \u2192 dates/evidence \u2192 documents \u2192 skills/devtools \u2192 Pac-Man",
   "general_stages_prework": true,
   "pacman_dataset": {
     "train": 4096,
@@ -184,7 +216,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–5 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20136 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
