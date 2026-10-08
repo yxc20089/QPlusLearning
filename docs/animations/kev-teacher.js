@@ -22,7 +22,7 @@
   const texts=[
     {id:'title',x:36,y:25,w:648,h:42,size:30,bold:true,text:'Native rollout MPC teacher'},
     {id:'subtitle',x:36,y:76,w:648,h:25,size:17,text:'Compare forecasts, execute one direction, then replan.'},
-    {id:'snapshot-label',x:45,y:158,w:90,h:18,size:12,bold:true,color:C.teal,text:'Native snapshot'},
+    {id:'snapshot-label',x:45,y:158,w:90,h:18,size:11,bold:true,color:C.teal,text:'Native snapshot'},
     {id:'snapshot-state',x:72,y:179,w:45,h:26,size:22,formula:true,text:'gt',subs:[[1,2]]},
     {id:'first-label',x:178,y:102,w:114,h:17,size:11,color:C.muted,text:'Legal first directions'},
     {id:'up-label',x:210,y:127,w:52,h:18,size:13,bold:true,color:C.teal,text:'Up'},
