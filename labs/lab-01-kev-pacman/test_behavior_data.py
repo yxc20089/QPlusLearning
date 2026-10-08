@@ -127,6 +127,19 @@ class BalancedBehaviorTests(unittest.TestCase):
         self.assertTrue(flags['actual_expiry_evasion']); self.assertTrue(flags['immediate_evasion'])
         self.assertFalse(flags['anticipatory_escape'])
 
+    def test_recorded_routing_alias_keeps_context_and_cleanup_proofs(self):
+        row = {'state': {'legal_moves': ['up', 'left', 'right'], 'turn': 40,
+            'decisions_since_last_pellet': 10, 'pellets_remaining': 150},
+            '_meta': {'cohorts': {'productive_junction': True}}}
+        self.assertTrue(balanced._scenario_roles(row)['productive_routing'])
+        row['state']['turn'] = 0
+        self.assertFalse(balanced._scenario_roles(row)['productive_routing'])
+        row['state']['turn'] = 40
+        row['state']['legal_moves'] = ['left', 'right']
+        self.assertFalse(balanced._scenario_roles(row)['productive_routing'])
+        row['_meta']['cohorts'] = {'sparse_cleanup': True}
+        self.assertTrue(balanced._scenario_roles(row)['cleanup'])
+
     def test_quota_matching_reassigns_overlap_without_rare_role_theft(self):
         records = [self.minimal(0, ('immediate_evasion', 'anticipatory_escape')),
                    self.minimal(1, ('immediate_evasion',)), self.minimal(2, ('cleanup',))]

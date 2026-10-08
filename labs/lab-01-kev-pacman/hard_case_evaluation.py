@@ -90,11 +90,14 @@ def evaluate_hard_cases(path, predict_batch, model_info, batch_size=16):
             others = [v for key, v in p.items() if key != gold]
             groups = set(cohorts(record['state']))
             groups.update(name for name, included in record['_meta'].get('cohorts', {}).items() if included)
+            groups.update(name for name, included in record['_meta'].get('behavior', {}).items() if included)
+            primary_role = (record['_meta'].get('primary_role')
+                            if record['_meta'].get('class') == 'targeted' else None)
             rows.append({'id': record['_meta']['id'], 'gold': gold, 'prediction': answer['choice'],
                          'probabilities': answer['probabilities'],
                          'teacher_probability': p[gold], 'cross_entropy': -math.log(max(p[gold], 1e-12)),
                          'teacher_probability_margin': p[gold] - max(others, default=0),
-                         'cohorts': sorted(groups)})
+                         'primary_role': primary_role, 'cohorts': sorted(groups)})
         print(f'[hard development] {min(start + len(part), len(records))}/{len(records)}', flush=True)
     if model_info() != identity:
         raise RuntimeError('Active adapter changed during hard-state evaluation')
@@ -103,11 +106,15 @@ def evaluate_hard_cases(path, predict_batch, model_info, batch_size=16):
                 'mean_cross_entropy': sum(r['cross_entropy'] for r in group) / len(group),
                 'mean_teacher_probability_margin': sum(r['teacher_probability_margin'] for r in group) / len(group)}
     groups = defaultdict(list)
+    roles = defaultdict(list)
     for row in rows:
         for name in row['cohorts']:
             groups[name].append(row)
+        if row['primary_role'] is not None:
+            roles[row['primary_role']].append(row)
     return {'active_checkpoint': identity, 'dataset_sha256': hashlib.sha256(content).hexdigest(),
             **summary(rows), 'cohorts': {name: summary(group) for name, group in groups.items()},
+            'primary_roles': {name: summary(group) for name, group in roles.items()},
             'rows': rows, 'interpretation': 'Single-state teacher agreement diagnoses imitation. '
                                           'CE uses rounded API probabilities with a 1e-12 floor; it is not the training loss. '
                                           'Native full-game outcomes remain the primary benchmark.'}

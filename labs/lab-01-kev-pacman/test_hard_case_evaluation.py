@@ -48,6 +48,24 @@ class HardCaseEvaluationTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'adapter changed'):
                     evaluate_hard_cases(path, predict, iter([{'sha': 'v3'}, {'sha': 'v4'}]).__next__)
 
+    def test_behavior_roles_do_not_count_followthrough_as_additional_roots(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'development.jsonl'
+            rows = []
+            for index, kind in enumerate(('targeted', 'informative')):
+                rows.append({'_meta': {'id': str(index), 'class': kind,
+                    'primary_role': 'actual_expiry_evasion', 'behavior': {'actual_expiry_evasion': True}},
+                    'state': {'public': 'state'}, 'questions': {'move': {
+                    'label': 'left', 'criteria': {'left': '', 'right': ''}}}})
+            path.write_text(''.join(json.dumps(r) + '\n' for r in rows))
+            response = {'answers': {'move': {'choice': 'left', 'probabilities': {'left': .8, 'right': .2}}}}
+            with patch('hard_case_evaluation.inference_request', side_effect=lambda r: {'state': r['state']}), \
+                    patch('hard_case_evaluation.cohorts', return_value=[]):
+                result = evaluate_hard_cases(path, lambda requests: [response for _ in requests], lambda: {'sha': 'v3'})
+            self.assertEqual(result['cohorts']['actual_expiry_evasion']['n'], 2)
+            self.assertEqual(result['primary_roles']['actual_expiry_evasion']['n'], 1)
+            self.assertIsNone(result['rows'][1]['primary_role'])
+
 
 if __name__ == '__main__':
     unittest.main()

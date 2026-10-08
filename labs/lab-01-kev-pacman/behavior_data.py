@@ -177,12 +177,17 @@ def _scenario_roles(record):
     # and a safe gold action. It therefore also proves immediate criticality.
     expiry = bool(cohorts.get('actual_expiry_fatal_alternative') or cohorts.get('actual_expiry_evasion'))
     critical = bool(cohorts.get('immediate_critical') or cohorts.get('immediate_evasion') or expiry)
+    state = record.get('state', {})
+    contextual_junction = bool(len(state.get('legal_moves', [])) >= 3 and state.get('turn', 0) >= 12
+        and (state.get('decisions_since_last_pellet', 0) >= 8
+             or state.get('visits_to_current_tile', 0) >= 2 or state.get('pellets_remaining', 244) <= 122))
     return {'immediate_evasion': critical,
         'anticipatory_escape': bool(cohorts.get('anticipatory_harm') or cohorts.get('anticipatory_escape')),
         'actual_expiry_evasion': expiry,
         'retreat_to_food': bool(cohorts.get('productive_retreat_to_food') or cohorts.get('retreat_to_food')),
-        'productive_routing': bool(cohorts.get('productive_routing')),
-        'cleanup': bool(cohorts.get('cleanup')), 'broad_exposure': False}
+        'productive_routing': bool(cohorts.get('productive_routing')
+                                   or cohorts.get('productive_junction') and contextual_junction),
+        'cleanup': bool(cohorts.get('cleanup') or cohorts.get('sparse_cleanup')), 'broad_exposure': False}
 
 
 def load_pools(offline_directory, scenario_directory, qualification_path, verify_native=False, recorded_directory=None):
