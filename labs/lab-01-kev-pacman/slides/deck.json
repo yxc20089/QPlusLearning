@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1\u201310 redesigned; completed native-v3 experiment analyzed; slides 11\u201315 pending approved redesign",
-  "title": "Decision models for Pac-Man \u2014 Kev, CLM and the lab",
-  "revision_id": "ZRea7u5_lGzkTA",
+  "state": "Slides 1–11 redesigned; slides 12–15 retain prior content pending final 13-slide consolidation",
+  "title": "Decision models for Pac-Man — Kev, CLM and the lab",
+  "revision_id": "ld-Cn6AMzUOVzg",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-08",
-  "visual_qa": "Slides 1\u201310 inspected in native PDF exports. Slide 10 explains the frozen teacher route policy and exact lexicographic future ranking using public seed 91009, level 1, turn 172. All 172 native prefix states and 24 action-buffer-future forecasts reproduced, and all 12 root food-route costs independently matched BFS, ghost-proximity penalties and dry-history revisits. The source and live root stayed unchanged. Final native page contains an editable actual maze crop, an editable 4\u00d75 forecast table and two editable mathematical expressions. All variables are explained in natural notes, with nominal 480-frame budget versus measured 484-frame ending and teacher-only survival filter distinctions. Full native readback and pixel comparison confirm only kev_lab_05 / PDF page 10 changed, all other 14 pages and order were preserved, notes match exactly, and all text fits the canvas. The animation footer is clickable. The 120-frame GIF visibly changes highlights in native slideshow mode. Published Play/Pause, six stages, Previous/Next boundaries, Reset and all 24 direction/buffer/future inspectors passed in Chrome with no console errors after successful Pages deployment. Slides 11\u201315 retain prior content pending the approved redesign.",
+  "visual_qa": "Slides 1–11 inspected in native PDF exports. Slide 11 connects the same observed state, decision question and original legal options to an offline teacher action label and Kev choice probabilities. Its hard-label CE equation and 2×5 exact data-composition table are native editable objects, with native phi/T subscripts and a clickable animation footer. Speaker notes match the reviewed local source exactly and explain every equation symbol in natural speech. Only kev_lab_08 / PDF page 11 changed; canonical native readback and raster comparison preserve the other 14 pages and their order. All text fits the canvas. Student probabilities are explicitly illustrative and the public teacher-Left qualification seed stays excluded from training. The 120-frame GIF visibly highlighted the teacher box and the data table at different times in native slideshow mode. Published Play/Pause, all six stages, Previous/Next boundaries, Reset, probability presets 0.20/0.50/0.80 and slider endpoints 0.05/0.95 passed in Chrome. CE matched the natural logarithm and distributions normalized to one. Category rows match the frozen export; there were no console errors. Slides 12–15 remain pending the approved rewrite.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -23,7 +23,8 @@
       7,
       8,
       9,
-      10
+      10,
+      11
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -45,7 +46,7 @@
       "object_id": "kev_lab_01",
       "title": "Kev architecture",
       "formulae": [
-        "H = f_\u03b8(x)",
+        "H = f_θ(x)",
         "p = softmax(z)"
       ],
       "speaker_notes": "speaker-notes/slide-01.md",
@@ -59,13 +60,13 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 11\u201315 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The native deck retains 15 physical pages. Eleven of the approved 13 topics are complete. Two topics remain, followed by final consolidation of the old extra pages. Pages 12–15 and their legacy lab metadata retain prior content. Top-level pacman_dataset and power_pellet_state are archived prior-lab values pending consolidation; the current frozen balanced-v4 composition is stated explicitly in redesign.slide_11.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
       "formulae": [
         "x = encode(s, u, A)",
-        "H \u2208 \u211d^(L\u00d7d)"
+        "H ∈ ℝ^(L×d)"
       ],
       "speaker_notes": "speaker-notes/slide-02.md",
       "diagram_source": "../../../docs/animations/kev-input.js",
@@ -82,8 +83,8 @@
       "object_id": "decision_lab_training_cost",
       "title": "LoRA inside Kev",
       "formulae": [
-        "y = W\u2080v + (\u03b1/r)BAv",
-        "\u0394W = (\u03b1/r)BA"
+        "y = W₀v + (α/r)BAv",
+        "ΔW = (α/r)BA"
       ],
       "speaker_notes": "speaker-notes/slide-03.md",
       "diagram_source": "../../../docs/animations/kev-lora.js",
@@ -107,7 +108,7 @@
       "formulae": [
         "q = W_q h_decide + b_q",
         "k_i = W_k h_end,i + b_k",
-        "z_i = q\u1d40 k_i / \u221ad_p"
+        "z_i = qᵀ k_i / √d_p"
       ],
       "speaker_notes": "speaker-notes/slide-04.md",
       "diagram_source": "../../../docs/animations/kev-pointer.js",
@@ -160,8 +161,8 @@
       "object_id": "kev_lab_06",
       "title": "Why Kev avoids the answer-token loop",
       "formulae": [
-        "R_Kev \u2248 (K + 1) d d_p + K d_p",
-        "R_text \u2248 M d V"
+        "R_Kev ≈ (K + 1) d d_p + K d_p",
+        "R_text ≈ M d V"
       ],
       "speaker_notes": "speaker-notes/slide-06.md",
       "diagram_source": "../../../docs/animations/kev-speed.js",
@@ -174,7 +175,7 @@
         "cold_hybrid_path": "State-prefix pass followed by one question row containing all supplied options",
         "generated_answer_tokens": false,
         "illustrative_answer_tokens": 4,
-        "extra_text_decode_passes": "M \u2212 1 after prefill",
+        "extra_text_decode_passes": "M − 1 after prefill",
         "cost_measure": "Approximate readout multiplications after hidden states, excluding backbone work and small bias/scaling/normalization terms",
         "backbone_hidden_dim": 2560,
         "pointer_dim": 256,
@@ -191,8 +192,8 @@
       "object_id": "kev_lab_03",
       "title": "A curriculum, then task checkpoints",
       "formulae": [
-        "\u03c6_child^0 = \u03c6_parent",
-        "D_train = D_new \u228e D_replay"
+        "φ_child^0 = φ_parent",
+        "D_train = D_new ⊎ D_replay"
       ],
       "speaker_notes": "speaker-notes/slide-07.md",
       "diagram_source": "../../../docs/animations/kev-curriculum.js",
@@ -225,7 +226,7 @@
       "title": "The game state Kev actually receives",
       "formulae": [
         "s_t = O(g_t)",
-        "a_t \u2208 A_t"
+        "a_t ∈ A_t"
       ],
       "speaker_notes": "speaker-notes/slide-08.md",
       "diagram_source": "../../../docs/animations/kev-state.js",
@@ -281,9 +282,9 @@
       "object_id": "kev_lab_09",
       "title": "Native rollout MPC teacher",
       "formulae": [
-        "(a_t^T, b_t*) = argmin_lex \u03c1(g_t, a, b)",
-        "a \u2208 A_t",
-        "b \u2208 {1, 2, 4, 6}"
+        "(a_t^T, b_t*) = argmin_lex ρ(g_t, a, b)",
+        "a ∈ A_t",
+        "b ∈ {1, 2, 4, 6}"
       ],
       "speaker_notes": "speaker-notes/slide-09.md",
       "diagram_source": "../../../docs/animations/kev-teacher.js",
@@ -393,10 +394,108 @@
       "formula_scope": "J_b is one component of the inner route heuristic. The whole teacher uses lexicographic native outcome ranks and finite policy continuations.",
       "safety_filter_scope": "Exact next-tile survival filtering is teacher-rollout-only. It never replaces Kev live action selection.",
       "interpretation": "Finite policy portfolio and horizon, with complete-game qualification and separate zero-loss positive continuation admission before student distillation. No global optimality, universal safety or trained-v4 claim."
+    },
+    "slide_11": {
+      "object_id": "kev_lab_08",
+      "title": "Teacher decisions and Kev distillation",
+      "formulae": [
+        "ℒ(φ) = −log p_φ(a_T | s, u, A)"
+      ],
+      "speaker_notes": "speaker-notes/slide-11.md",
+      "diagram_source": "../../../docs/animations/kev-distillation.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-distillation.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/e75beb468fc611db6a5d13e54e19dcdac8b1f7e3/docs/animations/assets/kev-distillation-flow.gif",
+      "static_diagram_editable": true,
+      "native_table": {
+        "rows": 2,
+        "columns": 5
+      },
+      "animation_layer": "White-backed moving highlights behind the native observed-decision, teacher-label, student-distribution, CE, trainable-weights and data-composition drawing",
+      "asset_revision": "e75beb468fc611db6a5d13e54e19dcdac8b1f7e3",
+      "frozen_helper_revision": "27bfeb72cbc7c9e677a3af6be8477ec9f874e365",
+      "frozen_dataset_manifest_sha256": "a1a151682f55e67de745165f8efdfc386e21a90e3eddfc0c002cbd9c40a38096",
+      "data_mix": {
+        "targeted_roots": 3660,
+        "nearby_informative_decisions": 1220,
+        "canonical_native_v2_expert_replay": 912,
+        "exported_task_records": 5792,
+        "generic_Kev_replay_requests": 304,
+        "total_training_requests": 6096,
+        "optimizer_updates": 762,
+        "development_targeted_roots": 384,
+        "development_nearby_decisions": 128,
+        "development_task_records": 512,
+        "actual_recorded_v3_disagreement_roots": 11,
+        "actual_disagreement_roles": {
+          "immediate_evasions": 4,
+          "productive_junction_corrections": 7
+        },
+        "actual_disagreements_counted_within_targeted_roots": true
+      },
+      "configuration": {
+        "parent_checkpoint": "kev-4b-pacman-native-v3",
+        "parent_checkpoint_sha256": "c7c5c8326f74e86e161e05730db5004efdfd3b2351c6f2f9478581cfc13550b0",
+        "warm_start": "Copy completed v3 LoRA matrices and pointer head",
+        "optimizer": "fresh for the new v4 stage",
+        "trainable_parameters": "LoRA matrices and pointer head",
+        "base_matrices": "fixed",
+        "lora_rank": 16,
+        "lora_targets": "all",
+        "pointer_dim": 256,
+        "choice_loss": "ordinary hard-label cross-entropy",
+        "teacher_soft_distribution_KL": false,
+        "teacher_runs_offline": true,
+        "live_teacher_override": false,
+        "epochs": 1,
+        "learning_rate": 2e-05,
+        "batch": 4,
+        "accumulation": 2,
+        "compute_dtype": "bf16",
+        "stored_weights_dtype": "fp32",
+        "gradient_checkpointing": true,
+        "teacher_futures_and_outcomes_in_model_input": false
+      },
+      "teacher_checks": {
+        "finite_qualification_games": 20,
+        "actual_qualification_clears": 20,
+        "actual_qualification_life_losses": 0,
+        "qualification_permitted_total_life_losses": 4,
+        "positive_continuation_admission": "Complete native clear, zero life losses, original loop/stall gates, independent cold replay and source/hash checks"
+      },
+      "example": {
+        "teacher_action": "left",
+        "teacher_choice_source": "Actual public teacher qualification replay from slide 10",
+        "seed": 91009,
+        "level": 1,
+        "turn": 172,
+        "example_seed_excluded_from_training": true,
+        "student_probabilities": "illustrative",
+        "initial_student_distribution": {
+          "up": 0.35,
+          "left": 0.2,
+          "right": 0.45
+        },
+        "probability_presets": [
+          0.2,
+          0.5,
+          0.8
+        ],
+        "CE_values": [
+          1.6094,
+          0.6931,
+          0.2231
+        ],
+        "slider_interval": [
+          0.05,
+          0.95
+        ],
+        "learned_gameplay_improvement_claim": false
+      },
+      "interpretation": "Finite teacher evidence, exact observations/options and action targets support supervised imitation. Most hard cases use simulation/counterfactual coverage. Lower choice loss is separate from complete-game survival and pellet efficiency."
     }
   },
   "initial_training_prework": true,
-  "lab_route": "Initial \u2192 dates/evidence \u2192 documents \u2192 skills/devtools \u2192 Pac-Man",
+  "lab_route": "Initial → dates/evidence → documents → skills/devtools → Pac-Man",
   "general_stages_prework": true,
   "pacman_dataset": {
     "train": 4096,
@@ -427,7 +526,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1\u20139 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–11 now use Kev-specific editable diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -441,6 +540,7 @@
       8,
       9,
       10,
+      11,
       13
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
