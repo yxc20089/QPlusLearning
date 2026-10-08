@@ -4,13 +4,15 @@
 
 Train **Kev-4B** with its published LoRA plus pointer-head architecture, then teach it to control Pac-Man. Chase/scatter ghost movement follows deterministic personality rules; frightened turns use the browser engine's RNG. The class lasts **90 minutes with 30 minutes for Pac-Man fine-tuning**; installation, downloads, demonstration generation and four general training stages are prework. Time the full Pac-Man stage before class; a slower run also belongs in prework.
 
-The lab has **one assessed checkpoint: CP1 — Fine-tune and evaluate Kev on Pac-Man game states**. Review the planning labels, train the task adapter, compare it with the Skills baseline, and submit the evidence. **Interactive play** is a separate, ungraded activity available before and after fine-tuning; its badge identifies the running LoRA and pointer head.
+The lab has **one assessed checkpoint: CP1 — Balanced teacher distillation into native-v4**. Verify the completed native-v3 parent, import and validate the frozen teacher data, train the new adapter/head, and compare it with v3 in complete native games. **Interactive play** is a separate, ungraded activity; its badge identifies the running LoRA and pointer head. The earlier general curriculum and Skills → native-v2 experiment remain optional prework in the same notebook.
 
-Use [the notebook](notebooks/pacman_kev_lab.ipynb), [Colab setup](COLAB_SETUP.md) and the **[15-slide lab deck](https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit)**. Local exports are [PDF](slides/pacman-lab.pdf) and [PPTX](slides/pacman-lab.pptx).
+Use [the single student notebook](notebooks/pacman_kev_lab.ipynb), [Colab setup](COLAB_SETUP.md) and the **[live lab deck](https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit)**. The deck is being revised into 13 slides. Local [PDF](slides/pacman-lab.pdf) and [PPTX](slides/pacman-lab.pptx) exports retain the earlier edition until the revision is complete.
 
-The **[rebalanced v4 dataset is generated and validated](evaluation/v4-balanced-export-2026-10-08.md)**. It contains 3,660 grounded behavior roots, 1,220 nearby informative decisions and 912 prior Pac-Man replay requests. The primary categories and overlaps are [reported separately](evaluation/v4-balanced-export-2026-10-08.json). Kev adds 304 generic replay requests for the same 762-update budget. Only 11 roots claim actual recorded v3 disagreement; the other difficult choices are identified by native counterfactuals and qualified teacher continuations. No v4 GPU training or improved player result is claimed.
+The **[rebalanced v4 dataset is generated and validated](evaluation/v4-balanced-export-2026-10-08.md)**. It contains 3,660 grounded behavior roots, 1,220 nearby informative decisions and 912 prior Pac-Man replay requests. The primary categories and overlaps are [reported separately](evaluation/v4-balanced-export-2026-10-08.json). Kev adds 304 generic replay requests for the same 762-update budget. Only 11 roots claim actual recorded v3 disagreement; the other difficult choices are identified by native counterfactuals and qualified teacher continuations. One completed learner v4 GPU run took **64.2 minutes**, processed all 6,096 requests in 762 updates and peaked at 26.94 GiB allocated GPU memory. Its saved recipe/lineage check passed after correcting numeric learning-rate validation. This establishes completed training, not improved play.
 
-Use the **[precomputed balanced v4 notebook in Colab](https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_v4.ipynb)**. It verifies the completed native-v3 parent, imports the exact data and evidence from Drive, validates them on CPU, and trains a separate v4 LoRA/head with a fresh optimizer. It does not generate scenarios or probe a model during import. Large evidence archives are restored from verified ordered parts. Training/recovery, per-role diagnostics, the unchanged 20 complete native games and ungraded interactive play remain separate; the final session backup retains checkpoints, exact input files and all traces.
+The **[main notebook in Colab](https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_lab.ipynb)** now includes the entire v4 workflow with one shared setup, Drive restore and final backup. Follow its **Student run order**, then jump to CP1. It verifies the completed native-v3 parent, imports the exact data and evidence from Drive, validates them on CPU, and trains a separate v4 LoRA/head with a fresh optimizer. It does not generate scenarios or probe a model during import. Large evidence archives are restored from verified ordered parts. Training, read-only completion verification, per-role diagnostics, 20 complete native games and interactive play have separate cells; the final backup retains checkpoints, exact inputs, curves and all traces. The **[focused v4 notebook](https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_v4.ipynb)** remains available unchanged.
+
+Before class, supply learners with the exact completed `kev-4b-pacman-native-v3` backup under `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/` and the balanced artifacts under `prework-backups/v4-balanced-generation-20261008` (or configure another mounted import folder). These private artifacts are not supplied by sharing the public notebook. The frozen experiment requires its exact v3 fingerprint; independently training another v3 does not satisfy that binding. A learner with completed v4 can skip training and run the read-only verification cell. Drive backup/restore is enabled by default in the main notebook.
 
 The [earlier optional checkpoint-bound disagreement design](evaluation/v4-hard-disagreements-plan.md) remains a separate research plan. It requires actual predictions and complete teacher-first/learner-first evidence; it cannot turn teacher-only states into measured learner errors. The [Jevman implementation comparison](evaluation/jevman-comparison-2026-10-08.md) motivates a later controlled route-feature experiment while preserving this frozen v4 input contract.
 
@@ -28,19 +30,19 @@ Teacher generation has its own incremental Drive backup when storage is enabled:
 
 | Slides | What learners do |
 | --- | --- |
-| 1–5 | Compare Kev/CLM architectures, watch the embedded CLM walkthrough, and discuss cost/performance/serving |
-| 6 | Watch scoring and softmax; change logits with the interactive controls |
-| 7–9 | Follow the 90-minute route, prepare Colab and identify the five separate training stages |
-| 10–11 | Try ungraded native Pac-Man play and review the ghost-aware planning labels |
-| 12–15 | Complete CP1: train, monitor/recover, evaluate and submit measured evidence |
+| 1–6 | Follow Kev's architecture, state/options encoding, LoRA, pointer head, softmax and fast decision output |
+| 7–8 | Trace checkpoint lineage and inspect the full native state supplied to Kev |
+| 9–10 | Follow the teacher's route search and native simulations |
+| 11 | Convert teacher decisions into Kev's supervised choice loss |
+| 12–13 (planned) | Trace gradients into LoRA/head and assess full-game behavior |
 
-The deck embeds looping GIFs on **slides 2, 6 and 13**, with typeset pointer/softmax, planning-objective, cross-entropy, LoRA and evaluation equations. Each equation has a variable key, and speaker notes provide a spoken teaching script. Open the public [CLM pause/scrub controls](https://yxc20089.github.io/QPlusLearning/animations/clm.html) or [Kev scoring and LoRA controls](https://yxc20089.github.io/QPlusLearning/animations/kev-math.html) from the slides. No download, account or GPU is needed for those controls. Animation values are illustrative, not trained-model results. PDF exports are static; Google Slides and PPTX retain the GIFs.
+The revised live deck uses editable mathematical diagrams, animated explanations and natural speaker scripts that define the variables. Public [animation controls](https://yxc20089.github.io/QPlusLearning/) support pause, scrubbing and parameter changes. No account or GPU is needed for those controls. Probability illustrations are teaching examples, not trained-model predictions. PDF exports are static; the earlier exports will be refreshed after all 13 revised slides are complete.
 
 The [companion CLM lecture](https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit) supplies the original 65-second CLM walkthrough and further softmax, contrastive-head, LoRA and evaluation explanations. Its CLM animation shows frozen independent encoders and two projection heads; Kev uses joint encoding, LoRA and a pointer head. The lecture's joint language/decision loss is a proposal, separate from this lab's Kev decision loss.
 
 The target is **one NVIDIA RTX PRO 6000 Blackwell GPU in Colab**. The full Server Edition has 96 GB VRAM. Arrange access before class, inspect the actual allocation, and record elapsed time and compute units. Colab does not guarantee this GPU or free access.
 
-## The five training stages
+## Earlier five-stage curriculum — optional prework
 
 Start from `Qwen/Qwen3.5-4B-Base@1001bb4d826a52d1f399e183466143f4da7b741b`. Only Stage 1 initializes fresh adapters/head; each later stage uses the preceding learner checkpoint. Original base matrices remain frozen while LoRA changes effective encoder features. This is decision-model training over an already pretrained LLM, rather than language-model pretraining from random weights. Old 0.8B adapters cannot initialize 4B.
 
@@ -70,16 +72,20 @@ To continue from a **completed dates checkpoint**, copy its native files directl
 
 Intermediate training automatically prepares missing curriculum data and verifies its pinned checksum and record count **before loading the GPU model**. You can also run `runtime.prepare_intermediate_data()` ahead of time. An empty output folder left by a failure before data loading is preserved under a unique `-empty-attempt-*` name so the same stage can retry. Nonempty outputs and recovery directories remain protected.
 
-Stages 1–4 each have a separate run cell, checkpoint, backup ZIP, restore control and TensorBoard directory. Each has a configurable 180-minute attempt cap, a scheduling limit rather than a prediction. Keep all four checkpoints before class. Stage 4 is the class baseline. The notebook checks full optimizer-step counts, recipe/data pins, parent fingerprints and learner/instructor ownership. Kev's records-seen count includes augmented siblings and may exceed requested source records.
+Stages 1–4 each have a separate run cell, checkpoint, backup ZIP, restore control and TensorBoard directory. Each has a configurable 180-minute attempt cap, a scheduling limit rather than a prediction. Retain all four checkpoints when following this earlier curriculum; Stage 4 supplies the earlier native-v2 baseline. The current v4 lab starts from the supplied completed v3 and does not require these general checkpoints. The notebook checks full optimizer-step counts, recipe/data pins, parent fingerprints and learner/instructor ownership. Kev's records-seen count includes augmented siblings and may exceed requested source records.
+
+## Current classroom route
+
+One complete v4 training run took 64.2 minutes, so finish full training before class on allocations with similar timing. Use the 30-minute block to examine the recipe, training curves and saved checkpoint. The full 762-update recipe is never reduced to fit class time.
 
 | Minutes | Activity | Evidence |
 | --- | --- | --- |
-| Prework | Install; verify kernels; initial → dates → documents → skills | Four checkpoints and separate training curves |
-| 0–20 | Compare architectures, inspect the Skills baseline and try interactive play | Configurations, parameter audit, active adapter and legal actions |
-| 20–30 | Review player labels | Edited train partition; evaluation closed |
-| 30–60 | Inspect loss (5 min), fine-tune (20 min), inspect/save (5 min) | Pac-Man checkpoint and positive optimizer steps |
-| 60–80 | Compare decisions, gameplay and cost | Paired predictions, captures, dots, latency and memory |
-| 80–90 | Explain and submit | Notebook, labels, five adapters/heads and measurements |
+| Prework | Install; restore v3; validate balanced data; finish slower full v4 training | Exact parent/data bindings, checkpoint and training curves |
+| 0–20 | Inspect Kev's architecture and teacher algorithm | LoRA, pointer head and qualified native simulations |
+| 20–30 | Inspect hard-case coverage and teacher labels | Frozen train/development partitions and native evidence |
+| 30–60 | Run/inspect fine-tuning and verify the completed checkpoint | All 762 updates, recovery acknowledgments and saved recipe |
+| 60–80 | Compare v3/v4 full native games and per-role diagnostics | Clears, deaths, dry cycles, food efficiency and all trajectories |
+| 80–90 | Explain results and back up | Checkpoint identity, exact data, curves and traces in Drive |
 
 ## Required optimized training
 
@@ -113,7 +119,7 @@ After interruption, ordinary resume requires identical profile, arguments, input
 
 On a new runtime, enable the same flag and run the storage cell: absent local outputs and saved input labels restore automatically to the original paths. Existing local checkpoints and changed labels are preserved. Stage 1 resumes the restored save automatically; with no backup or local checkpoint it starts fresh. No manual file copying is needed. Drive copying/mounting remains untested on a live Colab runtime; CPU tests exercise archive verification and restored optimizer/dropout continuation after deleting the local workspace. Logs and TensorBoard events use the separate export control. Recovery archives must restore at their original absolute paths; completed checkpoint ZIPs have per-stage restore controls.
 
-To start from **completed Skills**, upload its entire automatic-backup folder unchanged to `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/kev-4b-skills` if it is not already there. Run bootstrap, runtime setup, optimized preparation and storage with `SAVE_TO_DRIVE=True`. Skip the Stage 1–4 training/export cells and run **Load completed Skills checkpoint — start the lab here**. You can then try Interactive play or begin CP1. This startup cell needs only the restored Skills checkpoint and initialized runtime; it does not use recovery helpers or require a Documents checkpoint. It loads available stage metrics, reports absent earlier archives and retains checkpoint ownership. CP1 fine-tunes this baseline on Pac-Man.
+For the **earlier Skills → native-v2 route**, upload its entire automatic-backup folder unchanged to `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/kev-4b-skills` if it is not already there. Run bootstrap, runtime setup, optimized preparation and storage with `SAVE_TO_DRIVE=True`. Skip Stage 1–4 training/export cells and run **Earlier baseline — completed Skills checkpoint (optional prework)**, then the earlier native-v2 adaptation. This startup cell needs only the restored Skills checkpoint and initialized runtime; it does not use recovery helpers or require a Documents checkpoint. It loads available stage metrics, reports absent earlier archives and retains checkpoint ownership. For current v4 CP1, jump directly to its supplied-v3 verification section instead.
 
 ## Game, labels and evaluation
 
@@ -163,7 +169,7 @@ The old `pacman-planner-v1` dataset and checkpoint are archived. Their short-hor
 
 Human mode runs at 60 simulation frames per second. Kev pauses the simulation while choosing each move. The display shows simulation seconds and every ghost's mode. Ghosts leave home gradually: Blinky starts outside; Pinky leaves first; Inky and Clyde use pellet counters or a no-pellet timeout (about four simulation seconds at level 1). Repeated reversals can advance very few frames per decision, making release appear slow in wall-clock time. The browser retains three lives and level progression. Truncation or dropped records fail the training audit. Versioned v1 files preserve previous experiments; new v2 training never overwrites them. Reuse your completed Skills checkpoint and run CP1; general stages need no retraining.
 
-**Refresh an existing runtime:** copy and run the new bootstrap cell, then rerun `runtime.setup()`, optimized preparation with `RUN_TRAINING_PREFLIGHT=False`, and the storage cell with `SAVE_TO_DRIVE=True` if using Drive. Bootstrap creates a new runtime helper, so these cells restore its hardware, training and backup settings while reusing cached files. Run **Load completed Skills checkpoint — start the lab here**, then CP1. Interactive play is a separate activity. Checkpoints/logs remain in place; general stages do not need retraining.
+**Refresh an existing runtime:** copy and run the new bootstrap cell, then rerun `runtime.setup()`, optimized preparation with `RUN_TRAINING_PREFLIGHT=False`, and the storage cell with `SAVE_TO_DRIVE=True`. Bootstrap creates a new runtime helper, so these cells restore its hardware, training and backup settings while reusing cached files. For current CP1, jump to native-v3 verification and frozen-data import/validation; skip training if v4 is completed and run its read-only completion check. Interactive play is separate. Checkpoints/logs remain in place; general stages do not need retraining.
 
 ## Trajectory diagnosis and next data plan
 

@@ -1,5 +1,6 @@
 """Rebuild the stage-by-stage Kev notebook and browser game."""
 import argparse
+import copy
 import hashlib
 import json
 import subprocess
@@ -659,7 +660,7 @@ Use the same RTX PRO 6000 Blackwell runtime as the main lab. The following cells
     reuse('import subprocess\nsubprocess.check_call')
     reuse('runtime.setup()')
     reuse('RUN_TRAINING_PREFLIGHT = False')
-    reuse('SAVE_TO_DRIVE = False', ('SAVE_TO_DRIVE = False', 'SAVE_TO_DRIVE = True'))
+    reuse('SAVE_TO_DRIVE =', ('SAVE_TO_DRIVE = False', 'SAVE_TO_DRIVE = True'))
     md("""## Load the completed native-v2 adapter
 
 The default path is restored by the storage cell from `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/kev-4b-pacman-native-v2`. The active model identity must identify this completed adapter. Keep v2 intact: it supplies both the learner policy for data collection and the before-model for comparison.""")
@@ -780,6 +781,7 @@ Run this before replacing the runtime, including after data prework. Checkpoint 
     reuse('# Back up all available checkpoints, trajectories and traces to Google Drive')
     result = {'cells': cells, 'metadata': {**base['metadata'], 'colab': {'name': 'pacman_kev_v3.ipynb'}}, 'nbformat': 4, 'nbformat_minor': 5}
     (ROOT / 'notebooks/pacman_kev_v3.ipynb').write_text(json.dumps(result, indent=2) + '\n')
+    return result
 
 
 
@@ -833,7 +835,7 @@ Checkpoint backups include the exact balanced training/development files, manife
     reuse('import subprocess\nsubprocess.check_call')
     reuse('runtime.setup()')
     reuse('RUN_TRAINING_PREFLIGHT = False')
-    reuse('SAVE_TO_DRIVE = False', ('SAVE_TO_DRIVE = False', 'SAVE_TO_DRIVE = True'))
+    reuse('SAVE_TO_DRIVE =', ('SAVE_TO_DRIVE = False', 'SAVE_TO_DRIVE = True'))
     md("""## Verify the completed native-v3 parent — CPU
 
 Use `checkpoints/kev-4b-pacman-native-v3`, restored from its own Drive checkpoint backup. This experiment is bound to your completed v3 LoRA/head hash, not just a folder name. The cell checks the hash, rank, backbone and completed training metrics without loading the model onto the GPU. Skills, v2 or another v3 adapter cannot silently replace this parent.""")
@@ -1147,6 +1149,77 @@ Run before replacing the runtime. The session archive saves the imported manifes
     reuse('# Back up all available checkpoints, trajectories and traces to Google Drive')
     result = {'cells': cells, 'metadata': {**base['metadata'], 'colab': {'name': 'pacman_kev_v4.ipynb'}}, 'nbformat': 4, 'nbformat_minor': 5}
     (ROOT / 'notebooks/pacman_kev_v4.ipynb').write_text(json.dumps(result, indent=2) + '\n')
+    return result
+
+
+def unified_notebook(base, v4):
+    """Keep the original curriculum and add the current v4 route with one setup."""
+    cells = copy.deepcopy(base['cells'])
+
+    def text_cell(identifier, text):
+        return {'id': identifier, 'cell_type': 'markdown', 'metadata': {},
+                'source': text.strip().splitlines(keepends=True)}
+
+    def source(cell):
+        return ''.join(cell['source'])
+
+    cells[0] = text_cell('cell-00', """# Lab 1 — Train a Decision Model to Play Pac-Man
+
+Use Kev-4B's rank-16 LoRA and 256-dimensional pointer head to control Pac-Man in the faithful native browser game. Original backbone matrices stay frozen. Four ghosts retain their distinct native behavior; the player receives the full structured maze and actor state.
+
+This is the **single student notebook**. It retains the four general decision-training stages and the earlier native-v2 task experiment as optional prework. The current assessed **CP1 is balanced teacher distillation into native-v4**, followed by full native-game comparison with its native-v3 parent. Interactive play remains an ungraded activity. The focused [v3 correction notebook](https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_v3.ipynb) and [v4 notebook](https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_v4.ipynb) remain available.
+
+The class lasts 90 minutes, including a 30-minute fine-tuning block. A completed v4 learner run on an RTX PRO 6000 Blackwell took **64.2 minutes for all 762 updates**. Complete full training as prework when it exceeds the class block, then use class time to inspect the recipe, curves and checkpoint. The notebook never shortens the experiment to fit the schedule. That measurement describes one run and does not establish improved game performance.
+
+Setup uses the pinned optimized Kev environment, BF16 compute and FP32 stored weights. All stages save separate checkpoints, curves and recovery. V4 keeps the exact completed native-v3 parent and frozen 8 October dataset bindings; an independently trained v3 with another fingerprint cannot silently replace that experiment's parent.""")
+    cells.insert(1, text_cell('lab-route', """## Student run order for the current v4 lab
+
+1. Run [verified helper setup](#scrollTo=cell-03), [TensorBoard setup](#scrollTo=cell-05), [runtime setup](#scrollTo=cell-06), [optimized preparation](#scrollTo=cell-08), and [Drive storage](#scrollTo=cell-10). Drive backup and restore are enabled by default.
+2. Jump to [CP1 — balanced native-v4](#scrollTo=v4-00). Verify the supplied completed v3 parent, import the frozen data, and run the CPU validation. For a fresh v4, train then verify. For an already completed v4, skip training and run **Verify the completed v4 checkpoint — read-only**.
+3. Compare the two adapters in full native games, play the v4 adapter if desired, then run the [final Drive backup](#scrollTo=cell-44).
+
+Before class, the instructor supplies the completed `kev-4b-pacman-native-v3` checkpoint and balanced train/development/manifest/evidence files in the Drive layout printed by CP1. Storage restores checkpoints from `MyDrive/QPlusLearning/lab-01-kev-pacman/backups/`; dataset import uses `prework-backups/v4-balanced-generation-20261008`. Each learner needs these artifacts in their own mounted Drive or a configured mounted import folder. Sharing the notebook alone does not supply these private artifacts.
+
+**Earlier curriculum and native-v2 sections below are optional prework, outside this student run order.** They remain available for studying training from the pretrained Qwen backbone. They do not produce the exact v3 checkpoint required by frozen v4. The separate v3 notebook retains the earlier learner-rollout/correction experiment. Use the table of contents to choose a route instead of running all historical experiments."""))
+    for cell in cells:
+        text = source(cell)
+        if cell['cell_type'] == 'code' and text.startswith('SAVE_TO_DRIVE = False'):
+            cell['source'] = text.replace('SAVE_TO_DRIVE = False', 'SAVE_TO_DRIVE = True', 1).splitlines(keepends=True)
+        elif cell['cell_type'] == 'markdown':
+            text = text.replace('Complete installation, data/model downloads and all four general stages before class.',
+                                'Complete installation and model downloads before class. Run the earlier general stages only when following the optional curriculum route.')
+            text = text.replace('## Load completed Skills checkpoint — start the lab here',
+                                '## Earlier baseline — completed Skills checkpoint (optional prework)')
+            text = text.replace('## CP1 — Fine-tune and evaluate Kev on Pac-Man game states',
+                                '## Earlier Pac-Man adaptation — native-v2 (optional prework)')
+            text = text.replace('### Stage 5 — Fine-tune Pac-Man decisions (30–60 minutes)',
+                                '### Earlier task training — native-v2')
+            cell['source'] = text.splitlines(keepends=True)
+    # Keep one final backup after all v4 work; do not repeat setup or storage.
+    backup_start = next(i for i, cell in enumerate(cells) if cell['cell_type'] == 'markdown'
+                        and source(cell).startswith('## Back up to Google Drive'))
+    backup = cells[backup_start:]
+    cells = cells[:backup_start]
+    introduction = copy.deepcopy(v4['cells'][0])
+    introduction['source'] = source(introduction).replace(
+        '# Balanced teacher distillation — native-v3 → native-v4',
+        '## CP1 — Balanced teacher distillation into native-v4', 1).splitlines(keepends=True)
+    cells.append(introduction)
+    parent_start = next(i for i, cell in enumerate(v4['cells']) if cell['cell_type'] == 'markdown'
+                        and source(cell).startswith('## Verify the completed native-v3 parent'))
+    final_backup = next(i for i, cell in enumerate(v4['cells']) if cell['cell_type'] == 'markdown'
+                        and source(cell).startswith('## Final Drive backup'))
+    cells.extend(copy.deepcopy(v4['cells'][parent_start:final_backup]))
+    backup[0] = text_cell(backup[0]['id'], """## Final Drive backup — checkpoints, data, curves and all traces
+
+Pause interactive play, then run this cell before replacing the runtime. It saves every available completed checkpoint and latest complete recovery, including native-v2, native-v3 and native-v4, under the existing per-checkpoint Drive paths. The next storage run automatically restores those checkpoint backups.
+
+The dated session archive includes the frozen balanced input files, manifest and proof ZIP, training logs/TensorBoard events, per-role development predictions, every complete or partial benchmark trajectory and interactive trace. Session archives retain their file/checksum manifest and are separate from checkpoint auto-restore. The cell works without older general checkpoints or a finished benchmark. Wait for **Session backup complete** and an empty `checkpoint_errors` list.""")
+    cells.extend(backup)
+    result = {**copy.deepcopy(base), 'cells': cells}
+    result['metadata']['colab']['name'] = 'pacman_kev_lab.ipynb'
+    (ROOT / 'notebooks/pacman_kev_lab.ipynb').write_text(json.dumps(result, indent=2) + '\n')
+    return result
 
 
 def game():
@@ -1163,6 +1236,7 @@ if __name__ == '__main__':
         source_lock(pin=True)
     base = notebook()
     v3_notebook(base)
-    v4_notebook(base)
+    v4 = v4_notebook(base)
+    unified_notebook(base, v4)
     game()
     print('Built Lab 1, v3/v4 correction notebooks and Pac-Man browser game.')
