@@ -5,19 +5,20 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1–4 redesigned; completed native-v3 experiment analyzed; slides 5–15 pending approved redesign",
+  "state": "Slides 1–5 redesigned; completed native-v3 experiment analyzed; slides 6–15 pending approved redesign",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "SwM79lAEeMieyA",
+  "revision_id": "bHtLgQBpGYYlLA",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-07",
-  "visual_qa": "Slides 1–4 inspected in native PDF exports. Slide 4 affine projections, option-boundary readouts, shared key layer, scaling and notes were independently reviewed against pinned Kev source. Its editable diagram and animated highlights were verified in the native Google Slides editor and slideshow. Published Play/Pause, Next, Reset and direct stage controls worked in Chrome. Native issue checker returned zero issues. Slides 5–15 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1–5 inspected in native PDF exports. Slide 5 softmax, temperature and argmax mathematics and natural narration were independently checked against pinned Kev. Its editable fraction, probability bars and action equations fit in the native PDF and Google Slides editor. Native GIF motion and published Play/Pause, Next, Reset and temperature controls were checked in Chrome. Native issue checker returned zero issues. Full readback confirmed only slide 5 content changed and native notes match the repository. Slides 6–15 retain the previous version pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
       1,
       2,
       3,
-      4
+      4,
+      5
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -53,7 +54,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 5–15 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 6–15 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -121,6 +122,34 @@
         "head_parameters": 1311232,
         "output": "One raw scalar score per supplied option"
       }
+    },
+    "slide_5": {
+      "object_id": "decision_lab_models",
+      "title": "Softmax and action selection",
+      "formulae": [
+        "p(a_i | s) = exp(z_i/T) / sum_{j=1}^{K} exp(z_j/T)",
+        "i* = argmax_i p(a_i | s)",
+        "a* = a_{i*}"
+      ],
+      "speaker_notes": "speaker-notes/slide-05.md",
+      "diagram_source": "../../../docs/animations/kev-softmax.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-softmax.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/564644cbba0315004e11ccdf5d06c4a66b6622bd/docs/animations/assets/kev-softmax-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed looping highlights behind native scores, softmax, probability bars and chosen action",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "configuration": {
+        "lab_temperature": 1,
+        "choice_selection": "Deterministic argmax of unrounded option probabilities",
+        "calibration": "Separate fitted temperature; not inherited by new lab training stages",
+        "positive_temperature_changes_fixed_score_ranking": false,
+        "illustrative_scores": {
+          "Left": 1,
+          "Up": 0,
+          "Right": 2
+        },
+        "probability_display": "Option preference, not API confidence or survival probability"
+      }
     }
   },
   "initial_training_prework": true,
@@ -155,7 +184,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–4 now use Kev-specific diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–5 now use Kev-specific diagrams and interactive controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -163,6 +192,7 @@
       2,
       3,
       4,
+      5,
       6,
       13
     ],
@@ -175,6 +205,7 @@
     2,
     3,
     4,
+    5,
     6,
     11,
     12,
