@@ -1,6 +1,6 @@
 {
   "repository": "yxc20089/QPlusLearning",
-  "revision": "660ad0d9068887c055517cc7323c50ccc1014ecd",
+  "revision": "27bfeb72cbc7c9e677a3af6be8477ec9f874e365",
   "files": {
     "api_client.py": "d24f52b4bfb0c85fa1f4e67ab295eaa08e0f5654e71e6f0e0b030d7fb5347de6",
     "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
@@ -43,7 +43,7 @@
     "scenario_catalog.py": "1962c676744570214a6d369ecd8f10a9343db16e039a85e2f73468c04f3570b4",
     "collection_backup.py": "1f5b7b8f8412786ba504ed640720c931a44381e61b9557b457423d4bb125c625",
     "hard_case_evaluation.py": "cb2d68c5f1d3e34bcfeb18732858c5ceab23561c8f1eed62dfd1a5f360bb98e5",
-    "behavior_data.py": "45b6530f1f1cb69dd36063ce05d15d579718d44237934406aeb460b0332165a2",
+    "behavior_data.py": "83c2df6bf9f3f19ef3e39440fc04d3ce7b806e11e61e0a2d172f61e20950837f",
     "behavior_scenarios.py": "435bced087eff5d32b011ce7f9371d8ba70ff30491caf6f8c9b3274c01350f52",
     "recorded_behavior_scenarios.py": "b5000d0af4f155be49d9c45d0898030df364ca5180256d86df1b07f462a7efa5",
     "evaluation/v3-analysis-2026-10-07/teacher-reference.json": "c3c06bb5a5de1cca6559da62206a1314aefa17c544c97bd7171b22903014c888"
