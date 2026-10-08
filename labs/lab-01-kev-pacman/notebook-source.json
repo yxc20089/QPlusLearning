@@ -1,6 +1,6 @@
 {
   "repository": "yxc20089/QPlusLearning",
-  "revision": "9fb9d346b46b1f90a7f318e3a8e741d0b70ba61b",
+  "revision": "bbc174c8825b8e23a20ef62856f96cd303db35d2",
   "files": {
     "api_client.py": "d24f52b4bfb0c85fa1f4e67ab295eaa08e0f5654e71e6f0e0b030d7fb5347de6",
     "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
@@ -39,6 +39,8 @@
     "data/pacman-native-v2-generator.py": "31b7d5dcd4f750db0698f22535f13667f79e77e97cee525f373b8f99a9326be9",
     "v3_data.py": "5220adf63df9326ac05c0581e7bffbb682ca1b4df4709152dd2a48e276c8d2d1",
     "v4_data.py": "8a35c4f907d1391471b23ce11f6006141f931e6b00a00b408046e2a2ed0d6063",
+    "teacher_offline_data.py": "e35f4ba38b45807637c8a4502326a31656c89071ee74fb2bf0a2d2f8e936ef48",
+    "scenario_catalog.py": "1962c676744570214a6d369ecd8f10a9343db16e039a85e2f73468c04f3570b4",
     "collection_backup.py": "1f5b7b8f8412786ba504ed640720c931a44381e61b9557b457423d4bb125c625",
     "hard_case_evaluation.py": "6827a4fdc52980f9c1b1240a1d1879e3cace8ea0ef8f6b23c8edc0d7a583c0b7",
     "evaluation/v3-analysis-2026-10-07/teacher-reference.json": "c3c06bb5a5de1cca6559da62206a1314aefa17c544c97bd7171b22903014c888"
