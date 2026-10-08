@@ -91,6 +91,7 @@ class V4NotebookTests(unittest.TestCase):
         (source / f'{PREFIX}-manifest.json').write_text(json.dumps(manifest))
         return {'V4_DATA': local, 'V4_IMPORT_ROOT': source, 'V4_PREFIX': PREFIX,
                 'V4_MANIFEST': local / f'{PREFIX}-manifest.json', 'Path': Path,
+                'EXPECTED_V4_MANIFEST_SHA256': hashlib.sha256((source / f'{PREFIX}-manifest.json').read_bytes()).hexdigest(),
                 'hashlib': hashlib, 'json': json, 'print': lambda *a, **kw: None}, evidence
 
     def test_import_restores_all_four_artifacts_from_parts_and_preserves_conflicts(self):
@@ -107,6 +108,23 @@ class V4NotebookTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Conflicting local artifact'):
                 exec(source, scope)
             self.assertEqual(training.read_bytes(), b'previous-experiment')
+
+    def test_unapproved_manifest_cannot_import_or_reuse_semantic_success(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            scope, _ = self._import_scope(Path(temporary))
+            source = scope['V4_IMPORT_ROOT'] / f'{PREFIX}-manifest.json'
+            source.write_text(source.read_text() + '\n')
+            with self.assertRaisesRegex(ValueError, 'artifact checksum differs'):
+                exec(cell('# Import the four completed balanced artifacts'), scope)
+            self.assertEqual(list(scope['V4_DATA'].iterdir()), [])
+        with tempfile.TemporaryDirectory() as temporary:
+            scope = self._validation_scope(Path(temporary))
+            exec(cell('# Strict validation must pass'), scope)
+            scope['V4_MANIFEST'].write_text(scope['V4_MANIFEST'].read_text() + '\n')
+            with self.assertRaisesRegex(ValueError, 'differs from the frozen'):
+                scope['validated_v4_manifest']()
+            self.assertIsNone(scope['_V4_VALIDATION_RECEIPT'])
+            self.assertEqual(scope['validate_dataset'].call_count, 1)
 
     def test_corrupt_or_missing_part_never_installs_incomplete_evidence(self):
         for corrupt in (False, True):
@@ -129,6 +147,7 @@ class V4NotebookTests(unittest.TestCase):
             manifest = json.loads(source.read_text())
             manifest['files'] = {'../outside.jsonl': 'unused'}
             source.write_text(json.dumps(manifest))
+            scope['EXPECTED_V4_MANIFEST_SHA256'] = hashlib.sha256(source.read_bytes()).hexdigest()
             with self.assertRaisesRegex(ValueError, 'Unexpected balanced artifact names'):
                 exec(cell('# Import the four completed balanced artifacts'), scope)
             self.assertEqual([path.name for path in scope['V4_DATA'].iterdir()], [f'{PREFIX}-manifest.json'])
@@ -149,6 +168,7 @@ class V4NotebookTests(unittest.TestCase):
                 'QUALIFICATION': qualification, 'V4_MANIFEST': manifest_path, 'V4_RECIPE': RECIPE,
                 'LAB_DIR': lab, 'FILES': sources, 'COURSE_REVISION': 'pinned-test-revision',
                 'Path': Path, 'json': json,
+                'EXPECTED_V4_MANIFEST_SHA256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                 'v4_file_sha256': lambda path: hashlib.sha256(Path(path).read_bytes()).hexdigest(),
                 'print': lambda *a, **kw: None}
 
@@ -167,6 +187,7 @@ class V4NotebookTests(unittest.TestCase):
             validate.return_value = True
             manifest['counts']['train']['targeted'] = 10
             scope['V4_MANIFEST'].write_text(json.dumps(manifest))
+            scope['EXPECTED_V4_MANIFEST_SHA256'] = hashlib.sha256(scope['V4_MANIFEST'].read_bytes()).hexdigest()
             with self.assertRaisesRegex(ValueError, 'complete-data budget'):
                 exec(source, scope)
 

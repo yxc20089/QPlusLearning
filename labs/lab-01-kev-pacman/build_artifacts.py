@@ -804,7 +804,24 @@ Warm-start your completed **native-v3 rank-16 LoRA and pointer head**. V4 saves 
 
 The [v3 audit](https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/evaluation/v3-analysis-2026-10-07/README.md) found fewer immediate avoidable deaths, but zero clears and worse food efficiency. This experiment changes data selection: native evidence for immediate evasion, anticipatory escape, actual power-expiry hazards, retreat followed by food, productive junctions and sparse cleanup. Exact roles and overlaps are printed from the final manifest. A nearby ghost or low timer alone does not prove a bad alternative. Most labels come from independently verified winning teacher trajectories; archived v3 mistakes are identified only where their checkpoint, trace and state are bound. There are no live learner probes in this notebook.
 
-**Generate and qualify data locally before the training session.** This notebook imports the final train/development files, manifest and native proof bundle from Drive, strictly validates them, trains and evaluates. Missing files, insufficient quotas or failed checks stop before training. A collection still in progress is not a ready dataset. Rank, observation/action protocol, CE objective and total update budget remain fixed. The main lab still has one assessed CP1.
+**The balanced dataset is complete, validated and backed up to Drive on 8 October 2026.** This notebook imports that frozen export, checks its exact manifest fingerprint, validates the native evidence on CPU, then trains v4. Generation and teacher relabeling are already finished. Rank, observation/action protocol, CE objective and total update budget remain fixed. The main lab still has one assessed CP1.
+
+| Primary targeted behavior | Train | Development |
+| --- | ---: | ---: |
+| Immediate evasion | 640 | 96 |
+| Anticipatory escape | 64 | 16 |
+| Actual native power-expiry evasion | 16 | 4 |
+| Retreat followed by food | 512 | 48 |
+| Productive routing | 1,408 | 128 |
+| Sparse-pellet cleanup | 888 | 78 |
+| Residual broad exposure | 132 | 14 |
+| **Targeted roots** | **3,660** | **384** |
+
+Training also includes 1,220 informative nearby decisions and 912 canonical Pac-Man replay records: **5,792 task requests**. Kev adds 304 generic replay records for **6,096 requests / 762 optimizer updates**. Development contains 384 roots plus 128 informative decisions: **512 requests**. Primary roles count each root once; overlap tags remain separate. All 11 qualified, recorded v3 mistakes are included. The 16/4 expiry allocation has limited coverage.
+
+The full maze and four ghost states are present in every exported request. The CPU token audit found a maximum of 2,407 state tokens, below the 4,096-token limit. Training must still report its own truncation count. Data qualification does not establish learned-player improvement.
+
+**Run in order:** setup and optimized preparation, Drive storage, verify the completed v3 parent, import the frozen data, CPU validation, then **Train v4 from the completed v3 weights**. The first v4 run initializes a fresh optimizer from v3's learned weights. Interrupted runs automatically resume their own latest v4 recovery. Comparison and interactive play follow completed training. Leave the required optimized backend enabled; the extra two-record training preflight remains optional.
 
 For an already completed v4 checkpoint, run setup, storage, parent and dataset checks, then the training cell verifies its lineage and skips training. Continue to comparison or interactive play.""")
     md("""## Setup and Drive storage
@@ -832,6 +849,7 @@ V4_DEVELOPMENT = V4_DATA / f'{V4_PREFIX}-development.jsonl'
 V4_MANIFEST = V4_DATA / f'{V4_PREFIX}-manifest.json'
 QUALIFICATION = LAB_DIR / 'evaluation/teacher-qualification.json'
 EXPECTED_V3_SHA256 = 'c7c5c8326f74e86e161e05730db5004efdfd3b2351c6f2f9478581cfc13550b0'
+EXPECTED_V4_MANIFEST_SHA256 = 'a1a151682f55e67de745165f8efdfc386e21a90e3eddfc0c002cbd9c40a38096'
 V4_IMPORT_ROOT = Path('/content/drive/MyDrive/QPlusLearning/lab-01-kev-pacman/prework-backups/v4-balanced-generation-20261008')
 
 def verify_v3_parent():
@@ -860,13 +878,14 @@ V3_IDENTITY = verify_v3_parent()
 print('Verified warm-start parent:', json.dumps(V3_IDENTITY, indent=2))
 print('Separate v4 output:', V4)
 print('Precomputed data handoff:', V4_IMPORT_ROOT)
+print('Frozen dataset manifest SHA256:', EXPECTED_V4_MANIFEST_SHA256)
 print('Selected training recipe:', V4_RECIPE)
 """)
     md("""## Import the completed balanced data and proof bundle
 
-The handoff contains exactly four files: train JSONL, development JSONL, manifest and evidence ZIP. The final evidence ZIP may be stored as ordered 64 MiB parts plus its `.parts.json` receipt. The cell reconstructs it, checking every part and the full hash. It copies only the four named artifacts and never overwrites a conflicting local file. Matching restored files are reused.
+The completed Drive handoff contains train JSONL, development JSONL and the manifest. Its 133,513,786-byte evidence ZIP is stored as **two ordered parts** plus `pacman-native-v4-balanced-evidence.zip.parts.json`. The cell reconstructs the ZIP, checking every part and the final hash. It imports exactly four artifacts and never overwrites a conflicting local file. Matching restored files are reused.
 
-If the handoff is incomplete, wait for the final export/upload. There is no partial-data or easy-filler training mode. You can set `V4_IMPORT_ROOT` above to another mounted folder containing the same completed artifacts; the checks remain required.""")
+The manifest must match the frozen 8 October export fingerprint shown above. You can change `V4_IMPORT_ROOT` to another mounted folder containing those same files. Missing or changed artifacts stop before training.""")
     code("""# Import the four completed balanced artifacts from mounted Drive.
 import tempfile
 import shutil
@@ -946,7 +965,7 @@ def v4_install_file(name, expected_sha256=None):
             temporary_path.unlink()
 
 manifest_name = f'{V4_PREFIX}-manifest.json'
-v4_install_file(manifest_name)
+v4_install_file(manifest_name, EXPECTED_V4_MANIFEST_SHA256)
 handoff_manifest = json.loads(V4_MANIFEST.read_text())
 expected_names = {f'{V4_PREFIX}-train.jsonl', f'{V4_PREFIX}-development.jsonl'}
 if (handoff_manifest.get('dataset') != V4_PREFIX or set(handoff_manifest.get('files', {})) != expected_names
@@ -989,6 +1008,9 @@ def v4_validation_binding():
 def validated_v4_manifest():
     global _V4_VALIDATION_RECEIPT
     binding = v4_validation_binding()
+    if binding['artifacts'][V4_MANIFEST.name] != EXPECTED_V4_MANIFEST_SHA256:
+        _V4_VALIDATION_RECEIPT = None
+        raise ValueError('Dataset manifest differs from the frozen 8 October balanced export.')
     receipt = json.loads(V4_MANIFEST.read_text())
     if (receipt['expected_training_requests'] != 6096 or receipt['expected_optimizer_steps'] != 762
             or receipt['recipe'] != V4_RECIPE
