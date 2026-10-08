@@ -1,13 +1,13 @@
 {
   "repository": "yxc20089/QPlusLearning",
-  "revision": "bbc174c8825b8e23a20ef62856f96cd303db35d2",
+  "revision": "660ad0d9068887c055517cc7323c50ccc1014ecd",
   "files": {
     "api_client.py": "d24f52b4bfb0c85fa1f4e67ab295eaa08e0f5654e71e6f0e0b030d7fb5347de6",
     "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
     "cloud_runtime.py": "9ad546991e4542d5d7d540b67d49218b0d3f6a656c209385a5111c0ff8deda52",
     "training_monitor.py": "816f46da63ab7e936d55e85425ab9213145f2276fe6f2a260248307b45fbe681",
     "lora_recovery.py": "d01bc4f336b17948dc89fa8e931761c766fed979349a310d19f23e5ce0d6e274",
-    "checkpoint_backup.py": "a59c305ae279170a069b8194ff176800ca9702a3651dcb92442e2631ba18db7c",
+    "checkpoint_backup.py": "1014a5616b5d17a58d89a0020e464ff393edc4bf9d4639aa77f48ef88b3d4937",
     "optimized_training.py": "5c33fac17ec6ad6439193737aea650f85cdfb4445a0d346bb5bed10b858fcdfa",
     "training-kernels.json": "24dff024433f61c4a571f16326f4f16c5666297e6514089e66e721b39765e56c",
     "training_stages.py": "96fdd59285b8872b946523a88d95393decb73536322ca35e8f67f79cb2a7ef5c",
@@ -42,7 +42,10 @@
     "teacher_offline_data.py": "e35f4ba38b45807637c8a4502326a31656c89071ee74fb2bf0a2d2f8e936ef48",
     "scenario_catalog.py": "1962c676744570214a6d369ecd8f10a9343db16e039a85e2f73468c04f3570b4",
     "collection_backup.py": "1f5b7b8f8412786ba504ed640720c931a44381e61b9557b457423d4bb125c625",
-    "hard_case_evaluation.py": "6827a4fdc52980f9c1b1240a1d1879e3cace8ea0ef8f6b23c8edc0d7a583c0b7",
+    "hard_case_evaluation.py": "cb2d68c5f1d3e34bcfeb18732858c5ceab23561c8f1eed62dfd1a5f360bb98e5",
+    "behavior_data.py": "45b6530f1f1cb69dd36063ce05d15d579718d44237934406aeb460b0332165a2",
+    "behavior_scenarios.py": "435bced087eff5d32b011ce7f9371d8ba70ff30491caf6f8c9b3274c01350f52",
+    "recorded_behavior_scenarios.py": "b5000d0af4f155be49d9c45d0898030df364ca5180256d86df1b07f462a7efa5",
     "evaluation/v3-analysis-2026-10-07/teacher-reference.json": "c3c06bb5a5de1cca6559da62206a1314aefa17c544c97bd7171b22903014c888"
   }
 }
