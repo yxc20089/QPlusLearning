@@ -1,5 +1,6 @@
 """Exercise the precomputed-data handoff and v4 training boundary without a GPU."""
 import ast
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -28,6 +29,10 @@ def cell(prefix):
                 and ''.join(c['source']).startswith(prefix))
 
 
+def training_boundary():
+    return cell('# Validate inputs and lineage') + '\n' + cell('# Verify completed v4')
+
+
 def complete_manifest():
     return {'dataset': PREFIX, 'files': {f'{PREFIX}-train.jsonl': 'trainhash',
             f'{PREFIX}-development.jsonl': 'devhash'},
@@ -44,9 +49,34 @@ def write_completed_checkpoint(folder, parent_sha=PARENT_SHA, data_sha='trainhas
         {'optimizer_steps': 762, 'records_seen': 6096, 'requested_records': 6096}))
     (folder / 'run-evidence.json').write_text(json.dumps(
         {'stage': 'pacman', 'parent_checkpoint_sha256': parent_sha, 'training_data_sha256': data_sha}))
-    args = {**RECIPE, 'lora': 16, 'lora_targets': 'all', 'head_dim': 256,
-        'base': 'Qwen/Qwen3.5-4B-Base', 'base_revision': '1001bb4d826a52d1f399e183466143f4da7b741b'}
+    args = parsed_training_args()
     (folder / 'training_config.json').write_text(json.dumps({'args': args}))
+
+
+def parsed_training_args():
+    """Use the pinned trainer's real CLI types without importing CUDA packages."""
+    fields = {**RECIPE, 'lora': 16, 'lora_targets': 'all', 'head_dim': 256,
+        'base': 'Qwen/Qwen3.5-4B-Base', 'base_revision': '1001bb4d826a52d1f399e183466143f4da7b741b'}
+    source = ast.parse((ROOT / 'vendor/kev/kev/train.py').read_text())
+    function = next(node for node in source.body if isinstance(node, ast.FunctionDef) and node.name == 'parse_args')
+    parser = argparse.ArgumentParser()
+    for statement in function.body:
+        call = statement.value if isinstance(statement, ast.Expr) else None
+        if not (isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+                and call.func.attr == 'add_argument' and call.args):
+            continue
+        flag = ast.literal_eval(call.args[0])
+        if flag.removeprefix('--') not in fields:
+            continue
+        kwargs = {}
+        for keyword in call.keywords:
+            if keyword.arg == 'type':
+                kwargs['type'] = {'int': int, 'float': float}[keyword.value.id]
+            elif keyword.arg == 'choices':
+                kwargs['choices'] = ast.literal_eval(keyword.value)
+        parser.add_argument(flag, **kwargs)
+    argv = [part for key, value in fields.items() for part in ('--' + key, str(value))]
+    return vars(parser.parse_args(argv))
 
 
 class V4NotebookTests(unittest.TestCase):
@@ -225,7 +255,7 @@ class V4NotebookTests(unittest.TestCase):
             scope.update(V3=root / 'native-v3', V4=root / 'native-v4', runtime=runtime,
                          verify_v3_parent=Mock(), latest_snapshot=Mock())
             with self.assertRaisesRegex(ValueError, 'native proof mismatch'):
-                exec(cell('# Validate inputs and lineage'), scope)
+                exec(training_boundary(), scope)
             self.assertIsNone(scope['_V4_VALIDATION_RECEIPT'])
             runtime.finetune.assert_not_called()
             scope['latest_snapshot'].assert_not_called()
@@ -272,8 +302,8 @@ class V4NotebookTests(unittest.TestCase):
             with self.subTest(recovered=recovered), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary); scope, events = self._training_scope(root)
                 scope['latest_snapshot'].return_value = root / 'v4-recovery/step-100' if recovered else None
-                exec(cell('# Validate inputs and lineage'), scope)
-                self.assertEqual(events, ['validated', 'parent_checked', 'trained'])
+                exec(training_boundary(), scope)
+                self.assertEqual(events, ['validated', 'parent_checked', 'trained', 'validated', 'parent_checked'])
                 scope['latest_snapshot'].assert_called_once_with(Path(str(scope['V4']) + '-recovery'))
                 self.assertEqual(scope['runtime'].finetune.call_args.kwargs['resume'], recovered)
                 scope['runtime'].start.assert_not_called()
@@ -281,7 +311,7 @@ class V4NotebookTests(unittest.TestCase):
     def test_invalid_data_blocks_training_and_completed_v4_must_match_lineage(self):
         with tempfile.TemporaryDirectory() as temporary:
             scope, _ = self._training_scope(Path(temporary))
-            source = cell('# Validate inputs and lineage')
+            source = training_boundary()
             scope['validated_v4_manifest'].side_effect = ValueError('bad proof bundle')
             with self.assertRaisesRegex(ValueError, 'bad proof bundle'):
                 exec(source, scope)
@@ -299,6 +329,43 @@ class V4NotebookTests(unittest.TestCase):
             exec(source, scope)
             scope['runtime'].finetune.assert_not_called()
             scope['latest_snapshot'].assert_not_called()
+
+    def test_completed_checkpoint_accepts_saved_numeric_lr_without_retraining(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            scope, events = self._training_scope(Path(temporary))
+            write_completed_checkpoint(scope['V4'])
+            saved = json.loads((scope['V4'] / 'training_config.json').read_text())['args']
+            self.assertEqual(RECIPE['lr'], '2e-5')
+            self.assertIsInstance(saved['lr'], float)
+            self.assertEqual(saved['lr'], 0.00002)
+            exec(cell('# Verify completed v4'), scope)
+            self.assertEqual(scope['v4_mismatches'], {})
+            self.assertEqual(events, ['validated', 'parent_checked'])
+            scope['runtime'].finetune.assert_not_called()
+            self.assertEqual(RECIPE['lr'], '2e-5')  # Frozen manifest comparison stays valid.
+
+    def test_checkpoint_mismatches_remain_strict_and_report_saved_and_expected(self):
+        for filename, key, bad, diagnostic in [
+            ('training_config.json', 'lr', 0.0002, 'args.lr'),
+            ('training_config.json', 'batch', 1, 'args.batch'),
+            ('training_metrics.json', 'optimizer_steps', 761, 'metrics.optimizer_steps'),
+            ('training_metrics.json', 'records_seen', 6095, 'metrics.records_seen'),
+            ('run-evidence.json', 'parent_checkpoint_sha256', 'wrong', 'evidence.parent_checkpoint_sha256'),
+            ('run-evidence.json', 'training_data_sha256', 'wrong', 'evidence.training_data_sha256'),
+        ]:
+            with self.subTest(diagnostic=diagnostic), tempfile.TemporaryDirectory() as temporary:
+                scope, _ = self._training_scope(Path(temporary))
+                write_completed_checkpoint(scope['V4'])
+                path = scope['V4'] / filename
+                value = json.loads(path.read_text())
+                (value['args'] if filename == 'training_config.json' else value)[key] = bad
+                path.write_text(json.dumps(value))
+                with self.assertRaisesRegex(ValueError, diagnostic):
+                    exec(cell('# Verify completed v4'), scope)
+                self.assertEqual(scope['v4_mismatches'][diagnostic]['saved'], bad)
+                self.assertIn('expected', scope['v4_mismatches'][diagnostic])
+                self.assertEqual(json.loads(path.read_text()), value)
+                scope['runtime'].finetune.assert_not_called()
 
     def test_parent_check_is_exact_and_does_not_load_gpu(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -823,7 +823,7 @@ The full maze and four ghost states are present in every exported request. The C
 
 **Run in order:** setup and optimized preparation, Drive storage, verify the completed v3 parent, import the frozen data, CPU validation, then **Train v4 from the completed v3 weights**. The first v4 run initializes a fresh optimizer from v3's learned weights. Interrupted runs automatically resume their own latest v4 recovery. Comparison and interactive play follow completed training. Leave the required optimized backend enabled; the extra two-record training preflight remains optional.
 
-For an already completed v4 checkpoint, run setup, storage, parent and dataset checks, then the training cell verifies its lineage and skips training. Continue to comparison or interactive play.""")
+For an already completed v4 checkpoint, run setup, storage, parent and dataset checks, then **Verify the completed v4 checkpoint — read-only**. Skip training and continue to comparison or interactive play.""")
     md("""## Setup and Drive storage
 
 Use the same RTX PRO 6000 Blackwell allocation and pinned optimized environment. Drive is enabled by default. Storage restores available v3/v4 checkpoints and their backed-up inputs. The import cell additionally looks in the completed local-generation handoff folder. Training uses the GPU; dataset import and provenance validation use the CPU. Source generation scripts remain in the repository history.
@@ -1056,17 +1056,37 @@ if not (V4 / 'run-evidence.json').is_file():
     runtime.finetune(V4_TRAINING, V4, init_from=V3, steps=0, resume=RESUME_V4, recipe=V4_RECIPE)
 else:
     print('Checking completed v4 checkpoint:', V4)
+""")
+    md("""## Verify the completed v4 checkpoint — read-only
+
+Run after training, or rerun this cell alone to check an existing completed v4. It reads the saved metrics, recipe and lineage; it never trains, resumes or loads a model. The frozen recipe stores the learning rate as CLI text (`'2e-5'`), while Kev saves its parsed number (`0.00002`). This check compares their numeric values and reports any remaining mismatch by field. Saved checkpoints and Drive backups are preserved.""")
+    code("""# Verify completed v4 — read-only; no training or model loading.
+v4_manifest = validated_v4_manifest()
+verify_v3_parent()
 metrics = json.loads((V4 / 'training_metrics.json').read_text())
 evidence = json.loads((V4 / 'run-evidence.json').read_text())
 args = json.loads((V4 / 'training_config.json').read_text())['args']
-if (metrics.get('optimizer_steps') != 762 or metrics.get('records_seen') != 6096
-        or metrics.get('requested_records') != 6096 or metrics.get('truncated_records', 0)
-        or metrics.get('rejected_records', 0) or evidence.get('stage') != 'pacman'
-        or evidence.get('parent_checkpoint_sha256') != EXPECTED_V3_SHA256
-        or evidence.get('training_data_sha256') != v4_manifest['files'][V4_TRAINING.name]
-        or args.get('lora') != 16 or args.get('lora_targets') != 'all' or args.get('head_dim') != 256
-        or any(args.get(key) != value for key, value in V4_RECIPE.items())):
-    raise ValueError('V4 is incomplete or does not match the validated balanced experiment.')
+# The manifest preserves CLI text (lr='2e-5'); Kev's argparse saves lr as a float.
+# Normalize the expected argument, without changing the frozen manifest/recipe.
+expected_args = {**V4_RECIPE, 'lr': float(V4_RECIPE['lr']),
+                 'lora': 16, 'lora_targets': 'all', 'head_dim': 256}
+checks = {
+    'metrics.optimizer_steps': (metrics.get('optimizer_steps'), 762),
+    'metrics.records_seen': (metrics.get('records_seen'), 6096),
+    'metrics.requested_records': (metrics.get('requested_records'), 6096),
+    'metrics.truncated_records': (metrics.get('truncated_records', 0), 0),
+    'metrics.rejected_records': (metrics.get('rejected_records', 0), 0),
+    'evidence.stage': (evidence.get('stage'), 'pacman'),
+    'evidence.parent_checkpoint_sha256': (evidence.get('parent_checkpoint_sha256'), EXPECTED_V3_SHA256),
+    'evidence.training_data_sha256': (evidence.get('training_data_sha256'), v4_manifest['files'][V4_TRAINING.name]),
+    **{f'args.{key}': (args.get(key), value) for key, value in expected_args.items()},
+}
+v4_mismatches = {key: {'saved': saved, 'expected': expected}
+                 for key, (saved, expected) in checks.items() if saved != expected}
+if v4_mismatches:
+    raise ValueError('V4 is incomplete or does not match the validated balanced experiment. '
+                     'Saved checkpoints are kept; do not retrain before checking these mismatches: '
+                     + json.dumps(v4_mismatches, indent=2))
 print('Completed v4 LoRA/head SHA256:', checkpoint_fingerprint(V4))
 print('V4 training metrics:', json.dumps(metrics, indent=2))
 """)
