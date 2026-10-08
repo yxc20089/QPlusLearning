@@ -299,10 +299,18 @@ def save_backup(output, snapshot, backup_root, workspace, training_data=None):
     artifacts = []
     # The correction round generates private evidence at runtime. Restore its
     # dataset receipt/development/replays together with the exact training file.
-    if data is not None and data.name in ('pacman-native-v3-train.jsonl', 'pacman-native-v4-train.jsonl'):
+    if data is not None and data.name in ('pacman-native-v3-train.jsonl', 'pacman-native-v4-train.jsonl',
+                                          'pacman-native-v4-balanced-train.jsonl'):
         manifest_path = data.with_name(data.name.removesuffix('-train.jsonl') + '-manifest.json')
         manifest = json.loads(manifest_path.read_text())
-        for artifact_name, expected in manifest['files'].items():
+        dataset_files = dict(manifest['files'])
+        bundle = manifest.get('evidence')
+        if bundle is not None:
+            name, checksum = bundle['filename'], bundle['sha256']
+            if name in dataset_files and dataset_files[name] != checksum:
+                raise ValueError('Conflicting dataset evidence checksum; Drive backup not published')
+            dataset_files[name] = checksum
+        for artifact_name, expected in dataset_files.items():
             artifact = data.parent / artifact_name
             if (Path(artifact_name).name != artifact_name or artifact.is_symlink()
                     or not artifact.resolve().is_relative_to(workspace) or file_hash(artifact) != expected):
