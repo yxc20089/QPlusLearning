@@ -27,7 +27,7 @@
     {id:'in',x:151,y:214,w:13,h:14,size:8,bold:true,text:'In'},
     {id:'player',x:109,y:214,w:11,h:14,size:9,bold:true,text:'P'},
     {id:'ghost-legend',x:36,y:260,w:210,h:16,size:10,color:C.muted,text:'BP: Blinky/Pinky. In: Inky. P: Pac-Man.'},
-    {id:'crop-legend',x:36,y:277,w:210,h:16,size:10,color:C.muted,text:'Display crop. Native physics uses the full game.'},
+    {id:'crop-legend',x:36,y:277,w:210,h:16,size:10,color:C.muted,text:'Display crop only. Full native game.'},
     {id:'rank',x:258,y:249,w:426,h:48,size:19,formula:true,text:'ρ = (E, C, O, D, −S, T,\n       K, J, −W, −F̄, U, M̄)'},
     {id:'rank-caption',x:258,y:294,w:426,h:17,size:11,bold:true,color:C.teal,text:'First unequal component: Left beats Right at E and Up at C.'},
     {id:'cost-label',x:36,y:313,w:648,h:18,size:12,color:C.muted,text:'Food-route cost is one component of the inner rollout heuristic'},
