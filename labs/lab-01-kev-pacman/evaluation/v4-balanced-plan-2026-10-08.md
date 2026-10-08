@@ -91,8 +91,9 @@ teacher states do not claim new learner disagreement.
 Every admission passed complete zero-loss native recovery, the original loop
 and stall gates, independent cold replay and source/hash checks. This is teacher
 qualification evidence. It is not evidence that a new learned adapter improves.
-The export still has to pass exact selection, portable provenance validation
-and a token-length audit before it is ready for training.
+The exact export has now passed selection, portable provenance validation
+and a token-length audit. See [the completed export report](v4-balanced-export-2026-10-08.md)
+for the selected counts, limits, hashes and Colab handoff.
 
 ## Local evidence available before the new pilot
 

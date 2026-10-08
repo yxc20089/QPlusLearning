@@ -50,7 +50,7 @@ Their replay/version safeguards are useful: complete recordings, legal/timed/ter
 
 ## What to adopt later
 
-The v4 hard-case generation is complete and frozen; its exact balanced export is next. **Preserve its observation, adjacent-tile actions and teacher.** Adding features now would change the experiment's input contract.
+The v4 hard-case generation and exact balanced export are complete and frozen. **Preserve its observation, adjacent-tile actions and teacher.** Adding features now would change the experiment's input contract.
 
 1. Test a separately versioned later observation ablation: add current-state food/power distances, corridor pellet counts and ghost approach/distance facts for each legal adjacent move. Keep the full layered board, native clocks and history. Exclude teacher choices, simulated future outcomes and private RNG; distinguish descriptive geometry from rule recommendations such as `FRUIT`.
 2. Measure that ablation on matched complete native games, retaining clears, deaths, avoidability, loops, dry spells and frames per pellet. Add per-seed uncertainty and latency percentiles. Treat deadline/fallback deployment tests as a separate real-time protocol.

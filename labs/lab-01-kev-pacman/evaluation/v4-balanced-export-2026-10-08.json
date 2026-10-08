@@ -1,0 +1,321 @@
+{
+  "date": "2026-10-08",
+  "dataset": "pacman-native-v4-balanced",
+  "helper_revision": "27bfeb72cbc7c9e677a3af6be8477ec9f874e365",
+  "counts": {
+    "development": {
+      "targeted": 384,
+      "informative": 128
+    },
+    "train": {
+      "targeted": 3660,
+      "informative": 1220,
+      "replay": 912
+    }
+  },
+  "primary_roles": {
+    "train": {
+      "immediate_evasion": 640,
+      "anticipatory_escape": 64,
+      "actual_expiry_evasion": 16,
+      "retreat_to_food": 512,
+      "productive_routing": 1408,
+      "cleanup": 888,
+      "broad_exposure": 132
+    },
+    "development": {
+      "immediate_evasion": 96,
+      "anticipatory_escape": 16,
+      "actual_expiry_evasion": 4,
+      "retreat_to_food": 48,
+      "productive_routing": 128,
+      "cleanup": 78,
+      "broad_exposure": 14
+    }
+  },
+  "coverage": {
+    "development": {
+      "primary_roles": {
+        "immediate_evasion": 96,
+        "anticipatory_escape": 16,
+        "actual_expiry_evasion": 4,
+        "retreat_to_food": 48,
+        "productive_routing": 128,
+        "cleanup": 78,
+        "broad_exposure": 14
+      },
+      "behavior_overlaps": {
+        "immediate_evasion": 100,
+        "broad_exposure": 252,
+        "retreat_to_food": 71,
+        "productive_routing": 137,
+        "anticipatory_escape": 16,
+        "actual_expiry_evasion": 4,
+        "cleanup": 105
+      },
+      "window_kinds": {
+        "post_followthrough_with_progress": 86,
+        "post_routing_progress": 41,
+        "post_followthrough": 1
+      },
+      "critical_actual_expiry_joint": 4,
+      "targeted_origins": {
+        "verified_offline_trajectory": 364,
+        "verified_behavior_recovery": 20
+      },
+      "recorded_learner_disagreements": 0,
+      "post_escape_progress_windows": 86,
+      "families": {
+        "level-5-seed-460003": 47,
+        "level-1-seed-460003": 36,
+        "level-2-seed-460003": 37,
+        "level-1-seed-462029": 28,
+        "level-2-seed-461016": 46,
+        "level-3-seed-460003": 42,
+        "level-3-seed-463042": 23,
+        "level-5-seed-461016": 43,
+        "level-3-seed-461016": 35,
+        "level-2-seed-463042": 39,
+        "level-2-seed-462029": 18,
+        "level-5-seed-462029": 16,
+        "level-3-seed-462029": 35,
+        "level-1-seed-463042": 24,
+        "level-5-seed-463042": 27,
+        "level-1-seed-461016": 16
+      }
+    },
+    "train": {
+      "primary_roles": {
+        "immediate_evasion": 640,
+        "anticipatory_escape": 64,
+        "actual_expiry_evasion": 16,
+        "retreat_to_food": 512,
+        "productive_routing": 1408,
+        "cleanup": 888,
+        "broad_exposure": 132
+      },
+      "behavior_overlaps": {
+        "immediate_evasion": 658,
+        "broad_exposure": 2295,
+        "productive_routing": 1534,
+        "retreat_to_food": 696,
+        "cleanup": 1225,
+        "anticipatory_escape": 64,
+        "actual_expiry_evasion": 16
+      },
+      "window_kinds": {
+        "post_followthrough_with_progress": 762,
+        "post_routing_progress": 382,
+        "post_followthrough": 37,
+        "lead_in": 39
+      },
+      "critical_actual_expiry_joint": 16,
+      "targeted_origins": {
+        "verified_recorded_learner_recovery": 11,
+        "verified_offline_trajectory": 3566,
+        "verified_behavior_recovery": 83
+      },
+      "recorded_learner_disagreements": 11,
+      "post_escape_progress_windows": 762,
+      "families": {
+        "level-1-seed-400001": 102,
+        "level-1-seed-405046": 123,
+        "level-1-seed-406055": 126,
+        "level-3-seed-423028": 102,
+        "level-5-seed-406055": 128,
+        "level-5-seed-403028": 128,
+        "level-5-seed-404037": 128,
+        "level-2-seed-401010": 128,
+        "level-3-seed-403028": 128,
+        "level-1-seed-403028": 114,
+        "level-1-seed-401010": 100,
+        "level-2-seed-403028": 128,
+        "level-5-seed-400001": 114,
+        "level-3-seed-402019": 125,
+        "level-3-seed-407064": 102,
+        "level-5-seed-407064": 128,
+        "level-5-seed-420001": 128,
+        "level-1-seed-420001": 73,
+        "level-2-seed-404037": 121,
+        "level-2-seed-422019": 115,
+        "level-2-seed-405046": 100,
+        "level-5-seed-422019": 89,
+        "level-2-seed-400001": 128,
+        "level-2-seed-406055": 128,
+        "level-5-seed-405046": 128,
+        "level-1-seed-407064": 128,
+        "level-2-seed-407064": 117,
+        "level-3-seed-404037": 118,
+        "level-3-seed-405046": 95,
+        "level-1-seed-423028": 63,
+        "level-5-seed-401010": 96,
+        "level-1-seed-422019": 117,
+        "level-2-seed-421010": 126,
+        "level-1-seed-404037": 128,
+        "level-3-seed-401010": 111,
+        "level-3-seed-400001": 99,
+        "level-5-seed-421010": 127,
+        "level-2-seed-423028": 51,
+        "level-2-seed-402019": 84,
+        "level-3-seed-420001": 103,
+        "level-1-seed-421010": 89,
+        "level-1-seed-402019": 103,
+        "level-3-seed-406055": 46,
+        "level-3-seed-422019": 60,
+        "level-3-seed-421010": 45,
+        "level-2-seed-420001": 60,
+        "level-3-seed-207066": 86,
+        "level-3-seed-211102": 73,
+        "level-1-seed-205048": 75,
+        "level-2-seed-202021": 49,
+        "level-5-seed-204039": 65,
+        "level-3-seed-215138": 16,
+        "level-2-seed-206057": 50,
+        "level-2-seed-210093": 86,
+        "level-5-seed-208075": 87,
+        "level-3-seed-203030": 68,
+        "level-5-seed-216147": 18,
+        "level-1-seed-213120": 14,
+        "level-5-seed-212111": 80,
+        "level-1-seed-201012": 71,
+        "level-1-seed-209084": 57,
+        "level-2-seed-214129": 17
+      }
+    }
+  },
+  "duplicates_excluded": {
+    "all_teacher_duplicate_requests": 7268,
+    "targeted_duplicate_requests": 1758,
+    "cross_partition_requests_excluded": 755,
+    "ambiguous_teacher_labels_excluded": 0,
+    "balanced_cross_partition_or_ambiguous_inputs_excluded": 0,
+    "balanced_duplicate_provenances": 261
+  },
+  "checks": {
+    "train": {
+      "records": 5792,
+      "unique_request_inputs": 5792,
+      "nonreplay_families": 46,
+      "all_families": 62,
+      "maze_shapes": {
+        "36x28": 5792
+      },
+      "four_ghosts": 5792
+    },
+    "development": {
+      "records": 512,
+      "unique_request_inputs": 512,
+      "nonreplay_families": 16,
+      "all_families": 16,
+      "maze_shapes": {
+        "36x28": 512
+      },
+      "four_ghosts": 512
+    }
+  },
+  "token_audit": {
+    "records": 6304,
+    "state_limit": 4096,
+    "max_state_tokens": 2407,
+    "max_packed_tokens": 2655,
+    "over_state_limit": 0,
+    "files_sha256": {
+      "pacman-native-v4-balanced-train.jsonl": "fb0ded81c1de7393364344de0bd468f9e353ba36b083ed893a7b387e1a74e834",
+      "pacman-native-v4-balanced-development.jsonl": "5d811b2d63091e1a15307af0f9ef05dd3bc135e09c928bc65861c840a51a19b4"
+    },
+    "render_source_sha256": "a6f53af5354f8ea17915abc78360fdf291a5108ce39a53a2d9135d48c603ae58",
+    "tokenizer_sha256": "fe000e3ed39ed12b8d2481d527d44f93c65d37e87645d2dcc80d1bf9d50d2927",
+    "method": "Exact Kev render/option_text and local base tokenizer, with explicit state/question/option marker allowances. Labels/search metadata are excluded. CPU length audit; actual CUDA training must also report zero truncation.",
+    "kev_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+    "tokenizer_revision": "1001bb4d826a52d1f399e183466143f4da7b741b"
+  },
+  "generation": {
+    "dataset": "pacman-native-v4-behavior",
+    "completed_cases": 376,
+    "accepted_cases": 145,
+    "rejected_cases": 231,
+    "behavior_counts": {
+      "anticipatory_harm": 119,
+      "actual_expiry_fatal_alternative": 22,
+      "productive_retreat_to_food": 4
+    },
+    "by_split": {
+      "train": {
+        "anticipatory_harm": 81,
+        "actual_expiry_fatal_alternative": 16,
+        "productive_retreat_to_food": 4
+      },
+      "development": {
+        "anticipatory_harm": 38,
+        "actual_expiry_fatal_alternative": 6
+      }
+    },
+    "worker_seconds": 19355.757299677236,
+    "failure_counts": {
+      "No measured anticipatory failure, native expiry fatality or productive retreat cost": 225,
+      "Scouted alternative is also the exact teacher choice": 4,
+      "pellet stall": 1,
+      "Teacher-controlled positive continuation loses a life": 1
+    },
+    "learner_disagreement_measured": false,
+    "invocation_elapsed_seconds": 277.5528010419803,
+    "invocation_completed": 96,
+    "workers": 8
+  },
+  "recorded_recovery": {
+    "dataset": "pacman-native-v4-recorded-recovery",
+    "completed": 12,
+    "accepted": 11,
+    "elapsed_seconds": 265.29576070804615,
+    "live_model_queries": 0
+  },
+  "teacher_qualification": {
+    "episodes": 20,
+    "approved": true,
+    "failures": [],
+    "interpretation": "Empirical complete-game qualification on the declared finite suite; no universal optimality proof."
+  },
+  "artifacts": {
+    "pacman-native-v4-balanced-development.jsonl": {
+      "bytes": 4542310,
+      "sha256": "5d811b2d63091e1a15307af0f9ef05dd3bc135e09c928bc65861c840a51a19b4"
+    },
+    "pacman-native-v4-balanced-train.jsonl": {
+      "bytes": 51453549,
+      "sha256": "fb0ded81c1de7393364344de0bd468f9e353ba36b083ed893a7b387e1a74e834"
+    },
+    "pacman-native-v4-balanced-evidence.zip": {
+      "bytes": 133513786,
+      "sha256": "f57433f484a984ef1029a2931e0074fe61cce92bb9f8da24675838e18be70423"
+    },
+    "pacman-native-v4-balanced-manifest.json": {
+      "bytes": 606108,
+      "sha256": "a1a151682f55e67de745165f8efdfc386e21a90e3eddfc0c002cbd9c40a38096"
+    }
+  },
+  "evidence_members": 4046,
+  "source_sha256": {
+    "games/arcade-teacher.js": "66d98198b77ad5364688006ed132804fae1ccc395fb4a4536980abbdafbe2f3b",
+    "games/arcade-engine.js": "df5cf83c69810c641b65ccb533dd5da5b0ca6aca619db32090ad932fd8cd7e16",
+    "pacman_lab.py": "ebfa966b1a8f4bbaf90c98eacb11e77f2c18ec04158bee6744d1aee960307bc8",
+    "gameplay_benchmark.py": "62f205f9db11c7e067dbd07f609d0835fe92e1d2de3627aee2f7b641d2ed2008",
+    "games/benchmark-hooks.js": "9087a8ee70d8bb25c71a84abe8f614a4ea99f897ba345e36f4a70f520dca4069",
+    "games/benchmark-worker.cjs": "1d30685f16f5c55041fc5c50156da1119bd96c2ef382e09d4c7048939f7b1df7",
+    "vendor/arcade-pacman/source.json": "a0f21cf6009b7f7ca195fb8ce5f0730609767e7ced1c9b8cf29152f5bbe52545",
+    "vendor/arcade-pacman/source.zip": "fd9ae0cbeebdfd798c609464e884f6e9c9b59673bd50083fbd0e32ea6c26a6e8",
+    "benchmark-spec.json": "6be3f95e110422defe40c5c9007617f9e09f8c0e5c86a16b9107a73e52512cdc",
+    "teacher-validation-spec.json": "f5a57378e7020e543b14d4ab8ebaa0628097393307c2c493b96c0eb26d736780",
+    "teacher_validation.py": "0dfd7e7965a4837a7a989831802253d7f57a830283b241bf659ade7c876e8084"
+  },
+  "qualification_sha256": "bd848daed094f60e3c84dc267f2569f644bf8ce04c324d79942bf0dd821dbce5",
+  "exporter_sha256": "83c2df6bf9f3f19ef3e39440fc04d3ce7b806e11e61e0a2d172f61e20950837f",
+  "initialization": {
+    "parent_checkpoint": "kev-4b-pacman-native-v3",
+    "optimizer": "fresh"
+  },
+  "expected_training_requests": 6096,
+  "expected_optimizer_steps": 762,
+  "cpu_tests_passed": 44,
+  "gpu_training_performed": false,
+  "drive_verification": "Upload succeeded; destination names, sizes, parent and owner-only permissions checked. Local SHA-256 and ordered part reconstruction verified; notebook verifies downloaded bytes before use."
+}
