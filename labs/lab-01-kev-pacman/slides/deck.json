@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1\u20139 redesigned; completed native-v3 experiment analyzed; slides 10\u201315 pending approved redesign",
+  "state": "Slides 1\u201310 redesigned; completed native-v3 experiment analyzed; slides 11\u201315 pending approved redesign",
   "title": "Decision models for Pac-Man \u2014 Kev, CLM and the lab",
-  "revision_id": "pljRvSraWcrvOQ",
+  "revision_id": "ZRea7u5_lGzkTA",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-08",
-  "visual_qa": "Slides 1\u20139 inspected in native PDF exports. Slide 9 explains the unchanged native rollout MPC teacher with editable forecast/replan drawing and mathematics. All 24 buffer/scenario forecasts in its fresh seed-7 example replayed exactly against the frozen teacher, and planning left the root observation unchanged. Slides 8 and 9 fit in the native PDF. Slide 8 now explicitly separates the display crop from the full maze passed to Kev. Full readback confirms only these two pages changed and both native notes match the repository. The 120-frame GIF animates in native slideshow mode. Published Play/Pause, Previous/Next, Reset, stage controls and direction/buffer/future inspectors passed in Chrome after successful Pages deployment. The published slide 8 full-maze clarification also fits. Slides 10\u201315 retain the previous version pending the approved redesign.",
+  "visual_qa": "Slides 1\u201310 inspected in native PDF exports. Slide 10 explains the frozen teacher route policy and exact lexicographic future ranking using public seed 91009, level 1, turn 172. All 172 native prefix states and 24 action-buffer-future forecasts reproduced, and all 12 root food-route costs independently matched BFS, ghost-proximity penalties and dry-history revisits. The source and live root stayed unchanged. Final native page contains an editable actual maze crop, an editable 4\u00d75 forecast table and two editable mathematical expressions. All variables are explained in natural notes, with nominal 480-frame budget versus measured 484-frame ending and teacher-only survival filter distinctions. Full native readback and pixel comparison confirm only kev_lab_05 / PDF page 10 changed, all other 14 pages and order were preserved, notes match exactly, and all text fits the canvas. The animation footer is clickable. The 120-frame GIF visibly changes highlights in native slideshow mode. Published Play/Pause, six stages, Previous/Next boundaries, Reset and all 24 direction/buffer/future inspectors passed in Chrome with no console errors after successful Pages deployment. Slides 11\u201315 retain prior content pending the approved redesign.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -22,7 +22,8 @@
       6,
       7,
       8,
-      9
+      9,
+      10
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -35,9 +36,9 @@
       "Curriculum and checkpoint lineage",
       "Pac-Man behaviors and state information",
       "Native rollout MPC teacher",
-      "Teacher qualification",
-      "Learner states and verified teacher corrections",
-      "How a teacher decision changes Kev",
+      "Teacher route planning and future ranking",
+      "Teacher decisions and Kev distillation",
+      "How gradients update the LoRA and pointer head",
       "Does the learned policy survive?"
     ],
     "slide_1": {
@@ -58,7 +59,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 10\u201315 and their legacy lab metadata have not yet been revised.",
+    "existing_content": "The deck currently retains 15 pages. The approved 13-slide rewrite is being created and reviewed one slide at a time; pages 11\u201315 and their legacy lab metadata have not yet been revised.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -349,6 +350,49 @@
         "both_futures_agree_in_this_example": true
       },
       "public_assets_verified_commit": "7302aee2109fc09c7897c70a4f8413c89af6496f"
+    },
+    "slide_10": {
+      "object_id": "kev_lab_05",
+      "title": "Teacher route planning and future ranking",
+      "formulae": [
+        "rho = (E, C, O, D, -S, T, K, J, -mean(F), U, mean(M))",
+        "J_b(v) = min_{p in P} {d(v,p) + 2 sum_{g in G} max(0,b-d(g,p))} + 2N(v)"
+      ],
+      "speaker_notes": "speaker-notes/slide-10.md",
+      "diagram_source": "../../../docs/animations/kev-route-search.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-route-search.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/4329d7b372003f09558ef2989d16e4981674741f/docs/animations/assets/kev-route-search-flow.gif",
+      "static_diagram_editable": true,
+      "native_table": {
+        "rows": 4,
+        "columns": 5
+      },
+      "animation_layer": "White-backed moving highlights behind native maze crop, forecast table, ordered rank, food-cost component and replan text",
+      "source_revision": "27bfeb7",
+      "asset_revision": "444c2c83b69024814c248d3f49bb2f22c66468b1",
+      "teacher_sha256": "66d98198b77ad5364688006ed132804fae1ccc395fb4a4536980abbdafbe2f3b",
+      "example": {
+        "kind": "Public native CPU teacher qualification replay; no learner telemetry",
+        "seed": 91009,
+        "level": 1,
+        "turn": 172,
+        "prefix_state_hashes_verified": 172,
+        "policy_futures_verified": 24,
+        "food_costs_independently_verified": 12,
+        "live_root_restored": true,
+        "selected_action": "left",
+        "selected_buffer": 6,
+        "nominal_horizon_frames": 480,
+        "selected_forecast_frames": 484,
+        "selected_next_pellet_frames": 137,
+        "selected_future_pellets": 13,
+        "right_immediate_death_frames": 6,
+        "up_first_cycle_frames": 3,
+        "up_future_death_frames": 9
+      },
+      "formula_scope": "J_b is one component of the inner route heuristic. The whole teacher uses lexicographic native outcome ranks and finite policy continuations.",
+      "safety_filter_scope": "Exact next-tile survival filtering is teacher-rollout-only. It never replaces Kev live action selection.",
+      "interpretation": "Finite policy portfolio and horizon, with complete-game qualification and separate zero-loss positive continuation admission before student distillation. No global optimality, universal safety or trained-v4 claim."
     }
   },
   "initial_training_prework": true,
@@ -396,6 +440,7 @@
       7,
       8,
       9,
+      10,
       13
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
@@ -412,6 +457,7 @@
     7,
     8,
     9,
+    10,
     11,
     12,
     13,
