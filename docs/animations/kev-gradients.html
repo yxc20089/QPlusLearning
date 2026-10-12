@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How gradients update Kev</title>
+<style>
+:root{font:17px/1.5 Arial,sans-serif;color:#111827;background:white;color-scheme:light}body{max-width:1120px;margin:24px auto;padding:0 20px}a{color:#167985}.intro{font-size:15px;color:#5e6e80}svg{display:block;width:100%;height:auto;border-bottom:1px solid #e5eaed}.controls,.stages,.choices{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}button{font:inherit;border:1px solid #b5c4cc;background:white;border-radius:3px;padding:7px 16px;cursor:pointer}button:hover,button:focus-visible{outline:2px solid #167985;outline-offset:2px}button:disabled{opacity:.45;cursor:default}button[aria-current=step],button[aria-pressed=true]{color:white;background:#167985;border-color:#167985}.stages button{font-size:15px}h1{font-size:25px}#explanation{max-width:1050px;min-height:102px}.experiment{background:#fff4e4;padding:18px}input[type=range]{width:min(420px,90%)}output{font-weight:bold;color:#b36b17}footer{font-size:14px;color:#5e6e80;border-top:1px solid #e5eaed;padding-top:14px;margin:28px 0}
+</style>
+<p class="intro"><a href="https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit?slide=id.kev_lab_10">Slide 12</a> · <a href="kev-distillation.html">Previous: teacher distillation</a>. Backpropagation and adapter training.</p>
+<svg id="gradients" viewBox="0 0 720 405" role="img" aria-label="A cross-entropy score gradient travels backward through the trainable pointer head and Qwen backbone. LoRA matrices and the pointer head learn while base weights stay fixed. Fused AdamW updates the accumulated trainable gradients."></svg>
+<div class="controls" aria-label="Animation controls"><button id="play" aria-pressed="false">Play</button><button id="previous">Previous step</button><button id="next">Next step</button><button id="reset">Reset</button></div>
+<nav class="stages" aria-label="Gradient stages"><button data-stage="0">1 Score error</button><button data-stage="1">2 Pointer head</button><button data-stage="2">3 Frozen layers</button><button data-stage="3">4 LoRA</button><button data-stage="4">5 AdamW update</button></nav>
+<section aria-live="polite" aria-atomic="true"><h1 id="stage-title"></h1><p id="explanation"></p></section>
+<section class="experiment">
+<h2>How does confidence change the score gradient?</h2>
+<p>The teacher target stays Left. These probabilities are illustrative. Increasing Left’s probability reduces the magnitude of its negative score gradient. This control computes a one-example derivative. It does not run a model or apply an optimizer update.</p>
+<label for="probability">Illustrative p(Left): <output id="probability-value" for="probability"></output></label><br>
+<input id="probability" type="range" min="0.05" max="0.95" step="0.01" value="0.2">
+<div class="choices" aria-label="Illustrative Left probability"><button data-probability="0.2">p(Left) = 0.20</button><button data-probability="0.5">p(Left) = 0.50</button><button data-probability="0.8">p(Left) = 0.80</button></div>
+<p id="readout" aria-live="polite"></p>
+<p>The remaining probability follows the earlier Up:Right ratio of 0.35:0.45. The score gradients sum to zero. Parameter gradients also depend on the pointer-head features and the backbone’s chain rule, so these three values alone do not determine how much a LoRA weight moves.</p>
+</section>
+<h2>What the actual training step does</h2>
+<p>Kev differentiates the source-record-weighted request loss, accumulates across two microbatches of four requests, clips the global trainable gradient norm to 1.0, then runs fused AdamW on the LoRA matrices and pointer head. OneCycleLR advances after the optimizer step. The balanced-v4 recipe configures a maximum learning rate of 2e−5 and AdamW weight decay of 0.01. The displayed derivative is for one Pac-Man choice; the real update also includes the other requests in its accumulation group and generic replay.</p>
+<p>The original pretrained matrices and token embeddings stay fixed. The lab uses rank-16 all-targets LoRA, α = 32, five percent LoRA dropout during training and gradient checkpointing. The backbone remains in the autograd graph. Checkpointing recomputes activations to reduce their storage. BF16 and fused kernels change the execution, while saved LoRA/head weights use FP32.</p>
+<p>A new v4 stage starts with completed v3 adapter/head weights and fresh AdamW moments. Resuming v4 recovery restores that stage’s weights, optimizer, schedule and step. Neither the teacher’s search procedure nor the rendered game is differentiated. Teacher labels are fixed training targets. Complete-game performance needs a separate evaluation.</p>
+<footer>Sources: <a href="https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py">pinned Kev model and pointer head</a>, <a href="https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/train.py">pinned choice loss and training loop</a>, <a href="https://github.com/yxc20089/QPlusLearning/blob/5b2db99/labs/lab-01-kev-pacman/training_monitor.py">fused AdamW overlay</a>, <a href="https://github.com/yxc20089/QPlusLearning/blob/5efd612/labs/lab-01-kev-pacman/notebooks/pacman_kev_v4.ipynb">v4 recipe</a>, and <a href="https://arxiv.org/abs/2106.09685">LoRA paper</a>. The derivative follows analytically from the shown softmax cross-entropy. No measured checkpoint probabilities or learned-gameplay improvement is claimed.</footer>
+<script src="kev-gradients.js?v=1"></script>
+</html>
