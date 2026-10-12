@@ -4,5 +4,18 @@
   "clm_gif": "Byte-preserved 520-frame GIF from native reference slide course_slide_21A",
   "clm_html_source": "09-29/contrastive-animation/animation.html; standalone original lecture controls",
   "kev_math": "Mathematical illustrations; toy logits and toy rank-two matrices; no model results",
-  "upstream_kev_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4"
+  "upstream_kev_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+  "approved_lab_slide_count": 13,
+  "kev_specific_diagrams": "Editable native equations/diagrams with corresponding public interactive controls for slides 1–13",
+  "recorded_rollout_evidence": {
+    "slide": 13,
+    "recorded_date": "2026-10-07",
+    "source_revision": "b5aa381",
+    "source_sha256": {
+      "ghost-evasion-evidence.json": "10752800ee3a63e1eed28f37b9e21813d7d8df3f89f8e517962b2f366610393a",
+      "pellet-efficiency-evidence.json": "1eb80cda3e69ddfe4b119850b9992d6e1e838ca4fb4f03e31df0688e203c9bb5",
+      "teacher-reference.json": "c3c06bb5a5de1cca6559da62206a1314aefa17c544c97bd7171b22903014c888"
+    },
+    "scope": "20 reference starts, already used for diagnosis; not a blind test. No v4 outcomes."
+  }
 }

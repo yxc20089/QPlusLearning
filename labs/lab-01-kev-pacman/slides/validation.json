@@ -1,0 +1,79 @@
+{
+  "verified_at": "2026-10-12",
+  "native_presentation_id": "1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ",
+  "native_revision_id": "KKo7r3Jrt2U0Vw",
+  "slide_count": 13,
+  "slide_order": [
+    "kev_lab_01",
+    "decision_lab_pros",
+    "decision_lab_training_cost",
+    "decision_lab_performance",
+    "decision_lab_models",
+    "kev_lab_06",
+    "kev_lab_03",
+    "kev_lab_04",
+    "kev_lab_09",
+    "kev_lab_05",
+    "kev_lab_08",
+    "kev_lab_10",
+    "kev_lab_12"
+  ],
+  "removed_legacy_object_ids": [
+    "kev_lab_11",
+    "kev_lab_14"
+  ],
+  "unchanged_prior_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "native_structure_and_pixel_comparison": "passed",
+  "all_rendered_text_within_canvas": "passed",
+  "slide_13_native_objects_and_table_bounds": "passed",
+  "slide_13_formula_subscripts": "passed",
+  "slide_13_notes_match_local_source": "passed",
+  "gif": {
+    "frames": 100,
+    "dimensions": [
+      1348,
+      552
+    ],
+    "distinct_stages": 5,
+    "sha256": "54fce104d67199495a1e52e895a33b8134efd6b0560d7d4f854e4facee65b6c1"
+  },
+  "recorded_metrics_and_source_hashes": "passed",
+  "local_issue_checker": {
+    "totalIssues": 0,
+    "reportedIssues": 0,
+    "truncated": false,
+    "bySeverity": {},
+    "byCode": {}
+  },
+  "browser_controls": [
+    "five stages",
+    "Play/Pause",
+    "Previous/Next boundaries",
+    "Reset",
+    "recorded v2/v3 switching"
+  ],
+  "pdf": {
+    "sha256": "e185098ececa073669cde4d519918dae3a1589a7ffb5958018600c7bc7bef6ef",
+    "pages": 13,
+    "verification": "Native export rendered and visually reviewed"
+  },
+  "pptx": {
+    "sha256": "77fea364da52ff2093ac61580ad485c28f85724f6919c92867df8a1041d785d9",
+    "pages": 13,
+    "verification": "Native export structure, editable table and notes inspected; no PowerPoint round-trip"
+  },
+  "scope": "Presentation validation only. No GPU training or new model rollout was executed. No V4 gameplay outcome is supplied."
+}

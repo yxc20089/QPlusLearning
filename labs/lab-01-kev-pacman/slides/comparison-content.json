@@ -1,523 +1,1468 @@
 {
-  "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "total_minutes": 90,
-  "required_finetuning_minutes": 30,
-  "lab_route": "Initial → dates/evidence → documents → skills/devtools → Pac-Man",
+  "schema_version": 2,
+  "authoritative_native_url": "https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit",
+  "native_revision_id": "KKo7r3Jrt2U0Vw",
+  "synced_at": "2026-10-12",
+  "slide_count": 13,
+  "purpose": "Semantic snapshot of the approved native deck. Preserve mixed-style native equations when editing. No legacy authoring pages remain.",
   "slides": [
     {
-      "id": "kev_lab_01",
-      "title": "Kev and CLM: two ways to decide",
-      "kind": "table",
-      "dark": true,
-      "table": [
-        [
-          "Difference",
-          "Kev (small models)",
-          "CLM"
-        ],
-        [
-          "Inputs",
-          "State, question and\noptions together",
-          "State and actions\nencoded separately"
-        ],
-        [
-          "Trainable",
-          "LoRA + pointer head",
-          "Projection heads only"
-        ],
-        [
-          "Features",
-          "Encoder behavior\nchanges",
-          "LLM features\nstay fixed"
-        ]
+      "number": 1,
+      "object_id": "kev_lab_01",
+      "title": "Kev architecture",
+      "formulae": [
+        "H = f_θ(x)",
+        "p = softmax(z)"
       ],
-      "widths": [
-        122,
-        261,
-        265
-      ],
-      "body": "Our lab follows Kev's LoRA + pointer-head recipe.",
-      "footer": "Pac-Man lab | 90 minutes | 30-minute fine-tuning block",
-      "notes": "Imagine Pac-Man reaches a junction. There are three legal moves, a power pellet around one corner and a ghost approaching from another. We want the model to choose a direction from the board in front of it.\n\nKev and CLM both turn that problem into a choice, but they learn the choice differently. Small-model Kev reads the state, question and options together. Its LoRA adapters can change the features the encoder produces, and a pointer head scores each option. The original base matrices stay fixed.\n\nCLM encodes the state and each action separately. Its language-model features stay completely fixed; learned projection heads make a matching state and action point in similar directions. That separation lets it reuse action embeddings.\n\nWe follow Kev's published four-stage recipe, then add Pac-Man training. The tradeoff is more encoder computation during training in exchange for the ability to adapt its features. Whether that helps accuracy is something we need to measure.\n\nSources:\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/src/clm/heads.py\nhttps://github.com/jaredpalmer/kev/tree/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4\nhttps://github.com/Contrastive-LM/CLM/tree/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/train/finetune.py\nhttps://huggingface.co/blog/ggml-org/decision-models-in-llamacpp\nhttps://github.com/ggml-org/llama.cpp/pull/29818\nhttps://contrastive-lm.notion.site/\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_21A#slide=id.course_slide_21A",
-      "links": []
-    },
-    {
-      "id": "decision_lab_pros",
-      "title": "A CLM decision, step by step",
-      "kind": "animation",
-      "body": "",
-      "footer": "Interactive CLM controls | Original lecture animation; illustrative values, not model measurements.",
-      "notes": "Let's watch the same CLM walkthrough as in the lecture. The customer has been charged twice, and the candidates are Billing, Technical and Sales. The numbers in this animation are teaching examples.\n\nWatch the two inputs move through the teal encoder. The state and candidates are encoded separately. The encoder is fixed. The orange heads learn how to project those features into a shared space. We normalize the vectors, compare them, and turn the resulting scores into probabilities over the supplied options.\n\nThe training segment explains what changes: gradients update the heads, while the encoder keeps producing the same features. That makes cached-feature experiments attractive when we can reuse the same representations.\n\nFor Pac-Man, an action would be a direction rather than a support team. Kev adds another kind of adaptation: its LoRA updates change the encoder's effective features. We chose it because the general training stages are published and we can carry one adapter through the curriculum. Open the controls if you want to pause or repeat a stage.\n\nSources:\nhttps://github.com/jaredpalmer/kev/tree/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4\nhttps://github.com/Contrastive-LM/CLM/tree/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/src/clm/heads.py\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/train/finetune.py\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nhttps://huggingface.co/blog/ggml-org/decision-models-in-llamacpp\nhttps://github.com/ggml-org/llama.cpp/pull/29818\nhttps://contrastive-lm.notion.site/",
-      "links": [
+      "native_content": [
         {
-          "element": "footer",
-          "label": "Interactive CLM controls",
-          "url": "https://yxc20089.github.io/QPlusLearning/animations/clm.html"
-        }
-      ],
-      "media": [
-        {
-          "object_id": "decision_lab_pros_clm_overview",
-          "file": "clm-overview.gif",
-          "intrinsic": [
-            1280,
-            541
-          ],
-          "geometry": [
-            36,
-            96,
-            648,
-            273.88125
-          ],
-          "frames": 520,
-          "meaning": "existing reference CLM walkthrough",
-          "alt_text": "Animated CLM independent-encoder pipeline: input, fixed Qwen backbone, learned heads, normalization, scoring, softmax, training and unseen inference.",
-          "repository_path": "docs/animations/assets/clm-overview.gif"
-        }
-      ]
-    },
-    {
-      "id": "decision_lab_training_cost",
-      "title": "Training and serving cost",
-      "kind": "table",
-      "table": [
-        [
-          "Work",
-          "Kev LoRA",
-          "CLM heads"
-        ],
-        [
-          "Training",
-          "Encoder forward + backward\nfor adapters and head",
-          "Extract fixed features\nthen train two heads"
-        ],
-        [
-          "Repeat runs",
-          "Repeat encoder compute\nfor every experiment",
-          "Reuse feature cache\nTrain heads only"
-        ],
-        [
-          "Serving",
-          "Encode state and options\nReuse a shared prefix",
-          "Encode changing state\nReuse action vectors"
-        ]
-      ],
-      "widths": [
-        106,
-        271,
-        271
-      ],
-      "body": "Total cost = feature extraction + training + serving.",
-      "footer": "Record measured GPU time and compute units; include feature extraction.",
-      "notes": "Suppose we want to try three different training settings. With CLM, we can first extract fixed language-model features and then train the small heads repeatedly from that cache. The extraction still costs something, and it has to be repeated if the inputs or backbone change.\n\nWith Kev's LoRA recipe, every training pass runs the encoder forward and sends gradients backward through it. Only the adapters and head are updated, but the computation includes the encoder. That is why counting trainable parameters alone does not tell us the GPU cost.\n\nServing is a separate measurement. CLM can reuse candidate-action embeddings. Kev can reuse a shared prefix where its architecture and serving path support it. Neither fact gives us a universal cost winner.\n\nFor this lab, record setup time, training time, GPU use and Colab compute units. Multiply the measured hours by the actual rate if your provider charges by the hour. We have not measured a full task run on the course author's GPU, so the timing estimates are arithmetic examples rather than a quoted bill.\n\nSources:\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/train/finetune.py\nhttps://github.com/jaredpalmer/kev/tree/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4\nhttps://github.com/Contrastive-LM/CLM/tree/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/src/clm/heads.py\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nhttps://huggingface.co/blog/ggml-org/decision-models-in-llamacpp\nhttps://github.com/ggml-org/llama.cpp/pull/29818\nhttps://contrastive-lm.notion.site/\nhttps://github.com/jaredpalmer/kev\nhttps://github.com/Contrastive-LM/CLM\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_03#slide=id.clm_stage_03",
-      "links": []
-    },
-    {
-      "id": "decision_lab_performance",
-      "title": "Performance: compare like with like",
-      "kind": "table",
-      "table": [
-        [
-          "Published result",
-          "Setup",
-          "What it supports"
-        ],
-        [
-          "CLM: 36-44 ms",
-          "RTX 4090; cached actions\n1-1,024 candidates",
-          "Low added cost as the\naction set grows"
-        ],
-        [
-          "Kev-4B: 12 ms",
-          "RTX PRO 6000\nOne question; median",
-          "Fast serving in that\nllama.cpp setup"
-        ],
-        [
-          "Kev vs CLM",
-          "No matched Pac-Man\ncomparison established",
-          "Measure skill, latency\nand memory together"
-        ]
-      ],
-      "widths": [
-        169,
-        240,
-        239
-      ],
-      "body": "Different hardware and tasks: these are not a head-to-head result.",
-      "footer": "Hold states, actions, precision and hardware fixed; measure skill and latency together.",
-      "notes": "These reported numbers are useful as examples of deployment, but they are not a race between the two architectures. The CLM measurement uses an RTX 4090 with cached action embeddings. The Kev measurement uses a different GPU and a different serving implementation. The request shapes and reuse conditions also matter.\n\nIf we want an accuracy comparison, we need the same boards, legal actions and labels. If we want a latency comparison, we also need the same hardware, precision, warm-up and cache conditions. Report the median and the slower tail, not just one fast request.\n\nIn our lab we will make a narrower comparison: the completed Skills adapter against our Pac-Man adapter. The backbone, controller and evaluation boards stay the same. That lets us ask whether the task training changed the decisions and gameplay.\n\nA lower training loss is useful feedback, but it does not establish better play. We will keep the predictions and inspect a concrete changed move, especially when a ghost changes from dangerous to edible.\n\nSources:\nhttps://huggingface.co/blog/ggml-org/decision-models-in-llamacpp\nhttps://github.com/jaredpalmer/kev\nhttps://github.com/Contrastive-LM/CLM\nhttps://github.com/jaredpalmer/kev/tree/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4\nhttps://github.com/Contrastive-LM/CLM/tree/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/src/clm/heads.py\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/train/finetune.py\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nhttps://github.com/ggml-org/llama.cpp/pull/29818\nhttps://contrastive-lm.notion.site/\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49",
-      "links": []
-    },
-    {
-      "id": "decision_lab_models",
-      "title": "Serving: models and readouts",
-      "kind": "table",
-      "compact": true,
-      "table": [
-        [
-          "Model",
-          "Readout",
-          "Useful strength",
-          "Main tradeoff"
-        ],
-        [
-          "Julia-1\n144M",
-          "Option-marker\nhead",
-          "Small; multilingual\n50+ languages",
-          "Limited knowledge/reasoning\nPrivate training pipeline"
-        ],
-        [
-          "Laya\n421M",
-          "Option-marker\nhead",
-          "Small; designed\nfor specialization",
-          "Fully fine-tuned encoder\nEnglish root: 512 tokens"
-        ],
-        [
-          "Kev-4B",
-          "Pointer\nhead",
-          "Adaptable features\nOpen training code",
-          "LoRA changes features\nOptions encoded each step"
-        ],
-        [
-          "lev\n4B",
-          "Vocabulary\nlabel logits",
-          "Existing LM readout\nMany label codes",
-          "LoRA; two choice orders\nExtra head not converted"
-        ],
-        [
-          "OpenJev\n27B",
-          "Vocabulary\nlabel logits",
-          "Text and images\nAgent decisions",
-          "Larger model\nNon-commercial weights"
-        ]
-      ],
-      "widths": [
-        82,
-        113,
-        193,
-        260
-      ],
-      "body": "",
-      "footer": "llama.cpp: native heads | SGLang: label logits; native Kev/CLM heads not established (2 Oct).",
-      "notes": "A decision API describes how we ask for a choice. It does not mean every model behind that API computes the choice in the same way.\n\nThe model list here shows different readouts. Some systems compare independently encoded features. Kev uses a decision token and option tokens with a learned pointer head. Other models have their own classifiers or decision-specific architectures. They need a serving implementation that understands that readout.\n\nThe llama.cpp decision work includes several such families. The SGLang implementation we inspected takes probabilities from specified label-token logits. That can be useful for a label-token model, but it is a different computation from Kev's pointer head. We should not assume that an endpoint name alone makes a Kev checkpoint compatible.\n\nOur notebook uses the pinned Kev implementation to train and serve the adapter. The active-model badge gives us the checkpoint identity. That is the identity we will carry into the before-and-after evaluation.\n\nSources:\nhttps://huggingface.co/blog/ggml-org/decision-models-in-llamacpp\nhttps://github.com/ggml-org/llama.cpp/pull/29818\nhttps://huggingface.co/SupersonicLabs/Julia-1\nhttps://huggingface.co/convaiinnovations/laya\nhttps://huggingface.co/interfaze-ai/lev\nhttps://huggingface.co/openjev/openjev\nhttps://github.com/jaredpalmer/kev/tree/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4\nhttps://github.com/Contrastive-LM/CLM/tree/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/src/clm/heads.py\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/train/finetune.py\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nhttps://contrastive-lm.notion.site/\nhttps://github.com/ggml-org/llama.cpp/blob/master/conversion/lev.py\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/server-decision.cpp\nhttps://lmsysorg.mintlify.app/docs/supported-models/decision_models\nhttps://github.com/sgl-project/sglang/pull/41208\nhttps://github.com/sgl-project/sglang/pull/41712\nhttps://github.com/sgl-project/sglang/pull/41724\nhttps://github.com/sgl-project/sglang/pull/41922",
-      "links": []
-    },
-    {
-      "id": "kev_lab_06",
-      "title": "Kev scores the legal moves",
-      "body": "q: decision vector; k_j: option vector; d_p = 256; z_j: logit\np_j: probability; A(s): supplied legal moves; raw temperature = 1",
-      "footer": "Interactive scoring controls | Illustrative probabilities; fresh checkpoints remain uncalibrated.",
-      "notes": "At our junction, suppose the pointer head produces logits of two for Up, one for Right and zero for Down. These are illustrative values, not output from a trained checkpoint.\n\nThe first formula shows where a logit comes from. The decision representation becomes q. Each option representation becomes k sub j. Their dot product is divided by the square root of the pointer dimension, which is 256 in this recipe. A larger matching score gives that option a larger logit.\n\nThe animation then exponentiates the logits and divides each result by their sum. We get roughly 67 percent for Up, 24 percent for Right and 9 percent for Down. All three shares add to one. The sum runs only over the supplied legal moves.\n\nThose shares depend on the candidate set. They are not a promise that Up is safe 67 percent of the time. Our fresh checkpoints keep raw probabilities; we do not copy the release's fitted calibration temperature. Use the interactive controls to change one logit and see how all three shares respond.\n\nSources:\nhttps://github.com/jaredpalmer/kev/tree/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4\nhttps://github.com/Contrastive-LM/CLM/tree/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/src/clm/heads.py\nhttps://github.com/Contrastive-LM/CLM/blob/bb42c6c5bf914fd449bed2f6ca65be80602cb1f7/train/finetune.py\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nhttps://huggingface.co/blog/ggml-org/decision-models-in-llamacpp\nhttps://github.com/ggml-org/llama.cpp/pull/29818\nhttps://contrastive-lm.notion.site/\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_21A#slide=id.course_slide_21A\nhttps://drive.google.com/file/d/1ziqTDAN0kxP_fzGQwfJ-C6fQS2cQBcfh/view?usp=drivesdk\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_03#slide=id.clm_stage_03\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_07#slide=id.clm_stage_07\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_08#slide=id.clm_stage_08\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_10#slide=id.clm_stage_10\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_44#slide=id.course_slide_44\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49",
-      "links": [
-        {
-          "element": "footer",
-          "label": "Interactive scoring controls",
-          "url": "https://yxc20089.github.io/QPlusLearning/animations/kev-math.html#softmax"
-        }
-      ],
-      "kind": "animation-maths",
-      "media": [
-        {
-          "object_id": "kev_lab_06_softmax",
-          "file": "softmax.gif",
-          "intrinsic": [
-            1320,
-            330
-          ],
-          "geometry": [
-            36,
-            94,
-            648,
-            162.0
-          ],
-          "frames": 38,
-          "meaning": "mathematical illustration",
-          "alt_text": "Animated calculation for illustrative legal-move logits [2,1,0]. Normalized probabilities: Up 0.66524, Right 0.24473, Down 0.09003.",
-          "repository_path": "docs/animations/assets/softmax.gif"
+          "object_id": "kev_lab_01_title",
+          "text": "Kev architecture"
         },
         {
-          "object_id": "kev_lab_06_pointer_softmax",
-          "file": "pointer-softmax.png",
-          "intrinsic": [
-            1920,
-            240
-          ],
-          "geometry": [
-            36,
-            260,
-            648,
-            81.0
-          ],
-          "frames": 1,
-          "meaning": "mathematical illustration",
-          "alt_text": "z_j = q transpose k_j / sqrt(d_p); p_j = exp(z_j) / sum_{k in legal actions} exp(z_k).",
-          "repository_path": "docs/animations/assets/pointer-softmax.png"
-        }
-      ]
-    },
-    {
-      "id": "kev_lab_03",
-      "title": "Our 90-minute route",
-      "body": "0–20    Compare models, animation and play\n20–30  Review Pac-Man planning labels\n30–60  Fine-tune LoRA and the pointer head\n60–80  Evaluate the same boards and seed\n80–90  Explain and submit CP1",
-      "footer": "One assessed CP1; interactive play is ungraded. Stages 1–4 and label generation are prework.",
-      "notes": "We arrive with a completed Skills checkpoint. The initial decision, dates, documents and skills stages are separate prework; we are not squeezing all four into this session.\n\nFirst we watch the baseline play and identify the adapter in the badge. Then we inspect the planning labels. Look for a board where an apparently dangerous ghost is actually frightened, or where a nearby power pellet changes the best direction.\n\nThe mandatory training block takes thirty minutes: inspect the data and loss, run the full Pac-Man recipe, and check the saved result. The recipe has 762 optimizer updates. If your measured throughput needs longer, start training before the discussion block rather than silently reducing the number of updates.\n\nFinally we evaluate the Skills and task adapters on the same boards, try the task adapter in the separate play activity, and explain one result. There is one assessed checkpoint, CP1, covering review, training, evaluation and explanation. The live game is there to help us notice behaviour; it is an ungraded activity.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/cloud_runtime.py\nhttps://huggingface.co/jaredpalmer/kev-4b\nhttps://github.com/masonicGIT/pacman/tree/7407174c1d6a38be8cd230577489e39e0873145b\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman",
-      "links": []
-    },
-    {
-      "id": "kev_lab_04",
-      "title": "Prepare Colab before class",
-      "body": "RTX PRO 6000 Blackwell: 96 GB target\nPinned PyTorch/CUDA; BF16 autocast\nOptimized FLA, convolution and fused AdamW\nPac-Man: batch 4 × accumulation 2\nCheckpointing on; row budget 0",
-      "footer": "762 updates: ~19 min at 1.5 s/update; ~38 min at 3 s/update, plus setup/saves.",
-      "notes": "Before class, obtain the intended GPU and download the model weights. A free Colab session does not guarantee an RTX PRO 6000 allocation.\n\nThe setup pins the framework and the optimized training kernels. FLA handles the gated delta-rule layers, the CUDA convolution handles the short convolution, and PyTorch handles full attention. We use BF16 autocast, gradient checkpointing and fused AdamW. The task stage uses four records per microbatch and two accumulation steps, giving an effective batch of eight.\n\nThe first step can include kernel compilation, so use several warmed-up steps to estimate training time. For 762 updates, an average of 1.5 seconds gives about nineteen minutes; three seconds gives about thirty-eight minutes. Setup and checkpoint copies add time.\n\nLook at GPU utilization and step throughput as well as memory. Unused memory alone is not evidence of a slow configuration. Our earlier fallback path used much more memory. The optimized path refuses those reference kernels, and its monitor keeps enough batch information to investigate a slow or failed step.\n\nSources:\nhttps://huggingface.co/docs/transformers/en/model_doc/qwen3_5\nhttps://github.com/fla-org/flash-linear-attention/releases/tag/v0.5.2\nhttps://github.com/Dao-AILab/causal-conv1d/releases/tag/v1.7.0\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/optimized_training.py",
-      "links": []
-    },
-    {
-      "id": "kev_lab_09",
-      "title": "Five stages, five separate adapters",
-      "body": "1  Decisions: 12,576 records × 2 epochs\n2  Dates/evidence: 1,425 + 2,000 replay\n3  Documents: 5,219 + 2,000 replay\n4  Skills/devtools: 11,320 + 4,000 replay\n5  Pac-Man: 4,096 + 2,000 replay; 1 epoch",
-      "footer": "Pac-Man: 762 updates, lr 2e-5; prior stages and label generation are prework.",
-      "notes": "The word pre-training here means initial decision training on an already pretrained Qwen backbone. We are not training the language model from random weights.\n\nStage one teaches general decisions. Dates adds temporal and evidence tasks. Documents adds longer document decisions. Skills and developer tools add another domain. Each stage warm-starts from the completed adapter before it, and each has its own output folder and training curves.\n\nPac-Man is our fifth, course-specific stage. It starts from Skills and mixes 4,096 planning-labelled boards with 2,000 general decision replay records. Replay gives the model some continued practice on earlier decisions while it learns the new game task.\n\nThe Pac-Man recipe runs one epoch at a learning rate of two times ten to the minus five. With an effective batch of eight, the 6,096 requests give 762 optimizer updates. Keep all five adapter names distinct. A Skills-only continuation can begin the lab without retraining the earlier stages; it should honestly report which earlier archives are available.\n\nSources:\nhttps://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/experiments/q35-4b-s23.json\nhttps://huggingface.co/jaredpalmer/kev-4b\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/cloud_runtime.py",
-      "links": []
-    },
-    {
-      "id": "kev_lab_05",
-      "title": "Interactive play: meet the four ghosts",
-      "body": "Four native ghost personalities and release rules\nRemaining power pellets: o in the maze\nAfter consumption: global + per-ghost frightened flags\nBadge: Skills LoRA before; Pac-Man LoRA after",
-      "footer": "Ungraded play. No explicit just-consumed flag or remaining power-mode timer in the current input.",
-      "notes": "Let's look at the game before training. Blinky pursues Pac-Man. Pinky aims ahead. Inky uses both Pac-Man and Blinky in its target calculation. Clyde chases when far away and retreats when close. Their native chase and scatter rules matter to the labels.\n\nPower pellets change the situation. The maze uses the letter o for every remaining power pellet and gives Pac-Man's row and column separately. Once a pellet is eaten, that tile becomes empty. The global frightened flag and each ghost's frightened flag tell the model that power mode is active. A returning, eaten ghost is also identified by its movement mode. We do not currently provide the exact remaining power-mode duration or a separate just-consumed flag.\n\nThe ghosts leave the house gradually through native counters and timers. In model mode, simulation pauses during inference, so a minute on the wall clock can represent very little game time.\n\nRead the badge before interpreting the play. It should say Skills before task training and Pac-Man afterward. Both runs use the same faithful browser recreation and native ghost mechanics.\n\nSources:\nhttps://github.com/masonicGIT/pacman/blob/7407174c1d6a38be8cd230577489e39e0873145b/src/targets.js\nhttps://github.com/masonicGIT/pacman/blob/7407174c1d6a38be8cd230577489e39e0873145b/src/ghostReleaser.js\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/games/arcade-engine.js\nhttps://github.com/masonicGIT/pacman/tree/7407174c1d6a38be8cd230577489e39e0873145b\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/games/arcade-planner.js\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/vendor/arcade-pacman/source.json",
-      "links": []
-    },
-    {
-      "id": "kev_lab_08",
-      "title": "Planning labels from native game states",
-      "body": "4,096 train; 256 dev; 256 evaluation\nSearch 20 moves, beam 8; rank survival first\n1,450 training boards have power mode active",
-      "footer": "Approximate teacher; current timers are privileged. Two independent frightened-RNG scenarios.",
-      "notes": "We are imitating a planning teacher that can advance the actual game engine. For each legal first move, it searches twenty player moves ahead and keeps eight candidate paths. Normal ghost movement follows the native personality rules. Two independent scenarios account for frightened-mode randomness.\n\nWe rank survival first. Among equally surviving paths, the formula rewards score gain and pellets, penalizes repeated visits and distance to the nearest pellet, and rewards separation from dangerous ghosts. Delta S is score gain, P is pellets collected, R is repeated-visit cost, D sub p is maze distance to a pellet, taken as zero after the board clears, and D sub g is distance to a dangerous ghost.\n\nNative score includes eating power pellets and frightened ghosts. Of the 4,096 training boards, 1,450 have power mode active. That shows coverage of the mechanic; it does not by itself prove that every label is a good ghost-hunting decision.\n\nThe teacher sees current internal timers and pixel offsets. Kev sees the structured board, modes and history. Labels and future search paths stay outside its input. Episodes are separate across splits, and finite search makes the teacher approximate.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/planner_data.py\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/games/arcade-planner.js\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/data/pacman-planner-v1-manifest.json",
-      "links": [],
-      "kind": "maths",
-      "key": {
-        "text": "J: path value; ΔS: score gain; P: pellets; R: revisits\nD_p: nearest-pellet distance; D_g: distance to a dangerous ghost",
-        "geometry": [
-          36,
-          318,
-          648,
-          46
-        ],
-        "font": 13.5
-      },
-      "media": [
-        {
-          "object_id": "kev_lab_08_teacher_objective",
-          "file": "teacher-objective.png",
-          "intrinsic": [
-            1920,
-            208
-          ],
-          "geometry": [
-            36,
-            229,
-            648,
-            70.2
-          ],
-          "frames": 1,
-          "meaning": "mathematical illustration",
-          "alt_text": "J = score gain + 5 pellets - 4 revisits - 6 nearest-pellet distance + 2 min(dangerous-ghost distance,8).",
-          "repository_path": "docs/animations/assets/teacher-objective.png"
-        }
-      ]
-    },
-    {
-      "id": "kev_lab_10",
-      "title": "CP1: fine-tune and evaluate Pac-Man",
-      "body": "Skills → Pac-Man: rank-16 LoRA + pointer head\n4,096 boards + 2,000 replay; one epoch\n762 updates at learning rate 2e-5",
-      "footer": "One CP1: review → train → evaluate → explain. Run the complete recipe.",
-      "notes": "CP1 begins with a few labels you can explain. Check the legal moves, the ghost modes and why the planner preferred its selected action. Keep development and evaluation boards separate from training.\n\nThe loss is cross-entropy. For each training board, y sub i is the teacher's selected move and p of y sub i is the probability Kev assigns to it. We take the negative logarithm and average over the batch B. A teacher move with probability 0.9 gives a loss of about 0.105. At probability 0.1, the loss is about 2.303, so the model receives a much stronger correction.\n\nStart from the completed Skills adapter. Train the rank-16 LoRA adapters and 256-dimensional pointer head for the complete task epoch, including the 2,000 replay records. The printed command and record audit should show 6,096 accepted requests and 762 updates.\n\nStop serving before training so that a second model does not occupy the GPU. Save the task adapter in its own folder, then reload it for the paired evaluation. CP1 includes that comparison and the explanation, not just a successful training cell.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/cloud_runtime.py\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/checkpoint_backup.py",
-      "links": [],
-      "kind": "maths",
-      "key": {
-        "text": "B: batch size; s_i: board; y_i: teacher move; p(y_i | s_i): predicted share",
-        "geometry": [
-          36,
-          340,
-          648,
-          25
-        ],
-        "font": 13.5
-      },
-      "media": [
-        {
-          "object_id": "kev_lab_10_cross_entropy",
-          "file": "cross-entropy.png",
-          "intrinsic": [
-            1920,
-            240
-          ],
-          "geometry": [
-            36,
-            242,
-            648,
-            81.0
-          ],
-          "frames": 1,
-          "meaning": "mathematical illustration",
-          "alt_text": "Cross entropy = -1/B sum_i log p(teacher action y_i | board s_i).",
-          "repository_path": "docs/animations/assets/cross-entropy.png"
-        }
-      ]
-    },
-    {
-      "id": "kev_lab_11",
-      "title": "LoRA updates and training evidence",
-      "body": "W0: fixed base; A: r × d_in; B: d_out × r\nr = 16; α = 32; 33.8M trainable LoRA/head parameters",
-      "footer": "Interactive LoRA controls | TensorBoard + recovery; verified Drive backup after each saved snapshot.",
-      "notes": "The animation shows a small matrix example. The base matrix on the left stays fixed. The low-rank update changes, so the effective matrix on the right changes too. These are illustrative four-by-four matrices with rank two, not model weights or measured training steps.\n\nIn the real recipe, W zero is a fixed base matrix. A maps the input down to rank r, and B maps it back to the output dimension. We add their product, scaled by alpha divided by r. Kev uses rank sixteen and alpha thirty-two, so that scale is two. The adapters and pointer head account for about 33.8 million trainable parameters in the 4B configuration. Gradients still travel through encoder computation to reach them.\n\nWatch the actual TensorBoard loss, gradient norm, step time and GPU memory rather than treating this illustration as a training curve. Recovery includes the adapter, head, optimizer, scheduler and random state. It saves after step one, then every hundred steps or five minutes, and at completion. If Drive backup is enabled, wait for the verified backup-complete message before replacing a runtime.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/training_monitor.py\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/lora_recovery.py\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/checkpoint_backup.py\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_44#slide=id.course_slide_44\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_10#slide=id.clm_stage_10",
-      "links": [
-        {
-          "element": "footer",
-          "label": "Interactive LoRA controls",
-          "url": "https://yxc20089.github.io/QPlusLearning/animations/kev-math.html#lora"
-        }
-      ],
-      "kind": "animation-maths",
-      "media": [
-        {
-          "object_id": "kev_lab_11_lora",
-          "file": "lora.gif",
-          "intrinsic": [
-            1320,
-            330
-          ],
-          "geometry": [
-            36,
-            94,
-            648,
-            162.0
-          ],
-          "frames": 40,
-          "meaning": "mathematical illustration",
-          "alt_text": "Animated illustrative rank-two update to 4-by-4 matrices: fixed base W0, growing BA update, effective W0 + BA. Actual Kev uses rank16 and alpha32.",
-          "repository_path": "docs/animations/assets/lora.gif"
+          "object_id": "kev_lab_01_body",
+          "text": "One board, supplied moves, direct probabilities"
         },
         {
-          "object_id": "kev_lab_11_lora_formula",
-          "file": "lora.png",
-          "intrinsic": [
-            1920,
-            208
-          ],
-          "geometry": [
-            36,
-            267,
-            648,
-            70.2
-          ],
-          "frames": 1,
-          "meaning": "mathematical illustration",
-          "alt_text": "W_effective = W0 + (alpha/r) BA.",
-          "repository_path": "docs/animations/assets/lora.png"
-        }
-      ]
-    },
-    {
-      "id": "kev_lab_12",
-      "title": "Evaluate decisions and gameplay",
-      "body": "Same 256 boards: strict and tie-aware agreement\nSearch regret, survival choices and immediate captures\nSame-seed gameplay: pellets, score and revisits",
-      "footer": "Evaluation maths | Teacher agreement is not a full-game win rate or new-maze generalization.",
-      "notes": "Now we ask whether task training helped. Run both adapters on exactly the same 256 held-out boards.\n\nThe first formula is strict agreement. N is the number of boards, y sub i is the teacher's move, and a hat sub i is the model's top-ranked move. The indicator contributes one when they agree and zero otherwise, then we average. A is that fraction.\n\nSometimes the search finds equally good moves. The tie-aware metric handles that, while search regret asks how much value the chosen move gives up among equally surviving choices. Also inspect lower-survival choices and immediate captures. These compare the model with our approximate teacher; they are not a full-game win rate.\n\nThen compare native gameplay with the same seed and action limit. Record pellets, score, repeated tiles and the active adapter. A single appealing replay is not enough to establish improvement, but it can reveal why a decision changed. If probabilities are sharp, remember that our fresh model has not been calibrated. Keep the measured results even when the task adapter does not improve.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/pacman_lab.py\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/data/pacman-planner-v1-manifest.json\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/data/pacman-planner-v1-quality.json\nhttps://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman/planner_data.py\nhttps://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49",
-      "links": [
+          "object_id": "kev_lab_01_source",
+          "text": "Illustrative probabilities. Open animation controls."
+        },
         {
-          "element": "footer",
-          "label": "Evaluation maths",
-          "url": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
+          "object_id": "kev_lab_01_number",
+          "text": "1"
+        },
+        {
+          "object_id": "kev_arch_text_input_title",
+          "text": "Input x"
+        },
+        {
+          "object_id": "kev_arch_text_model_title",
+          "text": "Qwen3.5-4B-Base"
+        },
+        {
+          "object_id": "kev_arch_text_head_title",
+          "text": "Pointer head"
+        },
+        {
+          "object_id": "kev_arch_text_output_title",
+          "text": "Softmax p"
+        },
+        {
+          "object_id": "kev_arch_text_state",
+          "text": "Maze + ghosts\nTimers + history\nChoose a move\nLeft / Up / Right"
+        },
+        {
+          "object_id": "kev_arch_text_tokens",
+          "text": "Input token IDs"
+        },
+        {
+          "object_id": "kev_arch_text_lora_label",
+          "text": "LoRA ΔW\ntrainable"
+        },
+        {
+          "object_id": "kev_arch_text_base_label",
+          "text": "Base W₀\nfixed"
+        },
+        {
+          "object_id": "kev_arch_text_hidden",
+          "text": "H"
+        },
+        {
+          "object_id": "kev_arch_text_head_input",
+          "text": "Decision +\noption vectors"
+        },
+        {
+          "object_id": "kev_arch_text_head_score",
+          "text": "Learned scores"
+        },
+        {
+          "object_id": "kev_arch_text_score",
+          "text": "z"
+        },
+        {
+          "object_id": "kev_arch_text_left",
+          "text": "Left  0.67"
+        },
+        {
+          "object_id": "kev_arch_text_up",
+          "text": "Up  0.24"
+        },
+        {
+          "object_id": "kev_arch_text_right",
+          "text": "Right  0.09"
+        },
+        {
+          "object_id": "kev_arch_text_execute",
+          "text": "Execute Left"
+        },
+        {
+          "object_id": "kev_arch_text_repeated",
+          "text": "Adapted projections across layers"
+        },
+        {
+          "object_id": "kev_arch_text_encoder_formula",
+          "text": "H = fθ(x)"
+        },
+        {
+          "object_id": "kev_arch_text_output_formula",
+          "text": "p = softmax(z)"
+        },
+        {
+          "object_id": "kev_arch_text_symbols",
+          "text": "x: input tokens   H: hidden vectors   θ: effective backbone parameters\nW₀: fixed base weights   ΔW: LoRA updates   z: scores   p: probabilities"
+        },
+        {
+          "object_id": "kev_arch_text_plus",
+          "text": "+"
         }
       ],
-      "kind": "maths",
-      "key": {
-        "text": "N = 256; y_i: teacher move; a_hat: model move; 1[·]: agreement indicator",
-        "geometry": [
-          36,
-          326,
-          648,
-          37
-        ],
-        "font": 13.5
-      },
-      "media": [
-        {
-          "object_id": "kev_lab_12_accuracy",
-          "file": "accuracy.png",
-          "intrinsic": [
-            1920,
-            240
-          ],
-          "geometry": [
-            36,
-            242,
-            648,
-            81.0
-          ],
-          "frames": 1,
-          "meaning": "mathematical illustration",
-          "alt_text": "Strict teacher agreement A = 1/N sum_i indicator(model action a_hat_i = teacher y_i); a_hat_i = argmax_j p(j | s_i).",
-          "repository_path": "docs/animations/assets/accuracy.png"
-        }
-      ]
+      "speaker_notes": "speaker-notes/slide-01.md",
+      "notes": "Picture Pac-Man at a junction. It can move Left, Up or Right. We give Kev the current board and those three choices, and ask it to pick the next move. Let's follow that decision across the diagram.\n\nThe board description includes the maze, pellets, ghosts, timers and recent movement. Together with our instruction and the legal moves, it becomes a sequence of input tokens. That's the x in the first formula.\n\nQwen processes that sequence using two kinds of weights. The teal block shows the pretrained weights, W-zero, which stay fixed. The orange block shows the changes learned through LoRA, delta W. Those changes sit inside selected layers of the backbone. We've drawn them as one pair of branches so we can see how they combine; the same idea applies at many projections across the model.\n\nThe formula underneath says that the backbone, f, turns the input x into hidden vectors, H. The small theta under f names its effective parameters: the fixed base weights with the LoRA updates applied. Each hidden vector is a set of numbers describing the input at a particular token position. On the next slide, we'll see which positions matter for this decision.\n\nThe pointer head reads the decision vector and a vector for each supplied move. It learns how to compare them and produces a score for each option. We call that collection of scores z.\n\nSoftmax turns those scores into the probabilities p on the right. These example values give Left the largest share, so the application executes Left. The values are illustrative; they describe preference among the supplied moves, not the chance of surviving the game.\n\nAfter that move, the board changes and we repeat the process. Kev still runs the backbone, but it can return a choice directly from these scores. That avoids generating an answer one token at a time.\n\nAs we go into the lab, keep the colors in mind: the pretrained base stays fixed; training changes the LoRA updates and the pointer head.\n\nSources and presenter reference: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py ; https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/docs/model-cards/kev-4b.md ; https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/cloud_runtime.py\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-architecture.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-architecture.html",
+      "diagram_source": "../../../docs/animations/kev-architecture.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/5c4eb383edbb4bc9465673ed15714b1bb1b4fdb0/docs/animations/assets/kev-architecture-flow.gif"
     },
     {
-      "id": "kev_lab_14",
-      "title": "Submit CP1: show what changed",
-      "body": "Explain a changed move or remaining mistake\nConnect the move to the ghost behaviour\nShow trainable parameters and training curves\nSave task adapter and paired evaluation results\nSubmit the notebook, runtime and compute use",
-      "footer": "CP1 evidence: reviewed labels + Pac-Man adapter + measured before/after comparison.",
-      "notes": "Choose one move that changed after training, or one mistake that remained. Show the board and both predictions. Explain which ghost behaviour matters and whether a power pellet or frightened state changes the interpretation.\n\nThen connect the observation to training. Which parameters received gradients? What did the loss do? How much GPU time and compute did the run use? Could the finite-horizon teacher have missed a better long-term action? These questions make the result useful even if the model still gets stuck.\n\nSubmit the executed notebook, reviewed labels, task adapter and head, paired predictions and measured metrics. Keep the configuration, logs, TensorBoard events and backup evidence together. Package the learned adapter rather than the foundation weights or installed environment. Mark a supplied instructor checkpoint clearly, and report earlier stage archives that are unavailable.\n\nThe goal is a reproducible account of what your model learned and what it still struggles with. You can finish by trying the task adapter in the ungraded game, with the checkpoint badge visible.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_lab.ipynb",
-      "links": []
+      "number": 2,
+      "object_id": "decision_lab_pros",
+      "title": "From board state to hidden vectors",
+      "formulae": [
+        "x = encode(s, u, A)",
+        "H ∈ ℝ^(L×d)"
+      ],
+      "native_content": [
+        {
+          "object_id": "decision_lab_pros_title",
+          "text": "From board state to hidden vectors"
+        },
+        {
+          "object_id": "decision_lab_pros_source",
+          "text": "Schematic token groups. Readable marker names. Open animation controls."
+        },
+        {
+          "object_id": "decision_lab_pros_number",
+          "text": "2"
+        },
+        {
+          "object_id": "kev_input_text_subtitle",
+          "text": "State + instruction + legal moves → one structured input"
+        },
+        {
+          "object_id": "kev_input_text_state_label",
+          "text": "State s"
+        },
+        {
+          "object_id": "kev_input_text_question_label",
+          "text": "Instruction u"
+        },
+        {
+          "object_id": "kev_input_text_options_label",
+          "text": "Ordered options A"
+        },
+        {
+          "object_id": "kev_input_text_decide_label",
+          "text": "Decide"
+        },
+        {
+          "object_id": "kev_input_text_state",
+          "text": "<state>\nMaze, ghosts, ..."
+        },
+        {
+          "object_id": "kev_input_text_question",
+          "text": "<q>\nChoose a move"
+        },
+        {
+          "object_id": "kev_input_text_left",
+          "text": "<opt> Left\n</opt>"
+        },
+        {
+          "object_id": "kev_input_text_up",
+          "text": "<opt> Up\n</opt>"
+        },
+        {
+          "object_id": "kev_input_text_right",
+          "text": "<opt> Right\n</opt>"
+        },
+        {
+          "object_id": "kev_input_text_decide",
+          "text": "<decide>"
+        },
+        {
+          "object_id": "kev_input_text_backbone_label",
+          "text": "Qwen3.5-4B backbone + LoRA"
+        },
+        {
+          "object_id": "kev_input_text_hidden_state",
+          "text": "…"
+        },
+        {
+          "object_id": "kev_input_text_hidden_question",
+          "text": "…"
+        },
+        {
+          "object_id": "kev_input_text_hidden_left",
+          "text": "hend,1"
+        },
+        {
+          "object_id": "kev_input_text_hidden_up",
+          "text": "hend,2"
+        },
+        {
+          "object_id": "kev_input_text_hidden_right",
+          "text": "hend,3"
+        },
+        {
+          "object_id": "kev_input_text_hidden_decide",
+          "text": "hdecide"
+        },
+        {
+          "object_id": "kev_input_text_readout_caption",
+          "text": "The pointer head reads each option ending and the final decision vector"
+        },
+        {
+          "object_id": "kev_input_text_input_formula",
+          "text": "x = encode(s, u, A)"
+        },
+        {
+          "object_id": "kev_input_text_hidden_formula",
+          "text": "H ∈ ℝL×d"
+        },
+        {
+          "object_id": "kev_input_text_dimensions",
+          "text": "L tokens × d features"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-02.md",
+      "notes": "Let's zoom into the input we just gave Kev. There are three ingredients: the state, the instruction, and the moves it is allowed to choose.\n\nThe state, s, describes the board now. In our lab, that includes the remaining pellets and power pellets, Pac-Man's position and heading, each ghost's state, timers and recent movement. The instruction, u, tells Kev what decision to make. A is the ordered list of legal moves. For this junction, we're using Left, Up and Right.\n\nThe first formula says that the encoder combines those ingredients into x, our input token sequence. The boxes here group text spans; a phrase such as Left may take one or more tokens. Kev inserts special boundary tokens around those spans. We show them with readable names like state, question and option.\n\nLook at the closing marker after each move. That's the position where Kev will read that option's hidden vector. Because the backbone processes the sequence causally, the closing marker can use the option text that came before it. With this lab's configuration, later options can also see earlier options.\n\nNow look at the final decide marker. It comes after all three choices, so its hidden vector can use the board, the instruction and every supplied option. That gives the pointer head a place to read the whole decision context.\n\nQwen produces a hidden vector at every token position. All those vectors together form H. The notation at the bottom says H has L rows and d columns: L is the number of input tokens, and d is the width of each hidden vector. Little h means one vector from that collection. The subscripts identify the closing marker for option one, two or three, or the final decide marker.\n\nThe highlighted four vectors are the ones we pass to the pointer head for this three-option example. We'll work through that comparison shortly. First, let's see how LoRA changes the representations those vectors contain.\n\nPresenter reference: readable markers map to existing Qwen tokens: <state> → <|fim_prefix|>, <q> → <|fim_middle|>, <opt> → <|box_start|>, </opt> → <|box_end|>, <decide> → <|fim_suffix|>. No new embedding rows are required. The lab uses Qwen3.5's causal row form with option_isolation=false. The slide's state, instruction and option text is shortened for illustration; it is not an exact request dump or a literal token count.\n\nSource: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\nLab state: https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/games/arcade-engine.js\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-input.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-input.html",
+      "diagram_source": "../../../docs/animations/kev-input.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/5c4eb383edbb4bc9465673ed15714b1bb1b4fdb0/docs/animations/assets/kev-input-flow.gif"
+    },
+    {
+      "number": 3,
+      "object_id": "decision_lab_training_cost",
+      "title": "LoRA inside Kev",
+      "formulae": [
+        "y = W₀v + (α/r)BAv",
+        "ΔW = (α/r)BA"
+      ],
+      "native_content": [
+        {
+          "object_id": "decision_lab_training_cost_title",
+          "text": "LoRA inside Kev"
+        },
+        {
+          "object_id": "decision_lab_training_cost_source",
+          "text": "One adapted projection. Kev uses all targets. Open animation controls."
+        },
+        {
+          "object_id": "decision_lab_training_cost_number",
+          "text": "3"
+        },
+        {
+          "object_id": "kev_lora_text_subtitle",
+          "text": "Small learned matrices adapt each selected projection"
+        },
+        {
+          "object_id": "kev_lora_text_v",
+          "text": "v"
+        },
+        {
+          "object_id": "kev_lora_text_y",
+          "text": "y"
+        },
+        {
+          "object_id": "kev_lora_text_base",
+          "text": "Base W₀ stays fixed"
+        },
+        {
+          "object_id": "kev_lora_text_base_dim",
+          "text": "dout × din"
+        },
+        {
+          "object_id": "kev_lora_text_a",
+          "text": "A"
+        },
+        {
+          "object_id": "kev_lora_text_a_dim",
+          "text": "r × din"
+        },
+        {
+          "object_id": "kev_lora_text_b",
+          "text": "B"
+        },
+        {
+          "object_id": "kev_lora_text_b_dim",
+          "text": "dout × r"
+        },
+        {
+          "object_id": "kev_lora_text_scale",
+          "text": "α/r"
+        },
+        {
+          "object_id": "kev_lora_text_train_label",
+          "text": "LoRA matrices A and B train"
+        },
+        {
+          "object_id": "kev_lora_text_sum",
+          "text": "+"
+        },
+        {
+          "object_id": "kev_lora_text_projection_formula",
+          "text": "y = W0v + (α/r)BAv"
+        },
+        {
+          "object_id": "kev_lora_text_update_formula",
+          "text": "ΔW = (α/r)BA"
+        },
+        {
+          "object_id": "kev_lora_text_config",
+          "text": "r = 16     α = 32     α/r = 2     LoRA dropout = 0.05"
+        },
+        {
+          "object_id": "kev_lora_text_trainable",
+          "text": "33.8M trainable parameters across LoRA and the pointer head"
+        },
+        {
+          "object_id": "kev_lora_text_symbols",
+          "text": "v: layer input    y: layer output    din / dout: input / output widths"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-03.md",
+      "notes": "On the last slide, we saw Qwen turn our board and choices into hidden vectors. LoRA lets training change those representations while keeping the pretrained base weights fixed. Let's look inside one of the projections where that happens.\n\nThe vector coming in on the left is v. It's an activation inside a layer, rather than the input token sequence x we used earlier. The output of this projection is y.\n\nFollow the teal path first. The base matrix, W-zero, multiplies v to produce the original projection. That matrix has d-out rows and d-in columns. Those names simply mean the output width and the input width. Training keeps every value in this base matrix fixed.\n\nNow follow the orange path. A maps the same input into a much smaller space with r features. B maps those r features back to the output width. Together, they produce B times A times v. We multiply that contribution by alpha divided by r, then add it to the base output. That's the first equation at the bottom.\n\nThe second equation names the resulting weight update, delta W. It is alpha over r times B times A. The order matters: A acts first, and B acts second. Their product can have rank at most r. That's where the name low-rank adaptation comes from.\n\nIn our Kev recipe, r is sixteen and alpha is thirty-two, so the multiplier is two. Sixteen is the width of this small intermediate space. It is not the number of layers we train, or the number of moves Kev can choose.\n\nFor one projection, A and B contain r times the sum of d-in and d-out parameters. A full update would need d-in times d-out. That makes the learned update much smaller when r is small relative to those widths.\n\nKev applies this idea across the attention projections, the DeltaNet projections in Qwen3.5's linear-attention layers, and the feed-forward projections. The all-targets setting includes those groups. Across our four-billion-parameter backbone, the LoRA matrices and pointer head together have about thirty-three point eight million trainable parameters. The base weights stay fixed, but we still run the backbone and backpropagate through it to learn the adapters.\n\nThe recipe also uses five percent dropout on the LoRA input during training. Evaluation turns that dropout off. With the usual initialization, A starts random and B starts at zero, so a new adapter begins with zero delta W. When we continue from v2 to v3, we load the learned adapter and head instead of resetting them.\n\nSo the hidden vectors can change as the adapter learns. On the next slide, we'll use those vectors to work through the pointer head's comparison of our supplied moves.\n\nPresenter reference: A and B here are LoRA matrices, distinct from the ordered action list A on slide 2. The drawing shows one adapted linear projection. The scalar alpha/r applies to the LoRA contribution. Kev's pinned configuration uses rank 16, lora_alpha=32, lora_dropout=0.05 and lora_targets=all. Targets: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj, in_proj_qkv, in_proj_z, in_proj_a, in_proj_b and out_proj. Special embedding training is disabled in this lab. The 33.8M count includes the pointer head and is not the count for one projection.\n\nSources: https://arxiv.org/abs/2106.09685 ; https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py ; https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/cloud_runtime.py\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-lora.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-lora.html",
+      "diagram_source": "../../../docs/animations/kev-lora.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/18299745bd98d9a22db374d3ea11834f3b1eeb61/docs/animations/assets/kev-lora-flow.gif"
+    },
+    {
+      "number": 4,
+      "object_id": "decision_lab_performance",
+      "title": "The pointer head scores every option",
+      "formulae": [
+        "q = W_q h_decide + b_q",
+        "k_i = W_k h_end,i + b_k",
+        "z_i = qᵀ k_i / √d_p"
+      ],
+      "native_content": [
+        {
+          "object_id": "decision_lab_performance_title",
+          "text": "The pointer head scores every option"
+        },
+        {
+          "object_id": "decision_lab_performance_source",
+          "text": "Exact Kev pointer head. i indexes one option. Open animation controls."
+        },
+        {
+          "object_id": "decision_lab_performance_number",
+          "text": "4"
+        },
+        {
+          "object_id": "kev_pointer_text_subtitle",
+          "text": "Two learned linear projections, then a scaled dot product"
+        },
+        {
+          "object_id": "kev_pointer_text_decide_label",
+          "text": "Final <decide> vector"
+        },
+        {
+          "object_id": "kev_pointer_text_option_label",
+          "text": "Option i: closing </opt>"
+        },
+        {
+          "object_id": "kev_pointer_text_decide",
+          "text": "hdecide"
+        },
+        {
+          "object_id": "kev_pointer_text_option",
+          "text": "hend,i"
+        },
+        {
+          "object_id": "kev_pointer_text_query",
+          "text": "q = Wq hdecide + bq"
+        },
+        {
+          "object_id": "kev_pointer_text_key",
+          "text": "ki = Wk hend,i + bk"
+        },
+        {
+          "object_id": "kev_pointer_text_q",
+          "text": "q"
+        },
+        {
+          "object_id": "kev_pointer_text_k",
+          "text": "ki"
+        },
+        {
+          "object_id": "kev_pointer_text_query_dim",
+          "text": "2,560 features → 256 features"
+        },
+        {
+          "object_id": "kev_pointer_text_shared",
+          "text": "The same key layer for every option"
+        },
+        {
+          "object_id": "kev_pointer_text_dot",
+          "text": "·"
+        },
+        {
+          "object_id": "kev_pointer_text_scale",
+          "text": "÷√dp"
+        },
+        {
+          "object_id": "kev_pointer_text_scale_label",
+          "text": "÷16 here"
+        },
+        {
+          "object_id": "kev_pointer_text_z",
+          "text": "zi"
+        },
+        {
+          "object_id": "kev_pointer_text_score_label",
+          "text": "Score"
+        },
+        {
+          "object_id": "kev_pointer_text_score_formula",
+          "text": "zi = qᵀki / √dp"
+        },
+        {
+          "object_id": "kev_pointer_text_repeat",
+          "text": "K legal options → K raw scores"
+        },
+        {
+          "object_id": "kev_pointer_text_config",
+          "text": "d = 2,560     dp = 256     √dp = 16     Both projection layers train"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-04.md",
+      "notes": "LoRA has adapted the hidden vectors. Now we need to compare the moves we supplied. The pointer head takes the readouts we picked earlier and turns them into one score for each move.\n\nStart at the top left. h-decide is the hidden vector at the final decide marker. At that point, Qwen has read the board, our instruction and every candidate. We pass this vector through a learned linear layer to get q, the query vector. W-q is that layer's weight matrix, and b-q is its bias. We reuse this same query when we compare all the options for this question.\n\nNow follow the lower path. h-end-i is the hidden vector at the closing marker for option i. The i simply identifies which option we're considering: Left, Up or Right in our junction example. This is the contextual vector at the marker, rather than an average of the option's token vectors.\n\nA second learned linear layer maps that readout to k-i, the option's key vector. Its matrix is W-k and its bias is b-k. We apply this same layer to every option. Each option gets its own key because it has a different hidden vector, while the layer's weights are shared.\n\nThe d at the bottom names the width of the original hidden vectors. For our Qwen3.5 four-billion-parameter model, that width is two thousand five hundred and sixty. The pointer width, d-p, is two hundred and fifty-six. So each projection turns two thousand five hundred and sixty features into two hundred and fifty-six.\n\nAt the dot in the drawing, we compare q with k-i. Multiply their first entries, multiply their second entries, and keep going through all two hundred and fifty-six entries. Add those products. That is the dot product, written q-transpose times k-i in the equation. The transpose symbol tells us to treat q as a row when we multiply the two vectors.\n\nKev then divides the result by the square root of d-p. The square root of two hundred and fifty-six is sixteen, so that's the fixed divisor in our lab. The result is z-i: one raw score for option i. Kev uses an ordinary dot product here, without normalizing the vectors to unit length for a cosine similarity.\n\nRepeat that comparison for each of the K legal options. K is just the number of choices we supplied. Three moves give us three scores. Both of these pointer projection layers train alongside the LoRA adapters, so the model can learn which decision features should match which option features. The head is scoring the moves; the teacher's future-game simulations happen when we prepare the training labels.\n\nWe now have a score for each move. On the next slide, we'll turn those scores into probabilities and see how Kev selects an action.\n\nPresenter reference: Pinned PointerHead uses two ordinary nn.Linear(d, dp) layers with biases and scale 1/sqrt(dp). W_q and W_k each have shape 256 × 2560; each bias has 256 entries, giving 1,311,232 head parameters. These are pointer-head parameters; Qwen's attention q_proj/k_proj are separate backbone projections. The head readouts are h[decide_idx] and h[opt_idx], where option indices point to closing markers. There is no value projection, attention-weighted value sum, MLP or cosine normalization in the pointer head. In the lab temperature is 1.0. The diagram shows one option i; the same query and key layer are used for the other options. No independence or option-order invariance is implied: the Qwen3.5 row is causal and option isolation is disabled.\n\nSource: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-pointer.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-pointer.html",
+      "diagram_source": "../../../docs/animations/kev-pointer.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/5772063a2710a8d7d314118204727e2d35608e86/docs/animations/assets/kev-pointer-flow.gif"
+    },
+    {
+      "number": 5,
+      "object_id": "decision_lab_models",
+      "title": "Softmax and action selection",
+      "formulae": [
+        "p(a_i | s) = exp(z_i/T) / sum_{j=1}^{K} exp(z_j/T)",
+        "i* = argmax_i p(a_i | s)",
+        "a* = a_{i*}"
+      ],
+      "native_content": [
+        {
+          "object_id": "decision_lab_models_title",
+          "text": "Softmax and action selection"
+        },
+        {
+          "object_id": "decision_lab_models_source",
+          "text": "Illustrative scores, not a live prediction. Open animation controls."
+        },
+        {
+          "object_id": "decision_lab_models_number",
+          "text": "5"
+        },
+        {
+          "object_id": "kev_softmax_text_subtitle",
+          "text": "Softmax gives option probabilities. Argmax chooses the largest."
+        },
+        {
+          "object_id": "kev_softmax_text_probability_formula",
+          "text": "p(ai | s) ="
+        },
+        {
+          "object_id": "kev_softmax_text_numerator",
+          "text": "exp(zi / T)"
+        },
+        {
+          "object_id": "kev_softmax_text_sum",
+          "text": "Σ"
+        },
+        {
+          "object_id": "kev_softmax_text_sum_upper",
+          "text": "K"
+        },
+        {
+          "object_id": "kev_softmax_text_sum_lower",
+          "text": "j = 1"
+        },
+        {
+          "object_id": "kev_softmax_text_denominator",
+          "text": "exp(zj / T)"
+        },
+        {
+          "object_id": "kev_softmax_text_temperature",
+          "text": "T = 1"
+        },
+        {
+          "object_id": "kev_softmax_text_temperature_caption",
+          "text": "Our fresh lab checkpoint"
+        },
+        {
+          "object_id": "kev_softmax_text_scores_heading",
+          "text": "Raw scores"
+        },
+        {
+          "object_id": "kev_softmax_text_probabilities_heading",
+          "text": "Option probabilities"
+        },
+        {
+          "object_id": "kev_softmax_text_chosen_heading",
+          "text": "Chosen move"
+        },
+        {
+          "object_id": "kev_softmax_text_chosen",
+          "text": "Right"
+        },
+        {
+          "object_id": "kev_softmax_text_argmax",
+          "text": "i* = argmaxi p(ai | s)"
+        },
+        {
+          "object_id": "kev_softmax_text_action_formula",
+          "text": "a* = ai*"
+        },
+        {
+          "object_id": "kev_softmax_text_option_0",
+          "text": "Left"
+        },
+        {
+          "object_id": "kev_softmax_text_score_0",
+          "text": "1.0"
+        },
+        {
+          "object_id": "kev_softmax_text_option_1",
+          "text": "Up"
+        },
+        {
+          "object_id": "kev_softmax_text_score_1",
+          "text": "0.0"
+        },
+        {
+          "object_id": "kev_softmax_text_option_2",
+          "text": "Right"
+        },
+        {
+          "object_id": "kev_softmax_text_score_2",
+          "text": "2.0"
+        },
+        {
+          "object_id": "kev_softmax_text_percent_0",
+          "text": "24.5%"
+        },
+        {
+          "object_id": "kev_softmax_text_percent_1",
+          "text": "9.0%"
+        },
+        {
+          "object_id": "kev_softmax_text_percent_2",
+          "text": "66.5%"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-05.md",
+      "notes": "The pointer head has given us one score for each move. We now turn those scores into probabilities, and choose a move from them.\n\nLook at the equation first. s is our board state. a-i means candidate action number i, such as Left, Up or Right. p of a-i given s is the probability Kev assigns to that action for this state, with our question and supplied options held fixed. The z-i in the numerator is the raw score for that action from the pointer head.\n\nT is the temperature. In our freshly trained lab checkpoints, it is one, so dividing by T leaves each score unchanged. exp means the exponential function. It turns every score into a positive number. The denominator adds those positive numbers across all the options. The large sigma means “add them up”; j runs from one through K, where K is the number of options we supplied. Dividing by that shared total makes the probabilities add up to one. This whole calculation is called softmax.\n\nFollow the example underneath. Left has a score of one, Up has zero, and Right has two. These are illustrative scores, rather than an actual game prediction. At temperature one, softmax gives approximately twenty-four point five percent to Left, nine percent to Up, and sixty-six point five percent to Right.\n\nNow read the equation at the bottom. Argmax means “find the index with the largest value.” The winning index is i-star, and a-star is the action at that index. Here it is Right. Kev's Choice API uses the largest unrounded probability; it does not randomly sample a move from these percentages.\n\nThis probability tells us which supplied option the model prefers. It does not tell us that Pac-Man has a sixty-six percent chance of surviving. A dangerous move can still win if the model gives it the highest score. In this lab, the choices are the legal directions. Kev still has to choose one when they all look poor. That is why we evaluate complete games.\n\nIn the animation controls, try a smaller positive temperature. The probabilities become more concentrated. Try a larger one, and they become flatter. Right stays the winner because the score order has not changed. Temperature calibration can adjust those probabilities; it cannot repair a bad action ranking. Kev's published release fitted a temperature separately, but we do not inherit that fitted value when we train a new lab stage. We keep T at one here.\n\nSo Kev ends this decision with one probability per supplied move and one chosen action. Next, we can look at why producing this small output is faster than generating an answer token by token.\n\nPresenter reference: Pinned PointerHead divides logits by temperature only in evaluation; training always sees T=1. Kev's inference paths apply softmax over the option dimension. The Choice API chooses the largest unrounded probability deterministically and rounds reported probabilities to four decimal places. An exact tie chooses the first supplied option. The separate API confidence field is a normalized concentration measure, not simply the winning probability; this slide shows option probabilities. Our Pac-Man request supplies all wall-legal directions, including dangerous directions, with no implicit wait, none, abstention or confidence fallback. Fresh checkpoint metadata defaults to temperature 1.0, and warm-starting a new stage does not inherit the previous fitted temperature. Loading a completed checkpoint for inference uses its saved temperature unless explicitly overridden. Positive scalar temperature preserves fixed-logit ordering. For numerical stability, implementations may subtract the maximum scaled score before exponentiating; this gives the same probabilities.\n\nSource: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\n\nChoice selection: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/api.py\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-softmax.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-softmax.html",
+      "diagram_source": "../../../docs/animations/kev-softmax.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/564644cbba0315004e11ccdf5d06c4a66b6622bd/docs/animations/assets/kev-softmax-flow.gif"
+    },
+    {
+      "number": 6,
+      "object_id": "kev_lab_06",
+      "title": "Why Kev avoids the answer-token loop",
+      "formulae": [
+        "R_Kev ≈ (K + 1) d d_p + K d_p",
+        "R_text ≈ M d V"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_06_title",
+          "text": "Why Kev avoids the answer-token loop"
+        },
+        {
+          "object_id": "kev_lab_06_source",
+          "text": "Illustrative M = 4 answer. Counts exclude backbone work. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_06_number",
+          "text": "6"
+        },
+        {
+          "object_id": "kev_speed_text_subtitle",
+          "text": "The backbone reads the input. The pointer head returns K scores."
+        },
+        {
+          "object_id": "kev_speed_text_kev_label",
+          "text": "Kev"
+        },
+        {
+          "object_id": "kev_speed_text_state",
+          "text": "Read state"
+        },
+        {
+          "object_id": "kev_speed_text_branch_line1",
+          "text": "Question +"
+        },
+        {
+          "object_id": "kev_speed_text_branch_line2",
+          "text": "all options"
+        },
+        {
+          "object_id": "kev_speed_text_pointer_line1",
+          "text": "K option"
+        },
+        {
+          "object_id": "kev_speed_text_pointer_line2",
+          "text": "scores"
+        },
+        {
+          "object_id": "kev_speed_text_action",
+          "text": "Right"
+        },
+        {
+          "object_id": "kev_speed_text_kev_caption",
+          "text": "Cold Qwen3.5: state pass + question row"
+        },
+        {
+          "object_id": "kev_speed_text_output_caption",
+          "text": "No generated answer tokens"
+        },
+        {
+          "object_id": "kev_speed_text_text_label",
+          "text": "Text\noutput"
+        },
+        {
+          "object_id": "kev_speed_text_prompt",
+          "text": "Read prompt"
+        },
+        {
+          "object_id": "kev_speed_text_prefill_caption",
+          "text": "From prefill"
+        },
+        {
+          "object_id": "kev_speed_text_decode_caption",
+          "text": "M = 4: 3 extra decode passes"
+        },
+        {
+          "object_id": "kev_speed_text_pointer_cost",
+          "text": "RKev ≈ (K + 1) d dp + K dp"
+        },
+        {
+          "object_id": "kev_speed_text_text_cost",
+          "text": "Rtext ≈ M d V"
+        },
+        {
+          "object_id": "kev_speed_text_cost_caption",
+          "text": "Readout multiplications"
+        },
+        {
+          "object_id": "kev_speed_text_dimension_caption",
+          "text": "K choices, V vocabulary"
+        },
+        {
+          "object_id": "kev_speed_text_token_label_1",
+          "text": "y1"
+        },
+        {
+          "object_id": "kev_speed_text_token_label_2",
+          "text": "y2"
+        },
+        {
+          "object_id": "kev_speed_text_token_label_3",
+          "text": "y3"
+        },
+        {
+          "object_id": "kev_speed_text_token_label_4",
+          "text": "y4"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-06.md",
+      "notes": "We now have an action. Why can this output path be fast? The backbone still does the expensive reading. Kev changes what happens after that reading: the pointer head scores the supplied choices directly, so it can finish without writing an answer one token at a time.\n\nFollow the top row. This drawing shows a new board state in our Qwen3.5 serving setup. The model first computes the state prefix, then continues with one question row containing the instruction and every option. Those are two stages of backbone computation. All K choices belong to that row; K is the number of options, not the number of separate backbone runs. Once the hidden vectors are available, the pointer head produces the scores, and the softmax and argmax we just saw choose a move.\n\nCompare that with asking a conventional decoder to write an answer. It first reads the prompt. We call that the prefill pass. Prefill gives the distribution for the first answer token, y-one. Here y-m means answer token number m. M is the total number of tokens in the answer. Each later token depends on the tokens already generated, so the decoder has to continue in sequence. A four-token answer needs three extra decode passes after prefill. The decoder can reuse its cache during those passes, but it still has to compute the next token each time.\n\nThe equations below compare just the readouts, after we have the hidden vectors. R means an approximate count of multiplications in that readout. It is an operation count, rather than elapsed seconds.\n\nFor Kev, d is the hidden-vector width, and d-p is the smaller pointer width. They are two thousand five hundred and sixty and two hundred and fifty-six in our lab. We project one decide vector and K option vectors, giving the K-plus-one term. Each projection costs roughly d times d-p multiplications. Then we take K dot products, each with d-p entries. That gives the final K times d-p term.\n\nFor the conventional dense language-model head, V is the vocabulary size. Each answer token requires a projection from d hidden features to V vocabulary scores. Across M tokens, that is approximately M times d times V multiplications. The additional backbone decode passes are outside this equation; the lower row shows where they happen.\n\nTry one token in the animation controls. There are now zero extra decode passes. A constrained single-token classifier narrows this comparison, and a custom classification head can also score choices directly. So the benefit we are explaining is specific: Kev provides a trained option-scoring head and a decision API, while this text-output route writes a multi-token answer. Actual response time still depends on the input length, hardware and serving setup.\n\nLoRA changes the features the backbone learns. The pointer head and output format determine how we return the decision. Our API can serialize its result as JSON without asking Qwen to generate that JSON. We have now followed the complete inference path. Next, we will look at the training stages that created these weights.\n\nPresenter reference: The pinned model loads a backbone without a vocabulary output head. Qwen3.5 hybrid serving on a cold, single-question request runs a state-prefix pass followed by one causal question row containing all the options. This differs from a literal single-call claim. A repeated identical state can reuse its prefix; successive Pac-Man board states usually differ, so cross-turn cache hits are not assumed. Long states, multiple questions or CUDA graph batching can split work further. The pointer multiplication sketch is (K+1)d d_p + Kd_p; biases, scaling and softmax are small omitted terms. The text sketch assumes M dense vocabulary projections, each dV, plus M−1 extra autoregressive backbone decode passes after prefill. Optimized subset logits or a custom choice head can change that baseline. The diagram is a dependency/count sketch, not a latency measurement. The illustrative y_1…y_4 boxes do not claim a particular tokenizer segmentation. API usage.output_tokens counts serialized response text, not generated tokens.\n\nSource: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py\n\nAPI serialization: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/serve.py\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-speed.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-speed.html",
+      "diagram_source": "../../../docs/animations/kev-speed.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/2d92d160691854d3f48bd8edce8dafcab77a4f1a/docs/animations/assets/kev-speed-flow.gif"
+    },
+    {
+      "number": 7,
+      "object_id": "kev_lab_03",
+      "title": "A curriculum, then task checkpoints",
+      "formulae": [
+        "φ_child^0 = φ_parent",
+        "D_train = D_new ⊎ D_replay"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_03_title",
+          "text": "A curriculum, then task checkpoints"
+        },
+        {
+          "object_id": "kev_lab_03_source",
+          "text": "Same fixed Qwen base. Counts name requests; labels are not game wins. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_03_number",
+          "text": "7"
+        },
+        {
+          "object_id": "kev_curriculum_text_subtitle",
+          "text": "Each new stage loads its parent’s LoRA and pointer head."
+        },
+        {
+          "object_id": "kev_curriculum_text_general_label",
+          "text": "General decision curriculum — prework"
+        },
+        {
+          "object_id": "kev_curriculum_text_initial_label",
+          "text": "Initial decisions"
+        },
+        {
+          "object_id": "kev_curriculum_text_dates_label",
+          "text": "Dates + evidence"
+        },
+        {
+          "object_id": "kev_curriculum_text_documents_label",
+          "text": "Documents"
+        },
+        {
+          "object_id": "kev_curriculum_text_skills_label",
+          "text": "Skills + tools"
+        },
+        {
+          "object_id": "kev_curriculum_text_initial_count",
+          "text": "12,576 requests × 2 epochs"
+        },
+        {
+          "object_id": "kev_curriculum_text_dates_count",
+          "text": "1,425 + 2,000 replay"
+        },
+        {
+          "object_id": "kev_curriculum_text_documents_count",
+          "text": "5,219 + 2,000 replay"
+        },
+        {
+          "object_id": "kev_curriculum_text_skills_count",
+          "text": "11,320 + 4,000 replay"
+        },
+        {
+          "object_id": "kev_curriculum_text_task_label",
+          "text": "Skills becomes the baseline for task adaptation"
+        },
+        {
+          "object_id": "kev_curriculum_text_baseline_label",
+          "text": "Skills baseline"
+        },
+        {
+          "object_id": "kev_curriculum_text_v2_label",
+          "text": "Pac-Man v2"
+        },
+        {
+          "object_id": "kev_curriculum_text_v3_label",
+          "text": "Pac-Man v3"
+        },
+        {
+          "object_id": "kev_curriculum_text_baseline_caption",
+          "text": "No Pac-Man labels yet"
+        },
+        {
+          "object_id": "kev_curriculum_text_v2_caption",
+          "text": "Qualified teacher labels"
+        },
+        {
+          "object_id": "kev_curriculum_text_v3_caption",
+          "text": "Corrections on v2 states"
+        },
+        {
+          "object_id": "kev_curriculum_text_phi",
+          "text": "φchild0 = φparent"
+        },
+        {
+          "object_id": "kev_curriculum_text_data",
+          "text": "Dtrain = Dnew ⊎ Dreplay"
+        },
+        {
+          "object_id": "kev_curriculum_text_handoff_caption",
+          "text": "New stage: fresh optimizer. Parent checkpoint stays saved."
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-07.md",
+      "notes": "We have followed a decision all the way from input to action. Now let’s see where those learned weights came from. The arrows across the top show the general curriculum. Each stage starts with the LoRA and pointer head saved by the previous stage, then adds another set of decision examples.\n\nWe begin with Qwen3.5-4B-Base, whose language weights have already been pretrained. Our initial stage trains a fresh LoRA adapter and pointer head on twelve thousand five hundred and seventy-six generic requests, for two epochs. So when we call this initial decision training, we mean learning the decision adapter and head. We are not pretraining Qwen’s language weights again.\n\nNext come dates and missing-evidence examples. These teach the model to use supplied day counts and recognize when the evidence needed for a decision is absent. Then come real consumer-finance documents, followed by harder skill selection and developer-tool decisions. The numbers below the boxes show the new requests plus generic replay. Replay means we mix in earlier decision examples while learning the new task. That gives the model practice on both, although it cannot guarantee that every earlier ability is retained.\n\nSkills is the end of this general curriculum and the baseline for our game. The Skills box appears again in the lower row to show that handoff. It has learned how to score supplied options, but it has not yet received Pac-Man training labels. That is why seeing it play a game is useful: we can watch what general decision training transfers, and what it does not.\n\nNative Pac-Man v2 starts from Skills. Its task labels come from the qualified teacher, whose game simulations we will examine shortly. Native v3 starts from v2 instead. It adds verified corrections at states reached by the v2 player, together with original task examples and generic replay. We keep these versions in separate checkpoint folders, so we can load and compare each one. A new version records a training experiment; its name alone does not establish that it survives longer or collects pellets more efficiently.\n\nThe first equation describes what we copy. Phi is our name for the complete collection of trainable LoRA and pointer-head parameters. “Parent” identifies the checkpoint we load. “Child” identifies the new stage we are about to train. The superscript zero means its starting values. Before the child learns anything new, those values equal the parent’s saved values. The same fixed Qwen base supports both.\n\nThe second equation describes the training data. D-train is the collection of requests used by the new stage. D-new contains its new labels, and D-replay contains examples we keep practicing from earlier training. The combination symbol means we put those collections together, keeping repeated requests. In the actual code, we concatenate the request lists; it does not silently remove duplicates.\n\nA new stage also starts a fresh optimizer and learning-rate schedule. That differs from recovering an interrupted run. Recovery restores the progress of that same stage, including its optimizer and step position. Here, we are following completed parents into new training stages. Next we need to be precise about what a Pac-Man state tells the model, and which behaviors our teacher should demonstrate.\n\nPresenter reference: This diagram is the lab’s pinned 4B curriculum and its completed native-v2/v3 task lineage. The base revision is 1001bb4d826a52d1f399e183466143f4da7b741b. Initial: 12,576 requests × two epochs. Dates: 1,425 new + 2,000 generic replay; Documents: 5,219 + 2,000; Skills: 6,000 hard-v1 train + 5,320 devtools-v1 train + 4,000 replay, each one epoch. The Skills concatenation uses the published training partitions/counts; it is not asserted byte-identical to the unavailable historical joint file. V2: 4,096 task + 2,000 generic replay. V3: 2,048 original v2 + 2,048 verified correction/recovery + 2,000 generic replay. Both task stages are one epoch and 762 updates at effective batch eight. These are request counts, not counts of complete games or unique labeled questions. Generic augmentation may add question-level examples. Pac-Man v1 remains a separate archived task experiment, not a parent of this native-v2 → native-v3 chain. V4 dataset work is separate and no trained-v4 or improved gameplay is claimed. Warm-start copies compatible LoRA/head weights; temperature fitting is separate. The ⊎ equation denotes multiset combination, matching concatenation with repeated requests retained; it is not a new optimization objective.\n\nSources: https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/training-stages.json\n\nInitial recipe: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/experiments/q35-4b-s23.json\n\nWarm-start: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/checkpoint.py\n\nTraining: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/train.py\n\nV3: https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_v3.ipynb\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-curriculum.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-curriculum.html",
+      "diagram_source": "../../../docs/animations/kev-curriculum.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/f458ca745cc80e36c47d053bdf8a6ddc87d1e6ae/docs/animations/assets/kev-curriculum-flow.gif"
+    },
+    {
+      "number": 8,
+      "object_id": "kev_lab_04",
+      "title": "The game state Kev actually receives",
+      "formulae": [
+        "s_t = O(g_t)",
+        "a_t ∈ A_t"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_04_title",
+          "text": "The game state Kev actually receives"
+        },
+        {
+          "object_id": "kev_lab_04_source",
+          "text": "Teacher forecasts and labels stay outside this input. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_04_number",
+          "text": "8"
+        },
+        {
+          "object_id": "kev_state_text_subtitle",
+          "text": "A structured board, moving actors, native timers and memory."
+        },
+        {
+          "object_id": "kev_state_text_map_label",
+          "text": "Display crop only\nKev receives the full maze"
+        },
+        {
+          "object_id": "kev_state_text_legend",
+          "text": ". pellet · o power pellet"
+        },
+        {
+          "object_id": "kev_state_text_actors_title",
+          "text": "Player + four distinct ghosts"
+        },
+        {
+          "object_id": "kev_state_text_blinky",
+          "text": "Blinky"
+        },
+        {
+          "object_id": "kev_state_text_pinky",
+          "text": "Pinky"
+        },
+        {
+          "object_id": "kev_state_text_inky",
+          "text": "Inky"
+        },
+        {
+          "object_id": "kev_state_text_clyde",
+          "text": "Clyde"
+        },
+        {
+          "object_id": "kev_state_text_actor_fields1",
+          "text": "row/column · heading · pixel_offset · speed_phase"
+        },
+        {
+          "object_id": "kev_state_text_actor_fields2",
+          "text": "Ghosts: mode · frightened · next/pending turns"
+        },
+        {
+          "object_id": "kev_state_text_timers_title",
+          "text": "Native clocks"
+        },
+        {
+          "object_id": "kev_state_text_timers1",
+          "text": "timing.power.remaining_frames"
+        },
+        {
+          "object_id": "kev_state_text_timers2",
+          "text": "chase/scatter · release · Elroy · fruit · eating pauses"
+        },
+        {
+          "object_id": "kev_state_text_history_title",
+          "text": "Movement and pellet history"
+        },
+        {
+          "object_id": "kev_state_text_history1",
+          "text": "recent_positions (up to 64) · destination_visits"
+        },
+        {
+          "object_id": "kev_state_text_history2",
+          "text": "decisions_since_last_pellet · visits_to_current_tile"
+        },
+        {
+          "object_id": "kev_state_text_observation",
+          "text": "st = O(gt)"
+        },
+        {
+          "object_id": "kev_state_text_actions",
+          "text": "at ∈ At"
+        },
+        {
+          "object_id": "kev_state_text_actions_caption",
+          "text": "Wall-legal directions"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-08.md",
+      "notes": "Before we ask Kev to avoid a ghost, we should know what it can see. Our request contains structured game state. We give it the native maze, the current actors, the clocks and a short record of earlier movement. The model has to learn how those facts should change its choice.\n\nStart with the maze on the left. This drawing shows a small piece so we can read the symbols on the slide. Only the drawing is cropped. Kev receives every row and column of the full native maze in its structured state. A dot is a normal pellet worth ten points. The larger o is a power pellet worth fifty. A space is an empty corridor. When Pac-Man consumes either kind of food, that tile becomes a space. So an uneaten power pellet tells the model where it can activate frightened mode, while the frightened flags and remaining timer tell it whether that mode is active now. We do not need to leave an o behind to show that Pac-Man ate one.\n\nNow look at the actors. We pass Pac-Man’s row and column, but also its pixel offset within the tile. That matters because the game moves in pixels, and our decision boundary is entry to an adjacent tile. We also provide its heading, movement phase, eating pause and queued directions. A row and column alone would hide some of that timing.\n\nWe keep Blinky, Pinky, Inky and Clyde separate. Their names tell the model which native personality is present. In chase mode, Blinky targets Pac-Man directly. Pinky aims ahead of Pac-Man. Inky’s target depends on Pac-Man and Blinky together. Clyde switches between chasing and its corner according to distance. The original upward-targeting quirks are preserved. Each ghost also has a current movement mode and frightened flag, so a ghost returning to the house is different from a dangerous ghost outside it.\n\nThe pixel offsets, movement phases, next headings and pending reversals or releases are supplied for each ghost too. These are current facts from the engine. They are not a list of future ghost positions. At a new game, some ghosts are still pacing in the house. Native release counters and timers bring them out; we do not replace them with one generic random ghost.\n\nThe power timer is especially important. timing.power.remaining_frames tells us how much native frightened time remains. A move may take several simulation frames, and that timer can run out before the move finishes. Seeing a blue ghost at the beginning of a move is therefore not enough to conclude that approaching it will stay safe. Native pauses can hold that clock still, and a ghost flag can change on a different update. We therefore keep the timer and per-ghost state together. The observation also includes chase/scatter time, release state, Elroy state, fruit time and eating pauses.\n\nThe third group gives the model a way to recognize its own loops. recent_positions retains up to sixty-four recent positions, with headings. destination_visits tells us how often each legal next tile has been visited, and visits_to_current_tile describes the current tile. decisions_since_last_pellet counts how many decisions have passed without eating another pellet. These are observations of past movement. The model still has to learn when to reverse to survive and when repeated movement is wasting progress.\n\nThe equations name the two steps we have just described. g-sub-t is the complete native game state at decision t. O is the observation function that selects the fields we send, and s-sub-t is its result. The game has additional internal state, including its private random generator, that we do not put into the request. a-sub-t is the direction Kev chooses. A-sub-t is the supplied set of wall-legal directions. The membership symbol means its action comes from that set. A legal corridor can still contain a dangerous ghost; legality does not solve the avoidance problem for us.\n\nAfter the choice, the simulator advances complete native frames until Pac-Man enters the requested adjacent tile or a terminal event occurs. We then form the next observation. The teacher’s future rollouts and preferred label stay outside this input. Next, we will examine how that teacher uses the real simulator to evaluate possible continuations before it creates a training label.\n\nPresenter reference: The slide describes action_version=2 / native-adjacent-tile-entry-v2 as encoded by games/arcade-engine.js and pacman_lab.body. The slide’s display crop is rows 3–14, columns 0–11 of a fresh native seed-7 level-1 state. The model receives the complete map: observe() loops through all map.numRows and map.numCols, and pacman_lab.body includes that state without cropping its maze. Pixel tiles have an 8-pixel native size; pixel_offset is actor.tilePixel minus midTile. speed_phase is actor.frames % 16. Player fields include eat_pause_frames, stopped, next_heading and queued_heading. Ghost fields include next_heading, pending_reverse and pending_release. Global frightened, each ghost's frightened flag and timing.power.remaining_frames are separate fields. Power time is measured by the native energizer clock, not notebook wall time; power can expire or be refreshed during an action. Ghost-eating pauses can hold the power clock, so elapsed action frames are not always equal to consumed power-clock frames. Native update order can transiently show remaining_frames=0 while a ghost still has frightened=true. Full native transition/collision simulation, rather than timer subtraction alone, determines safety. Timing also includes commander.phase_clock_frames, release counters and frames_since_last_dot, elroy.wait_for_clyde, optional blinky_elroy and fruit_remaining_frames. The state includes level, lives, score, remaining pellets, fruit, turn, simulation_frames and life_epoch. Those context fields are not all printed on the slide. recent_positions is capped at 64; a respawn resets recent history and dry count, while accumulated visit counters remain. The observation excludes replay seed and private RNG. frightened movement can depend on that RNG, so observation is not claimed to make every future transition perfectly predictable. No just-consumed-power-pellet boolean is needed: the consumed tile is empty, and native flags/time show the current effect. Teacher diagnostic futures and training labels do not enter the encoded state/instructions/criteria.\n\nSource: https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/games/arcade-engine.js\n\nClock getters and request: https://github.com/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/pacman_lab.py\n\nGhost personalities: https://github.com/masonicGIT/pacman/blob/7407174c1d6a38be8cd230577489e39e0873145b/src/targets.js\n\nNative food and movement: https://github.com/masonicGIT/pacman/blob/7407174c1d6a38be8cd230577489e39e0873145b/src/Player.js\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-state.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-state.html",
+      "diagram_source": "../../../docs/animations/kev-state.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/1978c2683025bd56ac2a245a16aac36f8dc4d8f4/docs/animations/assets/kev-state-flow.gif"
+    },
+    {
+      "number": 9,
+      "object_id": "kev_lab_09",
+      "title": "Native rollout MPC teacher",
+      "formulae": [
+        "(a_t^T, b_t*) = argmin_lex ρ(g_t, a, b)",
+        "a ∈ A_t",
+        "b ∈ {1, 2, 4, 6}"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_09_title",
+          "text": "Native rollout MPC teacher"
+        },
+        {
+          "object_id": "kev_lab_09_source",
+          "text": "Fresh native example. Finite policy portfolio. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_09_number",
+          "text": "9"
+        },
+        {
+          "object_id": "kev_teacher_text_subtitle",
+          "text": "Compare forecasts, execute one direction, then replan."
+        },
+        {
+          "object_id": "kev_teacher_text_snapshot_label",
+          "text": "Native snapshot"
+        },
+        {
+          "object_id": "kev_teacher_text_snapshot_state",
+          "text": "gt"
+        },
+        {
+          "object_id": "kev_teacher_text_first_label",
+          "text": "Legal first directions"
+        },
+        {
+          "object_id": "kev_teacher_text_up_label",
+          "text": "Up"
+        },
+        {
+          "object_id": "kev_teacher_text_left_label",
+          "text": "Left"
+        },
+        {
+          "object_id": "kev_teacher_text_right_label",
+          "text": "Right"
+        },
+        {
+          "object_id": "kev_teacher_text_native_title",
+          "text": "Native game rollouts"
+        },
+        {
+          "object_id": "kev_teacher_text_portfolio",
+          "text": "4 route buffers × 2 futures"
+        },
+        {
+          "object_id": "kev_teacher_text_blinky",
+          "text": "Blinky"
+        },
+        {
+          "object_id": "kev_teacher_text_pinky",
+          "text": "Pinky"
+        },
+        {
+          "object_id": "kev_teacher_text_inky",
+          "text": "Inky"
+        },
+        {
+          "object_id": "kev_teacher_text_clyde",
+          "text": "Clyde"
+        },
+        {
+          "object_id": "kev_teacher_text_physics",
+          "text": "Pixel motion, clocks, collisions"
+        },
+        {
+          "object_id": "kev_teacher_text_horizon",
+          "text": "240 frames, 480 near danger\nor with 30 or fewer pellets"
+        },
+        {
+          "object_id": "kev_teacher_text_rank_title",
+          "text": "Compare rank ρ"
+        },
+        {
+          "object_id": "kev_teacher_text_rank_up",
+          "text": "Up        7 frames"
+        },
+        {
+          "object_id": "kev_teacher_text_rank_left",
+          "text": "Left      9 frames"
+        },
+        {
+          "object_id": "kev_teacher_text_rank_right",
+          "text": "Right   31 frames"
+        },
+        {
+          "object_id": "kev_teacher_text_rank_caption",
+          "text": "Earlier rank terms tie.\nNext-pellet time decides."
+        },
+        {
+          "object_id": "kev_teacher_text_execute_label",
+          "text": "Execute Up only"
+        },
+        {
+          "object_id": "kev_teacher_text_repeat",
+          "text": "Observe the real next state and replan"
+        },
+        {
+          "object_id": "kev_teacher_text_formula",
+          "text": "(atT, bt*) = argminlex ρ(gt, a, b)"
+        },
+        {
+          "object_id": "kev_teacher_text_domains",
+          "text": "a ∈ At\nb ∈ {1, 2, 4, 6}"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-09.md",
+      "notes": "We now know what Kev sees at a decision boundary. To teach it a good direction, we need a teacher that can compare what happens next. Our teacher does this by running the actual game forward in several temporary forecasts.\n\nFollow the diagram from the snapshot on the left. We call the complete native game state g-sub-t. The subscript t means the current decision. The teacher saves the actors, the maze and the engine’s internal clocks. It also carries forward the recent movement history. Without that history, a short forecast can keep promising food while the real player repeatedly reverses in the same corridor.\n\nEach branch starts with one legal direction. In this fresh seed-seven example, Pac-Man has moved Left once from the opening position. At row twenty-six, column twelve, the next legal directions are Up, Left and Right. We restore the same snapshot before trying each one.\n\nAfter that first move, a routing policy chooses the later moves. It uses cached shortest distances through the maze to find food and account for dangerous ghosts. We try four versions of that policy, controlled by the buffer b: one, two, four or six maze steps. The buffer changes the policy’s danger and food-route preferences. It is not a guaranteed safe radius. At each later decision, the policy simulates the legal one-action transitions and prefers those that survive immediately. It then picks a continuation using its routing rule.\n\nFor each buffer, we also try two future random sequences. The normal ghost personalities still follow the engine’s targeting rules. Frightened turns can depend on randomness, so two sampled futures can expose different outcomes. These are fresh planning samples. The teacher does not read the real episode’s future random sequence.\n\nThe orange box is the native game engine. It advances the pixels and clocks, including ghost release, chase and scatter, frightened time and eating pauses. It checks collisions using the same mechanics as interactive play. We normally forecast two hundred and forty active game frames. We extend that to four hundred and eighty near a dangerous ghost, or when thirty or fewer pellets remain. A movement finishes at its native boundary, so a forecast can go a little beyond that frame limit.\n\nHow do we compare the results? Rho, the Greek letter in the ranking box, represents an ordered vector of criteria. We compare its components from first to last. Immediate death comes first. Closing an existing dry cycle and predicting an imminent cycle come next. Then we consider deaths across the two futures and survival duration, followed by time to the next pellet and the other progress terms. A later food reward cannot cancel an earlier immediate death. This ordered comparison is called lexicographic ranking.\n\nThe numbers on the right make it concrete. For the selected Up, Left and Right forecasts, the first five components all tie at zero. We therefore compare the next-pellet times. Up takes seven frames, Left takes nine and Right takes thirty-one. Up wins. The interactive page lets us change the routing buffer or future sample and inspect the whole rank.\n\nThe equation expresses that choice. A-sub-t is the set of legal directions at this decision. The small a is one direction from that set, and b is one of our four routing buffers. Rho of g-sub-t, a and b is the rank produced by their forecasts. Argmin selects the pair with the smallest rank. The small lex tells us to compare its components in order. On the left, a-sub-t with a superscript T is the teacher’s selected direction. T stands for teacher. b-sub-t with a star is its selected buffer. The code first chooses the best buffer for each direction, then the best direction. That gives the same minimum over this finite set of candidates.\n\nPlanning has not advanced the real game. We restore the live root, execute only Up, then read the new state and plan again. This repeated forecast-and-replan process is model predictive control, or MPC. Its forecast is approximate because we use a finite policy portfolio and horizon. The next slide shows how we qualify the teacher through complete games before trusting its training labels.\n\nPresenter reference: Algorithm native-rollout-mpc-food-routing-v2, unchanged games/arcade-teacher.js. The exact frozen lab options are horizon_frames=240, endgame_horizon_frames=480, danger_horizon_frames=480, buffers=[1,2,4,6], scenario_seeds=[11117,77717]. Extend to 480 when remaining pellets ≤30 or the closest dangerous ghost is within six cached maze steps. Each forecast stops at a native terminal event, the frame horizon or 192 decisions. Completed native actions can overshoot the frame horizon. The continuation policy filters immediately fatal one-action choices only inside the teacher’s simulated policy, never inside Kev’s serving action set. Teacher planning independently resamples future RNG and restores the saved root. It does not use the real future RNG sequence.\n\nExact rank order: worst immediate death; worst root dry-cycle closure; worst max(0,32−first forecast cycle frames); number of scenario deaths; negative minimum scenario frames when any scenario dies; worst next-pellet frames with horizon+600 when none is found; worst dry-cycle count; current food-route cost with revisit penalty; negative cleared-scenario count; negative mean pellets; worst no-pellet decision streak; mean forecast frames. The selected policy uses ascending lexicographic order. The small slide table shows rank component six only after components one through five tie. It is not a standalone survival score or estimated probability.\n\nRecorded example: separate fresh CPU-only native seed-7 level-1 simulation, action_version=2, prefix=[left]. Up/Left/Right next-pellet frames are 7/9/31 using each direction’s selected buffer 1/1/4. Up and Left select buffer one by stable tie order. Both future seeds happen to agree in this early example. Nominal horizon 240 completes at 247/248/247 native frames. These are teacher forecasts, not full-game results, learner traces, GPU timings or trained-v4 evidence. Every forecast restored the live observation exactly. Snapshot/source evidence stays in the private authoring workspace; only this fresh example’s forecast summaries appear in the interactive asset.\n\nTeacher: https://github.com/yxc20089/QPlusLearning/blob/e96f50372ad970d0077b86daf8ed781b69d968e5/labs/lab-01-kev-pacman/games/arcade-teacher.js\n\nNative transition and rewind: https://github.com/yxc20089/QPlusLearning/blob/e96f50372ad970d0077b86daf8ed781b69d968e5/labs/lab-01-kev-pacman/games/arcade-engine.js\n\nFrozen search options: https://github.com/yxc20089/QPlusLearning/blob/e96f50372ad970d0077b86daf8ed781b69d968e5/labs/lab-01-kev-pacman/teacher-validation-spec.json\n\nAnimation: https://yxc20089.github.io/QPlusLearning/animations/kev-teacher.html",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-teacher.html",
+      "diagram_source": "../../../docs/animations/kev-teacher.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/d9dd85c80bea63d808963bb06226a0ec3f59529e/docs/animations/assets/kev-teacher-flow.gif"
+    },
+    {
+      "number": 10,
+      "object_id": "kev_lab_05",
+      "title": "Teacher route planning and future ranking",
+      "formulae": [
+        "rho = (E, C, O, D, -S, T, K, J, -mean(F), U, mean(M))",
+        "J_b(v) = min_{p in P} {d(v,p) + 2 sum_{g in G} max(0,b-d(g,p))} + 2N(v)"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_05_title",
+          "text": "Teacher route planning and future ranking"
+        },
+        {
+          "object_id": "kev_lab_05_source",
+          "text": "Recorded CPU teacher forecasts. Finite policy portfolio. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_05_number",
+          "text": "10"
+        },
+        {
+          "object_id": "kev_route_search_gates",
+          "table": [
+            [
+              "First move",
+              "Death now",
+              "Dry cycle",
+              "Next pellet",
+              "Alive futures"
+            ],
+            [
+              "Left, b=6",
+              "0",
+              "0",
+              "137 frames",
+              "2 / 2, 484 frames"
+            ],
+            [
+              "Up, b=1",
+              "0",
+              "1",
+              "none",
+              "0 / 2, 9 frames"
+            ],
+            [
+              "Right, b=1",
+              "1",
+              "0",
+              "6 frames",
+              "0 / 2, 6 frames"
+            ]
+          ]
+        },
+        {
+          "object_id": "kev_route_search_text_subtitle",
+          "text": "One native state exposes the trade-off between ghosts, loops and pellets."
+        },
+        {
+          "object_id": "kev_route_search_text_example_label",
+          "text": "Seed 91009, level 1, turn 172"
+        },
+        {
+          "object_id": "kev_route_search_text_bp",
+          "text": "BP"
+        },
+        {
+          "object_id": "kev_route_search_text_in",
+          "text": "In"
+        },
+        {
+          "object_id": "kev_route_search_text_player",
+          "text": "P"
+        },
+        {
+          "object_id": "kev_route_search_text_ghost_legend",
+          "text": "BP: Blinky/Pinky. In: Inky. P: Pac-Man."
+        },
+        {
+          "object_id": "kev_route_search_text_crop_legend",
+          "text": "Display crop only. Full native game."
+        },
+        {
+          "object_id": "kev_route_search_text_rank",
+          "text": "ρ = (E, C, O, D, −S, T,\n       K, J, −W, −F̄, U, M̄)"
+        },
+        {
+          "object_id": "kev_route_search_text_rank_caption",
+          "text": "First unequal component: Left beats Right at E and Up at C."
+        },
+        {
+          "object_id": "kev_route_search_text_cost_label",
+          "text": "Food-route cost is one component of the inner rollout heuristic"
+        },
+        {
+          "object_id": "kev_route_search_text_cost",
+          "text": "Jb(v) = minp∈P {d(v,p) + 2∑g∈G [b − d(g,p)]₊} + 2N(v)"
+        },
+        {
+          "object_id": "kev_route_search_text_execute",
+          "text": "Execute Left only, then replan from the actual next state."
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-10.md",
+      "notes": "Let's open up the teacher using one real decision. This is seed 91009 at level one, after 172 actions in the public qualification replay. The small maze on the left shows the actual tiles around Pac-Man. P marks Pac-Man. BP marks Blinky and Pinky, who occupy the same tile, and In marks Inky. Clyde is elsewhere in the full native state. The crop is just for this drawing.\n\nPac-Man is moving down. Blinky and Pinky approach from above, while Inky approaches from the right. There is a pellet immediately to the right. It looks attractive if we only ask where the nearest food is. The teacher instead tests every legal first direction in the native engine, including that dangerous direction. The table shows what each direction's best continuation predicts.\n\nStart with Right. It eats that pellet, but loses a life six native frames into the same tile transition. Now look at Up. Up survives its first transition. However, the recent positions already end with this sequence: the current tile, the tile above, then the current tile again. Moving Up closes the two-tile dry cycle. Its continuation loses a life at frame nine. Left survives both sampled futures and eventually reaches a pellet at frame 137. It consumes thirteen pellets before the forecast ends at frame 484.\n\nThese are native forecasts. The engine moves the ghosts during Pac-Man's action. It keeps their different target rules, release and chase/scatter clocks, pixel offsets, movement phases, eating pauses and power behavior. At this moment, there is no power time left. A dangerous ghost means an outside ghost that is not frightened. Frightened ghosts do not form the danger barrier in the routing heuristic. The teacher samples two independent future random-generator seeds, rather than looking up the live episode's future randomness. The two forecasts happen to agree here.\n\nHow does the teacher build each continuation? It first caches breadth-first-search distances across the walkable maze, including the tunnels. These are shortest maze distances. It then runs a food-routing policy under a buffer of one, two, four or six tiles. At each later simulated decision, it tests every legal next-tile move for immediate survival. If at least one move survives, the continuation chooses among those surviving moves. If every move is fatal, it still has to choose a legal move. This filter operates inside the teacher's simulation. It never replaces Kev's live choice. All legal first moves stay available to Kev.\n\nThe inner routing policy also has ordered priorities. First it penalizes a next tile one maze step or less from a dangerous ghost. Then it penalizes separation smaller than the chosen buffer. Next comes completing a dry cycle, unless that next tile contains food. Only then does it compare the food cost shown at the bottom. So that scalar cost is one component of the inner heuristic, not the teacher's whole objective.\n\nLet's read that cost. J with subscript b is the food-route cost for a particular buffer b. The letter v is the candidate next tile. P is the collection of remaining pellets, including power pellets. The letter p is one possible food target in P. The function d measures the cached BFS maze distance between two tiles. G is the collection of dangerous ghosts, and g is one ghost in that collection. We take the distance from v to p, then penalize targets that lie within buffer b of a dangerous ghost. The positive-part notation means keep the value if it is positive, otherwise use zero. The sum adds that penalty across dangerous ghosts. The minimum chooses the cheapest food target. Finally, N of v counts visits to that tile in the recent dry history, limited to the last 64 positions. The two-times-N term discourages repeating that empty route. Both factors of two are heuristic constants in this frozen implementation. A penalty near a target does not guarantee a safe route to it. After this cost, the inner rank prefers greater separation capped at b plus two, then keeping the current heading.\n\nThe outer rank rho compares what actually happened in those simulated continuations. Read its entries from left to right. E is the worst immediate-death flag across the futures. C is the worst flag for closing the real root dry cycle. O penalizes an imminent forecast cycle, using the positive part of 32 minus its first occurrence in native frames. D counts the futures that lose a life. If any future dies, S is the minimum number of simulated frames across the futures. Its negative value prefers more survival time. Otherwise this entry is zero. T is the worst time to the next actual pellet. A future with no pellet uses the horizon plus 600 as its fallback value.\n\nThe second row continues the same ordered vector. K is the largest forecast cycle count. J is the root food-route cost we just discussed. W counts futures that clear the level, so negative W prefers more clears. F bar is the mean number of pellets consumed, and its negative value prefers more pellets. U is the longest dry spell in forecast decisions. M bar is the mean number of simulated frames. The first unequal entry decides the comparison. These values never become a weighted reward sum, and raw game score is not an entry in this rank.\n\nRight loses at E. Up loses at C. The teacher therefore selects Left before either tempting food value can reverse the result. For Left, all four buffers tie in the first five entries. Its next-pellet time is 304, 273, 169 and 137 frames as the buffer increases from one to six. Buffer six wins at T. Interestingly, its root food cost J is three, while buffer one's is two. That shows why a static food cost alone cannot explain the teacher's final choice.\n\nAfter choosing Left, we execute only that first direction. Then the teacher reads the real next state and replans. The nominal horizon here is a 480-frame budget because danger is nearby. Each action completes its native boundary, which explains why the surviving forecast ends at 484. This limited portfolio gives a useful decision, with complete-game qualification and separate checks on training continuations still required. It does not prove a globally optimal route or survival in every future.\n\nPresenter controls: the footer opens the recorded example. Step through the state, route policy, native futures and rank. Compare Left with Right and Up, then compare Left under buffers one and six. Both future inspectors and every rank entry show recorded values from the frozen implementation. These controls replay stored explanatory data and run no live teacher or model.\n\nSources for the presenter: [frozen teacher source](https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/games/arcade-teacher.js), [native snapshot and transition adapter](https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/games/arcade-engine.js), [algorithm methods and limitations](https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/evaluation/teacher-methods.md), and [public qualification replay](https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/evaluation/teacher-qualification-replays.zip). All 172 prefix state hashes, all 24 action-buffer-future forecasts and all 12 root BFS/danger/revisit costs reproduced during authoring. Planning restored the live observation exactly. The teacher SHA-256 remains 66d98198b77ad5364688006ed132804fae1ccc395fb4a4536980abbdafbe2f3b. These are CPU teacher forecasts, with no learner telemetry or trained-v4 result.",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-route-search.html",
+      "diagram_source": "../../../docs/animations/kev-route-search.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/4329d7b372003f09558ef2989d16e4981674741f/docs/animations/assets/kev-route-search-flow.gif"
+    },
+    {
+      "number": 11,
+      "object_id": "kev_lab_08",
+      "title": "Teacher decisions and Kev distillation",
+      "formulae": [
+        "ℒ(φ) = −log p_φ(a_T | s, u, A)"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_08_title",
+          "text": "Teacher decisions and Kev distillation"
+        },
+        {
+          "object_id": "kev_lab_08_source",
+          "text": "Probability example only. Seed 91009 stays held out. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_08_number",
+          "text": "11"
+        },
+        {
+          "object_id": "kev_distillation_data_counts",
+          "table": [
+            [
+              "Targeted roots",
+              "Nearby decisions",
+              "Expert replay",
+              "Generic replay",
+              "Total requests"
+            ],
+            [
+              "3,660",
+              "1,220",
+              "912",
+              "304",
+              "6,096"
+            ]
+          ]
+        },
+        {
+          "object_id": "kev_distillation_text_subtitle",
+          "text": "The teacher searches offline. Kev learns its chosen action."
+        },
+        {
+          "object_id": "kev_distillation_text_input_title",
+          "text": "Same model input"
+        },
+        {
+          "object_id": "kev_distillation_text_input_state",
+          "text": "s: full observed game state\nu: decision question\nA: original legal options"
+        },
+        {
+          "object_id": "kev_distillation_text_teacher_title",
+          "text": "Offline teacher"
+        },
+        {
+          "object_id": "kev_distillation_text_teacher_label",
+          "text": "aT = Left"
+        },
+        {
+          "object_id": "kev_distillation_text_admission",
+          "text": "Positive continuations:\nclear with zero life loss"
+        },
+        {
+          "object_id": "kev_distillation_text_student_title",
+          "text": "Kev from completed v3"
+        },
+        {
+          "object_id": "kev_distillation_text_student_params",
+          "text": "φ: LoRA + pointer head"
+        },
+        {
+          "object_id": "kev_distillation_text_student_probability",
+          "text": "Up 0.35   Left 0.20   Right 0.45"
+        },
+        {
+          "object_id": "kev_distillation_text_illustrative",
+          "text": "Illustrative student probabilities"
+        },
+        {
+          "object_id": "kev_distillation_text_loss",
+          "text": "ℒ(φ) = −log pφ(aT | s, u, A)"
+        },
+        {
+          "object_id": "kev_distillation_text_numeric_loss",
+          "text": "Left target: −log(0.20) = 1.61"
+        },
+        {
+          "object_id": "kev_distillation_text_warm_start",
+          "text": "Fresh optimizer\nUpdate LoRA + pointer head\nKeep W₀ fixed"
+        },
+        {
+          "object_id": "kev_distillation_text_counts_note",
+          "text": "11 roots are recorded v3 disagreements. Other hard cases use simulation."
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-11.md",
+      "notes": "# Slide 11 — Teacher decisions and Kev distillation\n\nThe teacher can spend time exploring several futures before it chooses a move. Our student needs to make that choice quickly during play. We connect those two pieces by saving the teacher’s chosen action beside the exact decision that produced it, then teaching Kev to give that action a higher probability.\n\nStart on the left. The letter s is the full observed game state: the complete maze, Pac-Man, all four ghosts, their movement and timing fields, and the recent history. The letter u is the decision question. Capital A is the original ordered list of legal action options. We preserve the same state, question and options for the student. The teacher’s simulated future outcomes stay in the evidence files. They do not become extra clues in Kev’s input.\n\nThe teacher box gives us a sub T, written a_T. T identifies the teacher, and a is one action from those legal options. In the public example from the last slide, the teacher chose Left. That recorded teacher choice is real. Seed 91009 belongs to qualification and stays excluded from our training data. We use it here to explain how a label works.\n\nWe also have to decide which teacher labels deserve to enter the dataset. The frozen teacher cleared its finite 20-game qualification suite without a life loss in this run. The aggregate qualification rule permits up to four losses, so that result is better than its required threshold. Positive training continuations face a stricter individual rule: each one must finish the native maze with zero life loss, pass the original loop and stall gates, and reproduce under an independent cold replay with matching source hashes. These checks give evidence for the admitted cases. They do not establish that the teacher is optimal on every board.\n\nNow move to Kev on the right. Phi, the Greek letter φ, stands for the weights we allow this stage to change: the LoRA matrices and the pointer head. We initialize them from the completed native-v3 checkpoint. W with a zero below it, W₀, means the original backbone matrices. Those remain fixed. A new v4 stage starts a fresh optimizer and schedule rather than inheriting v3’s optimizer state. Resuming an interrupted v4 run is different: recovery restores that run’s optimizer and completed step.\n\nKev produces p sub phi. That is its probability distribution over the supplied actions, after the pointer head scores them and softmax normalizes the scores. To make the calculation easy to follow, the slide gives Left a probability of 0.20, Up 0.35 and Right 0.45. These are illustrative numbers. They are not measured predictions from either checkpoint.\n\nFollow the arrows down from the teacher and Kev. Both enter the same loss box: the teacher supplies the action label, and Kev supplies the probability of that action. The arrow leaving the loss box leads to the optimizer. It uses the loss gradients to update our LoRA matrices and pointer head, while the original backbone stays fixed.\n\nThe equation tells us how one Pac-Man choice contributes to the training loss. Script L, ℒ, is the loss, and the phi in parentheses reminds us that it depends on the trainable weights. We look up the probability that Kev assigns to the teacher action, a sub T. The vertical bar means “given”: given this state s, question u and option list A. We take its natural logarithm and put a minus sign in front. A probability of 0.20 gives about 1.61. If Kev instead assigned 0.80 to that same target, the loss would be about 0.22. The controls let us change that probability while keeping the complete distribution normalized.\n\nThat calculation uses one action label. We do not copy the teacher’s search ranking into a soft probability target, and this recipe does not use a teacher KL loss. During training, Kev learns from saved labels. During live play, Kev chooses the action itself. The offline teacher does not override its moves. The next slide will show how the loss reaches the pointer head and LoRA matrices, so we can leave the gradient mechanics there.\n\nFinally, look at the data counts. We selected 3,660 targeted roots and 1,220 nearby informative decisions. We retained 912 canonical native-v2 expert replay records. Those make 5,792 Pac-Man task records. Kev adds 304 generic decision replay requests, giving 6,096 requests and 762 optimizer updates for one epoch at batch four with accumulation two. All 11 recorded-v3 disagreement roots are already inside those counts. Other hard cases come from native simulation and counterfactual tests. We should not describe all of them as mistakes that we observed v3 make.\n\nThe interactive page shows the category breakdown, including the limited 16 training and four development examples of actual native power expiry. These counts describe the coverage we have, not a promise that every behavior is solved. A low choice loss tells us that Kev matches labels better on those examples. Ghost evasion, loops and pellet efficiency still need measurement in complete games.\n\n## Source and scope\n\n- Frozen state/action request construction and native observation contract: https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/pacman_lab.py and https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/games/arcade-engine.js\n- Teacher algorithm, finite qualification and positive-continuation admission: https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/evaluation/teacher-methods.md\n- Actual teacher-Left example, qualification seed 91009, level 1, turn 172: the verified public CPU reproduction underlying slide 10 and https://github.com/yxc20089/QPlusLearning/blob/27bfeb7/labs/lab-01-kev-pacman/evaluation/teacher-qualification-replays.zip\n- Frozen dataset composition, categories, 11 actual recorded-v3 disagreements, original legal options and exclusion of future metadata: https://github.com/yxc20089/QPlusLearning/blob/32f5d94/labs/lab-01-kev-pacman/evaluation/v4-balanced-export-2026-10-08.md\n- Verified completed-v3 warm start, fresh optimizer, rank 16, pointer dimension 256, one epoch, 2e-5 learning rate, batch 4 × accumulation 2 and 6,096 requests / 762 updates: https://github.com/yxc20089/QPlusLearning/blob/5efd612/labs/lab-01-kev-pacman/notebooks/pacman_kev_v4.ipynb\n- Choice loss implementation: https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/train.py (`question_loss`, hard-label `F.cross_entropy`; default loss modifiers remain zero for these Pac-Man choice labels).\n\nThe editable equation shows the loss for one Pac-Man choice question. The probability control is a teaching experiment, not a model run or parameter update. The teacher choice is recorded CPU evidence from an excluded qualification seed. No teacher futures enter the model state, no private learner trace is published, and no learned-v4 gameplay improvement is claimed.",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-distillation.html",
+      "diagram_source": "../../../docs/animations/kev-distillation.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/55061fb0e860ec3e6bb699f0ba278af553fc9487/docs/animations/assets/kev-distillation-flow.gif"
+    },
+    {
+      "number": 12,
+      "object_id": "kev_lab_10",
+      "title": "How gradients update Kev",
+      "formulae": [
+        "∂ℒ/∂z_i = p_i − t_i",
+        "φ = {A_ℓ, B_ℓ, W_q, b_q, W_k, b_k}"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_10_title",
+          "text": "How gradients update Kev"
+        },
+        {
+          "object_id": "kev_lab_10_source",
+          "text": "Single-choice gradient. Frozen base. Open animation controls."
+        },
+        {
+          "object_id": "kev_lab_10_number",
+          "text": "12"
+        },
+        {
+          "object_id": "kev_gradients_text_subtitle",
+          "text": "The loss flows backward. LoRA and the pointer head learn."
+        },
+        {
+          "object_id": "kev_gradients_text_score_gradient",
+          "text": "∂ℒ/∂zi = pi − ti"
+        },
+        {
+          "object_id": "kev_gradients_text_gradient_values",
+          "text": "Up +0.35   Left −0.80   Right +0.45"
+        },
+        {
+          "object_id": "kev_gradients_text_target",
+          "text": "ti = 1 for the teacher action, 0 otherwise. Values are illustrative."
+        },
+        {
+          "object_id": "kev_gradients_text_input",
+          "text": "x"
+        },
+        {
+          "object_id": "kev_gradients_text_backbone_title",
+          "text": "Qwen backbone"
+        },
+        {
+          "object_id": "kev_gradients_text_base",
+          "text": "W₀ stays fixed"
+        },
+        {
+          "object_id": "kev_gradients_text_lora",
+          "text": "LoRA Aℓ, Bℓ train"
+        },
+        {
+          "object_id": "kev_gradients_text_hidden",
+          "text": "H"
+        },
+        {
+          "object_id": "kev_gradients_text_head_title",
+          "text": "Pointer head"
+        },
+        {
+          "object_id": "kev_gradients_text_head_query",
+          "text": "Wq, bq"
+        },
+        {
+          "object_id": "kev_gradients_text_head_key",
+          "text": "Wk, bk"
+        },
+        {
+          "object_id": "kev_gradients_text_scores",
+          "text": "z"
+        },
+        {
+          "object_id": "kev_gradients_text_loss_title",
+          "text": "Cross-entropy"
+        },
+        {
+          "object_id": "kev_gradients_text_loss_symbol",
+          "text": "ℒ"
+        },
+        {
+          "object_id": "kev_gradients_text_teacher",
+          "text": "teacher: Left"
+        },
+        {
+          "object_id": "kev_gradients_text_frozen_gradient",
+          "text": "Gradients pass through frozen layers"
+        },
+        {
+          "object_id": "kev_gradients_text_backward",
+          "text": "Backpropagation"
+        },
+        {
+          "object_id": "kev_gradients_text_trainable",
+          "text": "φ = {Aℓ, Bℓ, Wq, bq, Wk, bk}"
+        },
+        {
+          "object_id": "kev_gradients_text_optimizer",
+          "text": "Batch 4 × accum 2     Clip norm 1.0     Fused AdamW     peak lr 2e−5"
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-12.md",
+      "notes": "# Slide 12 — How gradients update Kev\n\nOn the last slide, the teacher gave us Left and Kev assigned it a probability of 0.20. The loss told us that this was a poor match. Now we need to turn that mismatch into a learning signal.\n\nStart with the equation at the top. Script L is our cross-entropy loss. z sub i is the raw score for action i, before softmax. The two partial-derivative symbols ask how the loss would change if we nudged that score while holding the other scores fixed. The answer is p sub i minus t sub i. p is Kev’s probability for that action. t is the target indicator: it is one for the teacher’s chosen action and zero for every other supplied action.\n\nUsing our illustrative probabilities, Up gives 0.35 minus zero, so its score gradient is positive 0.35. Left gives 0.20 minus one, so its gradient is negative 0.80. Right gives positive 0.45. A downhill direction in score space would raise Left’s score and lower the others. These numbers explain the derivative. They are not measured predictions from a trained checkpoint, and we are not directly editing scores during training.\n\nNow follow the drawing from left to right once. x is the encoded state, question and action options. The backbone produces H, the collection of hidden vectors. The pointer head reads the decide marker and each option’s closing marker, then produces z, the list of action scores. Softmax and the teacher label give us the loss on the right. The backbone box is a schematic of many layers.\n\nThe orange arrows run in the reverse direction. First the loss reaches the pointer head. W sub q and b sub q are its query projection matrix and bias. W sub k and b sub k are its key projection matrix and bias. Autograd uses the chain rule through the dot products and both projections. It computes gradients for those head weights and for the hidden vectors that supplied their inputs. These head projections are separate from the attention projections inside Qwen.\n\nThose hidden-vector gradients continue through the backbone. W-zero stays fixed, but the activations around it still depend on earlier layers. Freezing the matrix means we do not update its entries. It does not remove that operation from the path needed to learn an earlier adapter. This is why LoRA training still needs a backward pass through a large model. Our gradient checkpointing saves activation memory by recomputing selected forward operations during backward.\n\nInside each selected projection, A sub ell and B sub ell are the two LoRA matrices. Ell names the adapted projection. We have many such pairs across Qwen’s attention, DeltaNet and feed-forward projections. Each pair learns its contribution to the representation. Rank is sixteen, and alpha over rank is thirty-two over sixteen, which gives a multiplier of two. The original base matrices and token embeddings remain fixed in this lab.\n\nLook at phi in the lower equation. The braces collect the parameters that training can update: every adapted layer’s A and B, together with the pointer head’s two matrices and two biases. That collection is what we optimize. The teacher’s search algorithm and the game simulator are outside this gradient path. Their role was to produce and check our fixed labels.\n\nFinally, connect this picture to the notebook. We use microbatches of four requests and accumulate across two of them, so a full optimizer update combines eight source requests. Kev weights the losses by source records. It clips the global trainable gradient norm to one, then fused AdamW updates phi. The learning-rate schedule advances after that update, with a configured maximum of two times ten to the minus five. AdamW keeps running estimates of gradients and squared gradients, and applies weight decay. It is more than simply subtracting the three score gradients shown at the top.\n\nThe new v4 stage copies the completed v3 adapter and head, then starts a fresh optimizer. Recovery within v4 restores that stage’s optimizer and progress. Because each update combines examples and changes shared weights, one particular action probability need not improve at every step. On the next slide, we will test the resulting policy in complete games, where ghost avoidance and pellet efficiency matter.\n\n## Sources and scope\n\n- [Pinned Kev model](https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/model.py): affine pointer projections, readouts, all-targets rank-16 LoRA and trainable-parameter filtering.\n- [Pinned Kev training loop](https://github.com/jaredpalmer/kev/blob/84847f0a883d900f7de5b7a57eaa341ca7f9a6b4/kev/train.py): ordinary choice cross-entropy, record-weighted accumulation, global gradient clipping at 1.0, AdamW and OneCycleLR.\n- [Lab execution overlay](https://github.com/yxc20089/QPlusLearning/blob/5b2db99/labs/lab-01-kev-pacman/training_monitor.py): CUDA fused AdamW with the upstream objective retained.\n- [V4 notebook recipe](https://github.com/yxc20089/QPlusLearning/blob/5efd612/labs/lab-01-kev-pacman/notebooks/pacman_kev_v4.ipynb): completed-v3 warm start, fresh optimizer, batch 4 × accumulation 2, maximum learning rate 2e-5 and checkpointing.\n- [LoRA paper](https://arxiv.org/abs/2106.09685): fixed pretrained matrices and learned low-rank updates.\n\nThe score derivative is an analytic consequence of single-label softmax cross-entropy at training temperature 1. It is displayed for one illustrative Pac-Man choice. The actual optimizer combines request losses and replay; this animation does not run GPU training, differentiate the teacher, reproduce a checkpoint’s predictions or establish better gameplay. A and B here are LoRA matrices, distinct from the action list A used earlier. The backbone drawing does not assert that there is only one layer or that every original parameter trains.",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-gradients.html",
+      "diagram_source": "../../../docs/animations/kev-gradients.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/af90ac22f4dca038c2f68ba8583b1d3a64eb151f/docs/animations/assets/kev-gradients-flow.gif"
+    },
+    {
+      "number": 13,
+      "object_id": "kev_lab_12",
+      "title": "Does the learned policy survive?",
+      "formulae": [
+        "s_t = O(g_t)",
+        "a_t = π_φ(s_t)",
+        "g_(t+1) = F(g_t, a_t)",
+        "C = (1/N) ∑_j 1[clear_j]",
+        "E = 1000 P / n_f"
+      ],
+      "native_content": [
+        {
+          "object_id": "kev_lab_12_title",
+          "text": "Does the learned policy survive?"
+        },
+        {
+          "object_id": "kev_lab_12_body",
+          "text": "Run complete native games. Diagnose mistakes in saved traces."
+        },
+        {
+          "object_id": "kev_lab_12_source",
+          "text": "Reference suite, not blind test. Open rollout controls."
+        },
+        {
+          "object_id": "kev_lab_12_number",
+          "text": "13"
+        },
+        {
+          "object_id": "kev_rollout_metrics",
+          "table": [
+            [
+              "Metric",
+              "Native-v3",
+              "Teacher"
+            ],
+            [
+              "Clears",
+              "0/20",
+              "20/20"
+            ],
+            [
+              "Avoidable deaths",
+              "22",
+              "0"
+            ],
+            [
+              "Pellets / 1k frames",
+              "34.60",
+              "74.09"
+            ]
+          ]
+        },
+        {
+          "object_id": "kev_rollout_text_starts",
+          "text": "Same 20 starts: 5 seeds × levels 1, 2, 3, 5"
+        },
+        {
+          "object_id": "kev_rollout_text_observation_title",
+          "text": "Observe full game"
+        },
+        {
+          "object_id": "kev_rollout_text_observation_formula",
+          "text": "st = O(gt)"
+        },
+        {
+          "object_id": "kev_rollout_text_observation_detail",
+          "text": "Full maze + ghosts + timers"
+        },
+        {
+          "object_id": "kev_rollout_text_policy_title",
+          "text": "Kev selects one legal move"
+        },
+        {
+          "object_id": "kev_rollout_text_policy_formula",
+          "text": "at = πφ(st)"
+        },
+        {
+          "object_id": "kev_rollout_text_policy_detail",
+          "text": "Largest probability; no teacher override"
+        },
+        {
+          "object_id": "kev_rollout_text_game_title",
+          "text": "Native game advances"
+        },
+        {
+          "object_id": "kev_rollout_text_game_formula",
+          "text": "gt+1 = F(gt, at)"
+        },
+        {
+          "object_id": "kev_rollout_text_game_detail",
+          "text": "4 ghosts · pellets · power timers"
+        },
+        {
+          "object_id": "kev_rollout_text_repeat",
+          "text": "Repeat until clear, game-over or watchdog"
+        },
+        {
+          "object_id": "kev_rollout_text_clear_formula",
+          "text": "C = (1/N) ∑j 1[clearj]"
+        },
+        {
+          "object_id": "kev_rollout_text_clear_key",
+          "text": "N = games; count genuine level clears only"
+        },
+        {
+          "object_id": "kev_rollout_text_efficiency_formula",
+          "text": "E = 1000 P / nf"
+        },
+        {
+          "object_id": "kev_rollout_text_efficiency_key",
+          "text": "P: pellets; nf: active native frames"
+        },
+        {
+          "object_id": "kev_rollout_text_diagnostics",
+          "text": "Inspect deaths, dry spells and loops."
+        },
+        {
+          "object_id": "kev_rollout_text_archive_caption",
+          "text": "Recorded v3 / teacher. V4 must be measured."
+        }
+      ],
+      "speaker_notes": "speaker-notes/slide-13.md",
+      "notes": "We have now followed one teacher decision all the way to a weight update. The final question is what those updates change when Kev plays a whole game. A lower loss tells us that it is fitting labels better. To see whether it can avoid ghosts and finish eating the pellets, we have to let its own decisions change the game.\n\nStart with the loop across the top. We reset the native game to the same seed and starting level for every controller. Our reference suite has five seeds at each of levels one, two, three and five, giving twenty starts. We keep the game version, observation format, action rules and limits fixed. We also record the active checkpoint fingerprint, so a file called “latest” cannot quietly stand in for a different adapter.\n\nIn the first box, g sub t is the native game snapshot at decision t. The letter O is our observation function. It turns that snapshot into s sub t, the information Kev receives. This includes the full maze and all remaining pellets, power pellets, the player, the four ghosts, movement and native timers, along with the recent history from slide eight. The drawing is a diagram of the evaluation loop. It is not a cropped board fed to the model. The engine's hidden future randomness and the teacher's forecasts are not part of Kev's observation.\n\nThe middle box says a sub t equals pi sub phi of s sub t. Pi is simply a name for the learned policy: the rule that maps an observation to an action. Phi identifies the LoRA and pointer-head weights we just trained. A sub t is the direction it chooses. As we saw earlier, Kev scores the legal options and the controller executes the option with the largest probability. This compact notation leaves the fixed instruction and the legal option list implicit. Those inputs are still supplied in every real request.\n\nDuring this run, the teacher does not rescue Kev. We can calculate what a teacher would choose or check the immediate risk of alternatives for diagnosis, but we do not replace the student's action. Otherwise we would be measuring a combined controller and could not tell whether Kev had learned the behavior.\n\nThe third box is the native game. Capital F names its transition function. Give it the current snapshot and chosen direction, and it produces g sub t plus one, the next snapshot. Here t counts decisions. One decision can advance several native frames before Pac-Man reaches the requested adjacent tile. The four ghosts keep their own controllers, the power timer keeps counting down, and collisions and pellet consumption follow the native mechanics. We observe the result and repeat the loop.\n\nWe stop at the first completed level or native game-over. Losing one life does not end the whole benchmark game if another life remains. A watchdog can also stop an unproductive run: too many decisions, too many simulation frames or five hundred and twelve decisions in a row without a pellet. That is an incomplete failure. It never becomes a win just because Pac-Man remained alive until a limit.\n\nNow look at the two equations below. C is the clear rate. N is the number of games, twenty in this suite. The index j runs through those games. The expression one in square brackets is an indicator: it contributes one when game j genuinely clears the level, and zero otherwise. Add those indicators and divide by N. Watchdog exits stay in the denominator and contribute zero.\n\nE measures food efficiency. P is the total number of pellets collected, including normal and power pellets. Lowercase n sub f is the total count of active native frames; the small f reminds us that these are frames. Divide P by that count, then multiply by a thousand to express the result as pellets per thousand frames. We aggregate the totals first. We do not average per-game ratios, and we do not put model or network waiting time into this denominator. If we want serving speed, we measure wall-clock latency separately.\n\nThe table is a real earlier result, from native-v3 and the frozen teacher on those same twenty starts. V3 clears zero games. The teacher clears all twenty. V3 has twenty-two immediate deaths where another legal move survives the next-tile transition; the teacher has none. That narrow check does not tell us whether a route was safe several decisions earlier. The teacher still loses one life in this reference suite before continuing to clear. Its earlier qualification suite used different seeds.\n\nFood efficiency is about thirty-four point six for v3 and seventy-four point one for the teacher. V3 had improved some immediate retreats compared with v2, yet its food efficiency got worse and its longest dry spell reached two hundred and seventy-three decisions. That is why we inspect survival and food progress together. A player can avoid the next ghost while wandering away from the remaining pellets. A strict repeated-loop count can also miss a long unproductive route through many different tiles.\n\nThese numbers are historical v3 results, not results for the v4 checkpoint you just trained. Run the notebook's paired v3–v4 comparison to fill in that answer. It also probes the five hundred and twelve hard development requests and breaks them down by behavior. Those fixed-state diagnostics help explain the result. The full games remain the main evidence. Inspect power-expiry mistakes, recovery after respawn, dry intervals and the final few pellets in the saved trajectories.\n\nThere is one final limit to the claim. These twenty starts are excluded from training, but we have already studied their failures while designing v4. They are a reference benchmark, not an untouched blind test. For a stronger generalization claim, use new disjoint starts and report them separately. The same classic maze also cannot establish performance on unseen maze layouts.\n\nFinish CP1 by keeping the completed adapter and pointer head, fingerprint, configuration, training curves, paired metrics and full traces together, with a verified Drive backup. Show one decision that improved or one failure that remains, and explain it from the actual state. The interactive game is still an ungraded way to explore the learned policy. Our conclusion should come from the reproducible game evidence.\n\nSources:\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/benchmark-spec.json\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/gameplay_benchmark.py\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/hard_case_evaluation.py\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/evaluation/v3-analysis-2026-10-07/README.md\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/evaluation/v3-analysis-2026-10-07/ghost-evasion-evidence.json\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/evaluation/v3-analysis-2026-10-07/pellet-efficiency-evidence.json\nhttps://github.com/yxc20089/QPlusLearning/blob/b5aa381/labs/lab-01-kev-pacman/evaluation/v3-analysis-2026-10-07/teacher-reference.json\nhttps://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_lab.ipynb",
+      "animation_controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-rollout.html",
+      "diagram_source": "../../../docs/animations/kev-rollout.js",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/fc37a122ecb1aa51313cf7089bd388b3c362e5b5/docs/animations/assets/kev-rollout-flow.gif"
     }
-  ],
-  "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
-  "assessment": {
-    "checkpoint": "CP1",
-    "title": "Fine-tune and evaluate Kev on Pac-Man game states",
-    "interactive_play": "separate ungraded activity before and after training",
-    "prework": "Stages 1–4 remain separate"
-  },
-  "companion_lecture": {
-    "presentation_id": "1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo",
-    "revision_id": "5KsymlbBib7kdw",
-    "url": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit",
-    "links": {
-      "lecture": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit",
-      "animation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_21A#slide=id.course_slide_21A",
-      "interactive_controls": "https://drive.google.com/file/d/1ziqTDAN0kxP_fzGQwfJ-C6fQS2cQBcfh/view?usp=drivesdk",
-      "frozen_encoder": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_03#slide=id.clm_stage_03",
-      "similarity": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_07#slide=id.clm_stage_07",
-      "softmax": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_08#slide=id.clm_stage_08",
-      "clm_training": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.clm_stage_10#slide=id.clm_stage_10",
-      "lora": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_44#slide=id.course_slide_44",
-      "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
-      "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
-    },
-    "use": "Reference deck unchanged. Original CLM GIF embedded on slide 2; public interactive CLM/softmax/LoRA controls; typeset maths with editable variable keys and spoken scripts."
-  },
-  "revision_id": "Ptlq_fwby1RmGQ",
-  "presentation_id": "1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ",
-  "animations": {
-    "embedded_slides": [
-      2,
-      6,
-      13
-    ],
-    "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
-    "illustrative_values": true,
-    "clm_source": "Original reference deck, course_slide_21A; byte-preserved 520-frame GIF"
-  },
-  "power_pellet_state": {
-    "remaining_locations": "maze o + player row/column",
-    "active": "global and per-ghost frightened flags + ghost movement modes",
-    "not_present": [
-      "explicit on_power_pellet/just_consumed flag",
-      "exact remaining frightened timer"
-    ],
-    "training_frightened_states": 1450,
-    "training_states": 4096,
-    "schema_changed": false
-  }
+  ]
 }

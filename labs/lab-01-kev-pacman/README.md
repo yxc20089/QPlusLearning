@@ -6,7 +6,7 @@ Train **Kev-4B** with its published LoRA plus pointer-head architecture, then te
 
 The lab has **one assessed checkpoint: CP1 — Balanced teacher distillation into native-v4**. Verify the completed native-v3 parent, import and validate the frozen teacher data, train the new adapter/head, and compare it with v3 in complete native games. **Interactive play** is a separate, ungraded activity; its badge identifies the running LoRA and pointer head. The earlier general curriculum and Skills → native-v2 experiment remain optional prework in the same notebook.
 
-Use [the single student notebook](notebooks/pacman_kev_lab.ipynb), [Colab setup](COLAB_SETUP.md) and the **[live lab deck](https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit)**. The deck is being revised into 13 slides. Local [PDF](slides/pacman-lab.pdf) and [PPTX](slides/pacman-lab.pptx) exports retain the earlier edition until the revision is complete.
+Use [the single student notebook](notebooks/pacman_kev_lab.ipynb), [Colab setup](COLAB_SETUP.md) and the **[live lab deck](https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit)**. The completed deck has 13 slides. Local [PDF](slides/pacman-lab.pdf) and [PPTX](slides/pacman-lab.pptx) exports match the native deck.
 
 The **[rebalanced v4 dataset is generated and validated](evaluation/v4-balanced-export-2026-10-08.md)**. It contains 3,660 grounded behavior roots, 1,220 nearby informative decisions and 912 prior Pac-Man replay requests. The primary categories and overlaps are [reported separately](evaluation/v4-balanced-export-2026-10-08.json). Kev adds 304 generic replay requests for the same 762-update budget. Only 11 roots claim actual recorded v3 disagreement; the other difficult choices are identified by native counterfactuals and qualified teacher continuations. One completed learner v4 GPU run took **64.2 minutes**, processed all 6,096 requests in 762 updates and peaked at 26.94 GiB allocated GPU memory. Its saved recipe/lineage check passed after correcting numeric learning-rate validation. This establishes completed training, not improved play.
 
@@ -34,9 +34,9 @@ Teacher generation has its own incremental Drive backup when storage is enabled:
 | 7–8 | Trace checkpoint lineage and inspect the full native state supplied to Kev |
 | 9–10 | Follow the teacher's route search and native simulations |
 | 11 | Convert teacher decisions into Kev's supervised choice loss |
-| 12–13 (planned) | Trace gradients into LoRA/head and assess full-game behavior |
+| 12–13 | Trace gradients into LoRA/head and assess full-game behavior |
 
-The revised live deck uses editable mathematical diagrams, animated explanations and natural speaker scripts that define the variables. Public [animation controls](https://yxc20089.github.io/QPlusLearning/) support pause, scrubbing and parameter changes. No account or GPU is needed for those controls. Probability illustrations are teaching examples, not trained-model predictions. PDF exports are static; the earlier exports will be refreshed after all 13 revised slides are complete.
+The revised live deck uses editable mathematical diagrams, animated explanations and natural speaker scripts that define the variables. Public [animation controls](https://yxc20089.github.io/QPlusLearning/) support pause, scrubbing and parameter changes. No account or GPU is needed for those controls. Probability illustrations are teaching examples, not trained-model predictions. PDF exports are static. Both local exports contain the completed 13-slide deck; slide 13 distinguishes recorded gameplay evidence from the illustrative teaching probabilities.
 
 The [companion CLM lecture](https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit) supplies the original 65-second CLM walkthrough and further softmax, contrastive-head, LoRA and evaluation explanations. Its CLM animation shows frozen independent encoders and two projection heads; Kev uses joint encoding, LoRA and a pointer head. The lecture's joint language/decision loss is a proposal, separate from this lab's Kev decision loss.
 

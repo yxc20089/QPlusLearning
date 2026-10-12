@@ -1,16 +1,16 @@
 {
   "presentation_id": "1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ",
   "url": "https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit",
-  "slide_count": 15,
+  "slide_count": 13,
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1–12 redesigned; slides 13–15 retain prior content pending final 13-slide consolidation",
+  "state": "Approved 13-slide redesign complete",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "AZbY3MTMpd_dGg",
+  "revision_id": "KKo7r3Jrt2U0Vw",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-12",
-  "visual_qa": "Slides 1–12 inspected in native PDF exports. Slide 12 contains editable cross-entropy score-gradient and trainable-parameter equations, native forward/backward arrows and a five-stage animated highlight layer. Every mathematical symbol is explained in the speaker notes, which match the reviewed local source. Native and raster comparisons show that only kev_lab_10 / PDF page 12 changed, preserving the other 14 pages and slide order. All native elements and rendered text fit the 720×405 canvas, and Cross-entropy stays on one line. Formula subscripts are preserved. The public controls passed Play/Pause, all five stages, Previous/Next boundaries, Reset, probability presets 0.20/0.50/0.80 and slider endpoints 0.05/0.95 in Chrome. Analytic score gradients matched finite differences at all five probabilities; their sum is zero and CE uses the natural logarithm. The displayed probabilities are illustrative. No GPU training or measured gameplay improvement is claimed. Slide 13 is the final approved topic remaining before consolidation.",
+  "visual_qa": "All 13 slides inspected in native PDF renders. Slides 1–12 are structurally and pixel-identical to the previous approved deck. Final slide formulas, table, arrow destinations, animation stages and speaker notes were verified. Rendered text fits the 720×405 canvas. All slide-13 native objects fit, including the table measured from its true row/column dimensions. The final highlight avoids diagnostic captions. Public controls passed all stages, Play/Pause, Previous/Next boundaries, Reset and v2/v3 evidence switching. No new GPU training or V4 gameplay result is claimed.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -25,7 +25,8 @@
       9,
       10,
       11,
-      12
+      12,
+      13
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -58,10 +59,20 @@
       "animation_layer": "White-backed highlights behind the native diagram for consistent PDF rendering"
     },
     "exports": {
-      "pdf": "Updated native deck snapshot",
-      "pptx": "Previous version; regenerate after the redesign is complete"
+      "pdf": {
+        "path": "pacman-lab.pdf",
+        "native_revision_id": "KKo7r3Jrt2U0Vw",
+        "sha256": "e185098ececa073669cde4d519918dae3a1589a7ffb5958018600c7bc7bef6ef",
+        "pages": 13
+      },
+      "pptx": {
+        "path": "pacman-lab.pptx",
+        "native_revision_id": "KKo7r3Jrt2U0Vw",
+        "sha256": "77fea364da52ff2093ac61580ad485c28f85724f6919c92867df8a1041d785d9",
+        "pages": 13
+      }
     },
-    "existing_content": "The native deck retains 15 physical pages. Twelve of the approved 13 topics are complete. One topic remains, followed by consolidation of the old extra pages. Pages 13–15 and their legacy lab metadata retain prior content. Top-level pacman_dataset and power_pellet_state are archived prior-lab values pending consolidation; current frozen balanced-v4 composition is stated explicitly in redesign.slide_11.",
+    "existing_content": "Exactly 13 approved topics. Duplicate legacy LoRA and old submission pages removed after verifying the delivered slide order. CP1 reproducibility and submission guidance are retained in slide 13 speaker notes and controls.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -561,18 +572,123 @@
         "learned_gameplay_improvement_claim": false
       },
       "interpretation": "Backpropagation and optimizer mechanics explain what learns. Individual probabilities need not improve at each mixed-request update; complete-game survival is evaluated separately."
+    },
+    "slide_13": {
+      "object_id": "kev_lab_12",
+      "title": "Does the learned policy survive?",
+      "formulae": [
+        "s_t = O(g_t)",
+        "a_t = π_φ(s_t)",
+        "g_(t+1) = F(g_t, a_t)",
+        "C = (1/N) ∑_j 1[clear_j]",
+        "E = 1000 P / n_f"
+      ],
+      "speaker_notes": "speaker-notes/slide-13.md",
+      "diagram_source": "../../../docs/animations/kev-rollout.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-rollout.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/fc37a122ecb1aa51313cf7089bd388b3c362e5b5/docs/animations/assets/kev-rollout-flow.gif",
+      "asset_revision": "fc37a122ecb1aa51313cf7089bd388b3c362e5b5",
+      "static_diagram_editable": true,
+      "native_table": {
+        "rows": 4,
+        "columns": 3
+      },
+      "animation_layer": "Five-stage white-backed highlight layer; rendered captions remain clear",
+      "evidence": {
+        "recorded_date": "2026-10-07",
+        "scope": "20 reference starts, already used for diagnosis; not a blind test. No v4 outcomes.",
+        "source_revision": "b5aa381",
+        "source_sha256": {
+          "ghost-evasion-evidence.json": "10752800ee3a63e1eed28f37b9e21813d7d8df3f89f8e517962b2f366610393a",
+          "pellet-efficiency-evidence.json": "1eb80cda3e69ddfe4b119850b9992d6e1e838ca4fb4f03e31df0688e203c9bb5",
+          "teacher-reference.json": "c3c06bb5a5de1cca6559da62206a1314aefa17c544c97bd7171b22903014c888"
+        },
+        "controllers": {
+          "native-v2": {
+            "games": 20,
+            "clears": 0,
+            "avoidable": 52,
+            "pellets": 2639,
+            "frames": 56471,
+            "life_losses": 60,
+            "longest_dry": 131,
+            "checkpoint_sha256": "c100872bd94f9869807ed33bdb4617cc38867abf61c551a6ac507e8f38106d33"
+          },
+          "native-v3": {
+            "games": 20,
+            "clears": 0,
+            "avoidable": 22,
+            "pellets": 2647,
+            "frames": 76493,
+            "life_losses": 60,
+            "longest_dry": 273,
+            "checkpoint_sha256": "c7c5c8326f74e86e161e05730db5004efdfd3b2351c6f2f9478581cfc13550b0"
+          },
+          "teacher": {
+            "games": 20,
+            "clears": 20,
+            "avoidable": 0,
+            "pellets": 4880,
+            "frames": 65865,
+            "life_losses": 1,
+            "longest_dry": 112
+          }
+        }
+      },
+      "configuration": {
+        "starts": {
+          "levels": [
+            1,
+            2,
+            3,
+            5
+          ],
+          "seeds": [
+            50021,
+            50023,
+            50033,
+            50047,
+            50051
+          ]
+        },
+        "win": "First native level clear",
+        "loss": "Native game-over after remaining lives are exhausted",
+        "intermediate_life_loss": "Continue with the native game while lives remain",
+        "watchdogs": {
+          "decisions": 10000,
+          "active_native_frames": 36000,
+          "consecutive_pellet_free_decisions": 512
+        },
+        "watchdog_result": "Incomplete failure; retained in denominator",
+        "teacher_overrides_student": false,
+        "efficiency": "1000 × summed normal/power pellets / summed active native frames",
+        "scope": "Previously examined reference starts; not a blind test or unseen-maze generalization claim",
+        "v4_measured_result": false
+      }
     }
   },
   "initial_training_prework": true,
   "lab_route": "Initial → dates/evidence → documents → skills/devtools → Pac-Man",
   "general_stages_prework": true,
   "pacman_dataset": {
-    "train": 4096,
-    "development": 256,
-    "evaluation": 256,
-    "replay": 2000,
-    "optimizer_steps": 762,
-    "teacher": "20-move native-engine beam search"
+    "targeted_roots": 3660,
+    "nearby_informative_decisions": 1220,
+    "canonical_native_v2_expert_replay": 912,
+    "exported_task_records": 5792,
+    "generic_Kev_replay_requests": 304,
+    "total_training_requests": 6096,
+    "optimizer_updates": 762,
+    "development_targeted_roots": 384,
+    "development_nearby_decisions": 128,
+    "development_task_records": 512,
+    "actual_recorded_v3_disagreement_roots": 11,
+    "actual_disagreement_roles": {
+      "immediate_evasions": 4,
+      "productive_junction_corrections": 7
+    },
+    "actual_disagreements_counted_within_targeted_roots": true,
+    "teacher": "native-rollout-mpc-food-routing-v2",
+    "parent_checkpoint": "kev-4b-pacman-native-v3"
   },
   "assessed_checkpoint": {
     "id": "CP1",
@@ -595,7 +711,7 @@
       "calibration": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_33#slide=id.course_slide_33",
       "evaluation": "https://docs.google.com/presentation/d/1sdnPkV6VyTW9tr6Xmtyyxns4UHlUGoTtTLj-vmxNhfo/edit?slide=id.course_slide_49#slide=id.course_slide_49"
     },
-    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, typeset mathematics and natural narration guide the redesign. Slides 1–11 now use Kev-specific editable diagrams and interactive controls."
+    "use": "Reference deck unchanged. Its white layout, teal/orange diagrams, mathematics and natural narration guide all 13 Kev-specific slides and controls."
   },
   "embedded_animations": {
     "embedded_slides": [
@@ -610,10 +726,11 @@
       9,
       10,
       11,
+      12,
       13
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
-    "illustrative_values": true,
+    "illustrative_values": "Teaching probabilities/matrices are illustrative. Slide 13 measurements are recorded historical evidence, with source hashes.",
     "clm_source": "Original reference deck, course_slide_21A; byte-preserved GIF remains archived in the repository. Its previous slide-2 placement has been replaced with the Kev input animation."
   },
   "mathematics_slides": [
@@ -629,18 +746,15 @@
     10,
     11,
     12,
-    13,
-    14
+    13
   ],
   "power_pellet_state": {
-    "remaining_locations": "maze o + player row/column",
-    "active": "global and per-ghost frightened flags + ghost movement modes",
-    "not_present": [
-      "explicit on_power_pellet/just_consumed flag",
-      "exact remaining frightened timer"
-    ],
-    "training_frightened_states": 1450,
-    "training_states": 4096,
-    "schema_changed": false
+    "remaining_locations": "Complete maze o tiles plus player position",
+    "active": "Native global power clock and individual ghost frightened/movement fields",
+    "remaining_power_field": "timing.power.remaining_frames",
+    "recent_history_cap": 64,
+    "private_future_rng_in_input": false,
+    "teacher_futures_in_input": false,
+    "details": "redesign.slide_8"
   }
 }
