@@ -1,8 +1,23 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QPlusLearning lab animations</title>
 <style>body{font:20px/1.6 Arial,sans-serif;max-width:850px;margin:60px auto;padding:0 24px;color:#1a2433}a{color:#007b82}h1{font-size:36px}</style>
 <h1>QPlusLearning lab animations</h1>
-<p><a href="animations/clm.html">CLM: inference and head training</a> — pause, scrub and step through the original lecture walkthrough.</p>
-<p><a href="animations/kev-math.html">Kev: probabilities and LoRA</a> — change the logits and explore a low-rank matrix update.</p>
+<p>Follow the 13-slide Kev lab. Pause each animation and step through the equations.</p>
+<ol>
+<li><a href="animations/kev-architecture.html">Kev architecture</a></li>
+<li><a href="animations/kev-input.html">State, options and hidden vectors</a></li>
+<li><a href="animations/kev-lora.html">LoRA mathematics</a></li>
+<li><a href="animations/kev-pointer.html">Pointer-head computation</a></li>
+<li><a href="animations/kev-softmax.html">Softmax and action selection</a></li>
+<li><a href="animations/kev-speed.html">Why decision output is fast</a></li>
+<li><a href="animations/kev-curriculum.html">Curriculum and checkpoint lineage</a></li>
+<li><a href="animations/kev-state.html">The full Pac-Man observation</a></li>
+<li><a href="animations/kev-teacher.html">Native rollout MPC teacher</a></li>
+<li><a href="animations/kev-route-search.html">Teacher route planning and future ranking</a></li>
+<li><a href="animations/kev-distillation.html">Teacher decisions and distillation</a></li>
+<li><a href="animations/kev-gradients.html">How gradients update Kev</a></li>
+<li><a href="animations/kev-rollout.html">Complete-game evaluation</a></li>
+</ol>
 <p><a href="https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit">Lab slides</a> · <a href="https://github.com/yxc20089/QPlusLearning/tree/main/labs/lab-01-kev-pacman">Notebook, code and instructions</a></p>
-<p>Animation values are illustrative. Run the notebook to obtain actual model predictions and training curves.</p>
+<p>Architecture and probability examples are illustrative. The final evaluation page identifies its recorded v2/v3 and teacher measurements. Run the notebook for your own checkpoint's results.</p>
+<p>Lecture references: <a href="animations/clm.html">CLM walkthrough</a> · <a href="animations/kev-math.html">Extra softmax and LoRA controls</a></p>
 </html>
