@@ -1,9 +1,10 @@
 {
   "verified_at": "2026-10-12",
   "native_presentation_id": "1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ",
-  "native_revision_id": "KKo7r3Jrt2U0Vw",
-  "slide_count": 13,
+  "native_revision_id": "i5dC3x23D3N--g",
+  "slide_count": 14,
   "slide_order": [
+    "kev_lab_cover",
     "kev_lab_01",
     "decision_lab_pros",
     "decision_lab_training_cost",
@@ -22,20 +23,38 @@
     "kev_lab_11",
     "kev_lab_14"
   ],
-  "unchanged_prior_pages": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12
-  ],
+  "unchanged_prior_pages": {
+    "previous_physical_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "current_physical_pages": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ]
+  },
   "native_structure_and_pixel_comparison": "passed",
   "all_rendered_text_within_canvas": "passed",
   "slide_13_native_objects_and_table_bounds": "passed",
@@ -66,14 +85,22 @@
     "recorded v2/v3 switching"
   ],
   "pdf": {
-    "sha256": "e185098ececa073669cde4d519918dae3a1589a7ffb5958018600c7bc7bef6ef",
-    "pages": 13,
-    "verification": "Native export rendered and visually reviewed"
+    "sha256": "c9fdd6128d51e519c8cd12fd041aaba798e7298998fb14d6d02a792a6a1780b3",
+    "pages": 14,
+    "verification": "Native PDF exported, rendered and visually reviewed"
   },
   "pptx": {
-    "sha256": "77fea364da52ff2093ac61580ad485c28f85724f6919c92867df8a1041d785d9",
-    "pages": 13,
-    "verification": "Native export structure, editable table and notes inspected; no PowerPoint round-trip"
+    "sha256": "5e32253f281ae3c1c76f98fde10aad822db4b3944ffd9225b0f2f698070bcf2d",
+    "pages": 14,
+    "verification": "Native export slide count and cover hyperlink relationships inspected; no PowerPoint round-trip"
   },
-  "scope": "Presentation validation only. No GPU training or new model rollout was executed. No V4 gameplay outcome is supplied."
+  "scope": "Presentation validation only. No GPU training or new model rollout was executed. No V4 gameplay outcome is supplied.",
+  "lecture_slide_count": 13,
+  "cover_slide_count": 1,
+  "cover_native_and_exported_links": {
+    "kev_cover_repo_link": "https://github.com/yxc20089/QPlusLearning",
+    "kev_cover_colab_link": "https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_lab.ipynb"
+  },
+  "cover_notes_match_local_source": "passed",
+  "cover_native_objects_within_canvas": "passed"
 }

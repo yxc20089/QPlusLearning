@@ -5,8 +5,8 @@
   "clm_html_source": "09-29/contrastive-animation/animation.html; standalone original lecture controls",
   "kev_math": "Mathematical illustrations; toy logits and toy rank-two matrices; no model results",
   "upstream_kev_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
-  "approved_lab_slide_count": 13,
-  "kev_specific_diagrams": "Editable native equations/diagrams with corresponding public interactive controls for slides 1–13",
+  "approved_lab_slide_count": 14,
+  "kev_specific_diagrams": "Editable native equations/diagrams with corresponding public interactive controls for lecture slides 1–13, preceded by a resource cover",
   "recorded_rollout_evidence": {
     "slide": 13,
     "recorded_date": "2026-10-07",
@@ -17,5 +17,7 @@
       "teacher-reference.json": "c3c06bb5a5de1cca6559da62206a1314aefa17c544c97bd7171b22903014c888"
     },
     "scope": "20 reference starts, already used for diagnosis; not a blind test. No v4 outcomes."
-  }
+  },
+  "approved_lab_lecture_slide_count": 13,
+  "cover_slide_count": 1
 }

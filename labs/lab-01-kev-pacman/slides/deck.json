@@ -1,16 +1,16 @@
 {
   "presentation_id": "1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ",
   "url": "https://docs.google.com/presentation/d/1_PfmbUEH38jMO_24S_AqtUUh-IIg2LyZYkEYKjZ5uXQ/edit",
-  "slide_count": 13,
+  "slide_count": 14,
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Approved 13-slide redesign complete",
+  "state": "Cover plus approved 13-slide lecture complete",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "KKo7r3Jrt2U0Vw",
+  "revision_id": "i5dC3x23D3N--g",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
   "synced_at": "2026-10-12",
-  "visual_qa": "All 13 slides inspected in native PDF renders. Slides 1–12 are structurally and pixel-identical to the previous approved deck. Final slide formulas, table, arrow destinations, animation stages and speaker notes were verified. Rendered text fits the 720×405 canvas. All slide-13 native objects fit, including the table measured from its true row/column dimensions. The final highlight avoids diagnostic captions. Public controls passed all stages, Play/Pause, Previous/Next boundaries, Reset and v2/v3 evidence switching. No new GPU training or V4 gameplay result is claimed.",
+  "visual_qa": "Cover and all 13 lecture slides reviewed in the 14-page native export. Existing lecture slides are structurally and pixel-identical to the prior approved deck. Cover text and native element frames fit the 720×405 canvas. Both resource links are preserved in native text, PDF annotations and PPTX relationships. Speaker notes match the local cover source. No GPU work or new gameplay measurement was performed.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -61,18 +61,18 @@
     "exports": {
       "pdf": {
         "path": "pacman-lab.pdf",
-        "native_revision_id": "KKo7r3Jrt2U0Vw",
-        "sha256": "e185098ececa073669cde4d519918dae3a1589a7ffb5958018600c7bc7bef6ef",
-        "pages": 13
+        "native_revision_id": "i5dC3x23D3N--g",
+        "sha256": "c9fdd6128d51e519c8cd12fd041aaba798e7298998fb14d6d02a792a6a1780b3",
+        "pages": 14
       },
       "pptx": {
         "path": "pacman-lab.pptx",
-        "native_revision_id": "KKo7r3Jrt2U0Vw",
-        "sha256": "77fea364da52ff2093ac61580ad485c28f85724f6919c92867df8a1041d785d9",
-        "pages": 13
+        "native_revision_id": "i5dC3x23D3N--g",
+        "sha256": "5e32253f281ae3c1c76f98fde10aad822db4b3944ffd9225b0f2f698070bcf2d",
+        "pages": 14
       }
     },
-    "existing_content": "Exactly 13 approved topics. Duplicate legacy LoRA and old submission pages removed after verifying the delivered slide order. CP1 reproducibility and submission guidance are retained in slide 13 speaker notes and controls.",
+    "existing_content": "One unnumbered resource cover followed by all 13 approved lecture topics. Original lecture numbering, diagrams, speaker notes, animations and order are preserved.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -715,7 +715,6 @@
   },
   "embedded_animations": {
     "embedded_slides": [
-      1,
       2,
       3,
       4,
@@ -727,14 +726,15 @@
       10,
       11,
       12,
-      13
+      13,
+      14
     ],
     "controls": "https://yxc20089.github.io/QPlusLearning/animations/",
     "illustrative_values": "Teaching probabilities/matrices are illustrative. Slide 13 measurements are recorded historical evidence, with source hashes.",
-    "clm_source": "Original reference deck, course_slide_21A; byte-preserved GIF remains archived in the repository. Its previous slide-2 placement has been replaced with the Kev input animation."
+    "clm_source": "Original reference deck, course_slide_21A; byte-preserved GIF remains archived in the repository. Its previous slide-2 placement has been replaced with the Kev input animation.",
+    "slide_index_kind": "Physical page; lecture controls retain original 1–13 numbering"
   },
   "mathematics_slides": [
-    1,
     2,
     3,
     4,
@@ -746,7 +746,8 @@
     10,
     11,
     12,
-    13
+    13,
+    14
   ],
   "power_pellet_state": {
     "remaining_locations": "Complete maze o tiles plus player position",
@@ -756,5 +757,18 @@
     "private_future_rng_in_input": false,
     "teacher_futures_in_input": false,
     "details": "redesign.slide_8"
-  }
+  },
+  "lecture_slide_count": 13,
+  "cover_slide_count": 1,
+  "cover": {
+    "object_id": "kev_lab_cover",
+    "title": "Kev × Pac-Man",
+    "physical_page": 1,
+    "speaker_notes": "speaker-notes/cover.md",
+    "repository": "https://github.com/yxc20089/QPlusLearning",
+    "student_colab": "https://colab.research.google.com/github/yxc20089/QPlusLearning/blob/main/labs/lab-01-kev-pacman/notebooks/pacman_kev_lab.ipynb",
+    "links_clickable": true,
+    "slide_numbering": "Cover unnumbered; existing lecture slides retain 1–13"
+  },
+  "mathematics_slide_index_kind": "Physical page"
 }
