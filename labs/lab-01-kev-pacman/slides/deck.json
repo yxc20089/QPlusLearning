@@ -404,14 +404,15 @@
       "speaker_notes": "speaker-notes/slide-11.md",
       "diagram_source": "../../../docs/animations/kev-distillation.js",
       "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-distillation.html",
-      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/e75beb468fc611db6a5d13e54e19dcdac8b1f7e3/docs/animations/assets/kev-distillation-flow.gif",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/55061fb0e860ec3e6bb699f0ba278af553fc9487/docs/animations/assets/kev-distillation-flow.gif",
       "static_diagram_editable": true,
       "native_table": {
         "rows": 2,
         "columns": 5
       },
       "animation_layer": "White-backed moving highlights behind the native observed-decision, teacher-label, student-distribution, CE, trainable-weights and data-composition drawing",
-      "asset_revision": "e75beb468fc611db6a5d13e54e19dcdac8b1f7e3",
+      "asset_revision": "55061fb0e860ec3e6bb699f0ba278af553fc9487",
+      "training_flow": "Teacher action label and student action probabilities enter the same loss box. The loss feeds a fresh optimizer that updates LoRA and the pointer head while W₀ stays fixed.",
       "frozen_helper_revision": "27bfeb72cbc7c9e677a3af6be8477ec9f874e365",
       "frozen_dataset_manifest_sha256": "a1a151682f55e67de745165f8efdfc386e21a90e3eddfc0c002cbd9c40a38096",
       "data_mix": {
