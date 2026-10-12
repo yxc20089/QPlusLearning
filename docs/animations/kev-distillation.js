@@ -5,9 +5,11 @@
   const rects=[
     {id:'observation',x:36,y:126,w:176,h:91,fill:'#ffffff',stroke:'#b5c4cc'},
     {id:'teacher',x:252,y:126,w:172,h:91,fill:C.tealFill,stroke:C.teal},
-    {id:'student',x:468,y:126,w:216,h:91,fill:C.orangeFill,stroke:C.orange}
+    {id:'student',x:468,y:126,w:216,h:91,fill:C.orangeFill,stroke:C.orange},
+    {id:'choice-loss',x:36,y:242,w:388,h:54,fill:'#ffffff',stroke:'#b5c4cc'},
+    {id:'weight-update',x:464,y:242,w:220,h:54,fill:C.orangeFill,stroke:C.orange}
   ];
-  const lines=[[212,167,252,167,C.teal,true],[212,137,228,137,C.muted,false],[228,137,228,114,C.muted,false],[228,114,576,114,C.muted,false],[576,114,576,126,C.muted,true],[338,217,338,236,C.teal,true],[576,217,576,236,C.orange,true]];
+  const lines=[[212,167,252,167,C.teal,true],[212,137,228,137,C.muted,false],[228,137,228,114,C.muted,false],[228,114,576,114,C.muted,false],[576,114,576,126,C.muted,true],[338,217,338,242,C.teal,true],[576,217,576,229,C.orange,false],[576,229,408,229,C.orange,false],[408,229,408,242,C.orange,true],[424,269,464,269,C.orange,true]];
   const table={x:36,y:304,w:648,h:56,widths:[132,154,146,112,104],rows:[['Targeted roots','Nearby decisions','Expert replay','Generic replay','Total requests'],['3,660','1,220','912','304','6,096']]};
   const texts=[
     {id:'title',x:36,y:25,w:648,h:37,size:28,bold:true,text:'Teacher decisions and Kev distillation'},
@@ -21,12 +23,12 @@
     {id:'student-params',x:480,y:158,w:192,h:18,size:12,text:'φ: LoRA + pointer head'},
     {id:'student-probability',x:480,y:180,w:192,h:17,size:11,text:'Up 0.35   Left 0.20   Right 0.45'},
     {id:'illustrative',x:480,y:199,w:192,h:13,size:9.5,color:C.muted,text:'Illustrative student probabilities'},
-    {id:'loss',x:64,y:235,w:600,h:34,size:25,formula:true,text:'ℒ(φ) = −log pφ(aT | s, u, A)',subs:[[13,14],[16,17]]},
-    {id:'numeric-loss',x:47,y:273,w:365,h:18,size:12.5,text:'Left target: −log(0.20) = 1.61'},
-    {id:'warm-start',x:388,y:273,w:295,h:28,size:11.5,text:'Fresh optimizer. Train φ. Keep W₀ fixed.'},
+    {id:'loss',x:48,y:246,w:364,h:30,size:25,formula:true,text:'ℒ(φ) = −log pφ(aT | s, u, A)',subs:[[13,14],[16,17]]},
+    {id:'numeric-loss',x:48,y:278,w:364,h:16,size:12.5,text:'Left target: −log(0.20) = 1.61'},
+    {id:'warm-start',x:476,y:247,w:196,h:42,size:11.5,text:'Fresh optimizer\nUpdate LoRA + pointer head\nKeep W₀ fixed'},
     {id:'counts-note',x:36,y:365,w:648,h:17,size:10.5,color:C.muted,text:'11 roots are recorded v3 disagreements. Other hard cases use simulation.'},
-    {id:'footer',x:36,y:386,w:632,h:14,size:9,color:C.muted,text:'Probability example only. Seed 91009 stays held out. Open animation controls.'},
-    {id:'number',x:678,y:386,w:20,h:14,size:9,color:C.muted,text:'11'}
+    {id:'footer',x:36,y:383,w:632,h:14,size:9,color:C.muted,text:'Probability example only. Seed 91009 stays held out. Open animation controls.'},
+    {id:'number',x:678,y:383,w:20,h:14,size:9,color:C.muted,text:'11'}
   ];
   const categories=[
     ['Immediate collision evasion',640,96],['Anticipatory escape',64,16],['Native power-expiry evasion',16,4],['Retreat followed by food',512,48],['Productive routing',1408,128],['Sparse-pellet cleanup',888,78],['Residual broad exposure',132,14]
@@ -41,7 +43,7 @@
   ];
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   const hl=(r,t,c=C.teal)=>`<rect x="${r.x-3}" y="${r.y-3}" width="${r.w+6}" height="${r.h+6}" rx="3" fill="none" stroke="${c}" stroke-width="${1.2+Math.sin(t*Math.PI)*1.4}"/>`;
-  function overlay(stage,t){return [()=>hl(rects[0],t),()=>hl(rects[1],t),()=>hl(rects[2],t,C.orange),()=>hl({x:59,y:235,w:601,h:31},t,C.orange),()=>hl({x:385,y:273,w:298,h:25},t,C.orange),()=>hl(table,t)][stage]();}
+  function overlay(stage,t){return [()=>hl(rects[0],t),()=>hl(rects[1],t),()=>hl(rects[2],t,C.orange),()=>hl(rects[3],t,C.orange),()=>hl(rects[4],t,C.orange),()=>hl(table,t)][stage]();}
   function rich(v){let p=0,s='';for(const [a,b] of v.subs||[]){s+=esc(v.text.slice(p,a))+`<tspan baseline-shift="sub" font-size="${v.size*.7}">${esc(v.text.slice(a,b))}</tspan>`;p=b;}return s+esc(v.text.slice(p));}
   function distribution(left){return {up:(1-left)*.4375,left,right:(1-left)*.5625,loss:-Math.log(left)};}
   function diagram(left=.2){const p=distribution(left);return rects.map(r=>`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.fill}" stroke="${r.stroke}" stroke-width=".6"/>`).join('')+lines.map(([x1,y1,x2,y2,c,arrow])=>{const d=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/d,uy=(y2-y1)/d,bx=x2-ux*4,by=y2-uy*4;return `<path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="${c}" stroke-width="1.3"/>${arrow?`<polygon points="${x2},${y2} ${bx-uy*2},${by+ux*2} ${bx+uy*2},${by-ux*2}" fill="${c}"/>`:''}`;}).join('')+table.rows.map((row,i)=>{let x=table.x;return row.map((cell,j)=>{const out=`<rect x="${x}" y="${table.y+i*28}" width="${table.widths[j]}" height="28" fill="${i?C.tealFill:'white'}" stroke="#d7e2e5"/><text x="${x+7}" y="${table.y+i*28+18}" font-family="Arial" font-size="10.5" font-weight="${i?'700':'400'}" fill="${i?C.teal:C.ink}">${esc(cell)}</text>`;x+=table.widths[j];return out;}).join('');}).join('')+texts.map(v=>{if(v.id==='student-probability')v={...v,text:`Up ${p.up.toFixed(2)}   Left ${p.left.toFixed(2)}   Right ${p.right.toFixed(2)}`};if(v.id==='numeric-loss')v={...v,text:`Left target: −log(${p.left.toFixed(2)}) = ${p.loss.toFixed(2)}`};return v.text.split('\n').map((line,i)=>`<text x="${v.x}" y="${v.y+v.size+i*v.size*1.1}" font-family="${v.formula?'Georgia':'Arial'}" font-size="${v.size}" font-weight="${v.bold?'700':'400'}" fill="${v.color||C.ink}">${rich({...v,text:line,subs:i?[]:v.subs})}</text>`).join('');}).join('');}
