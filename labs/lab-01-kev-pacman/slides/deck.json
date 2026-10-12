@@ -5,12 +5,12 @@
   "theme": "Kev-4B published LoRA + pointer-head curriculum, then Pac-Man adaptation",
   "duration_minutes": 90,
   "finetuning_minutes": 30,
-  "state": "Slides 1–11 redesigned; slides 12–15 retain prior content pending final 13-slide consolidation",
+  "state": "Slides 1–12 redesigned; slides 13–15 retain prior content pending final 13-slide consolidation",
   "title": "Decision models for Pac-Man — Kev, CLM and the lab",
-  "revision_id": "ld-Cn6AMzUOVzg",
+  "revision_id": "AZbY3MTMpd_dGg",
   "runtime": "Colab, one RTX PRO 6000 Blackwell GPU",
-  "synced_at": "2026-10-08",
-  "visual_qa": "Slides 1–11 inspected in native PDF exports. Slide 11 connects the same observed state, decision question and original legal options to an offline teacher action label and Kev choice probabilities. Its hard-label CE equation and 2×5 exact data-composition table are native editable objects, with native phi/T subscripts and a clickable animation footer. Speaker notes match the reviewed local source exactly and explain every equation symbol in natural speech. Only kev_lab_08 / PDF page 11 changed; canonical native readback and raster comparison preserve the other 14 pages and their order. All text fits the canvas. Student probabilities are explicitly illustrative and the public teacher-Left qualification seed stays excluded from training. The 120-frame GIF visibly highlighted the teacher box and the data table at different times in native slideshow mode. Published Play/Pause, all six stages, Previous/Next boundaries, Reset, probability presets 0.20/0.50/0.80 and slider endpoints 0.05/0.95 passed in Chrome. CE matched the natural logarithm and distributions normalized to one. Category rows match the frozen export; there were no console errors. Slides 12–15 remain pending the approved rewrite.",
+  "synced_at": "2026-10-12",
+  "visual_qa": "Slides 1–12 inspected in native PDF exports. Slide 12 contains editable cross-entropy score-gradient and trainable-parameter equations, native forward/backward arrows and a five-stage animated highlight layer. Every mathematical symbol is explained in the speaker notes, which match the reviewed local source. Native and raster comparisons show that only kev_lab_10 / PDF page 12 changed, preserving the other 14 pages and slide order. All native elements and rendered text fit the 720×405 canvas, and Cross-entropy stays on one line. Formula subscripts are preserved. The public controls passed Play/Pause, all five stages, Previous/Next boundaries, Reset, probability presets 0.20/0.50/0.80 and slider endpoints 0.05/0.95 in Chrome. Analytic score gradients matched finite differences at all five probabilities; their sum is zero and CE uses the natural logarithm. The displayed probabilities are illustrative. No GPU training or measured gameplay improvement is claimed. Slide 13 is the final approved topic remaining before consolidation.",
   "redesign": {
     "approved_slide_count": 13,
     "completed_slides": [
@@ -24,7 +24,8 @@
       8,
       9,
       10,
-      11
+      11,
+      12
     ],
     "workflow": "Create and review one slide at a time",
     "outline": [
@@ -60,7 +61,7 @@
       "pdf": "Updated native deck snapshot",
       "pptx": "Previous version; regenerate after the redesign is complete"
     },
-    "existing_content": "The native deck retains 15 physical pages. Eleven of the approved 13 topics are complete. Two topics remain, followed by final consolidation of the old extra pages. Pages 12–15 and their legacy lab metadata retain prior content. Top-level pacman_dataset and power_pellet_state are archived prior-lab values pending consolidation; the current frozen balanced-v4 composition is stated explicitly in redesign.slide_11.",
+    "existing_content": "The native deck retains 15 physical pages. Twelve of the approved 13 topics are complete. One topic remains, followed by consolidation of the old extra pages. Pages 13–15 and their legacy lab metadata retain prior content. Top-level pacman_dataset and power_pellet_state are archived prior-lab values pending consolidation; current frozen balanced-v4 composition is stated explicitly in redesign.slide_11.",
     "slide_2": {
       "object_id": "decision_lab_pros",
       "title": "From board state to hidden vectors",
@@ -493,6 +494,73 @@
         "learned_gameplay_improvement_claim": false
       },
       "interpretation": "Finite teacher evidence, exact observations/options and action targets support supervised imitation. Most hard cases use simulation/counterfactual coverage. Lower choice loss is separate from complete-game survival and pellet efficiency."
+    },
+    "slide_12": {
+      "object_id": "kev_lab_10",
+      "title": "How gradients update Kev",
+      "formulae": [
+        "∂ℒ/∂z_i = p_i − t_i",
+        "φ = {A_ℓ, B_ℓ, W_q, b_q, W_k, b_k}"
+      ],
+      "speaker_notes": "speaker-notes/slide-12.md",
+      "diagram_source": "../../../docs/animations/kev-gradients.js",
+      "controls": "https://yxc20089.github.io/QPlusLearning/animations/kev-gradients.html",
+      "embedded_gif": "https://raw.githubusercontent.com/yxc20089/QPlusLearning/af90ac22f4dca038c2f68ba8583b1d3a64eb151f/docs/animations/assets/kev-gradients-flow.gif",
+      "static_diagram_editable": true,
+      "animation_layer": "White-backed five-stage highlights behind native score-gradient, pointer-head, frozen-backbone, LoRA and optimizer objects",
+      "animation_asset_revision": "af90ac22f4dca038c2f68ba8583b1d3a64eb151f",
+      "diagram_source_revision": "c2214dc",
+      "source_revision": "84847f0a883d900f7de5b7a57eaa341ca7f9a6b4",
+      "gradient_scope": "One single-label Pac-Man choice at temperature 1. Teacher labels are fixed; teacher search and the game are outside autograd.",
+      "configuration": {
+        "base_weights": "frozen, activation gradients propagate through backbone",
+        "trainable": "all selected LoRA matrix pairs plus pointer-head matrices and biases",
+        "lora_rank": 16,
+        "lora_alpha": 32,
+        "lora_scaling": 2,
+        "lora_dropout": 0.05,
+        "lora_targets": "all",
+        "pointer_dim": 256,
+        "batch": 4,
+        "accumulation": 2,
+        "gradient_weighting": "source records",
+        "gradient_clip_norm": 1.0,
+        "optimizer": "fused AdamW",
+        "weight_decay": 0.01,
+        "scheduler": "OneCycleLR",
+        "peak_learning_rate": 2e-05,
+        "compute_dtype": "bf16",
+        "stored_weights_dtype": "fp32",
+        "gradient_checkpointing": true,
+        "warm_start": "completed v3 adapter/head with fresh v4 optimizer",
+        "recovery": "restore v4 optimizer, scheduler, weights and step"
+      },
+      "example": {
+        "teacher_action": "left",
+        "student_probabilities": "illustrative",
+        "initial_distribution": {
+          "up": 0.35,
+          "left": 0.2,
+          "right": 0.45
+        },
+        "score_gradients": {
+          "up": 0.35,
+          "left": -0.8,
+          "right": 0.45
+        },
+        "probability_presets": [
+          0.2,
+          0.5,
+          0.8
+        ],
+        "slider_interval": [
+          0.05,
+          0.95
+        ],
+        "measured_checkpoint_predictions": false,
+        "learned_gameplay_improvement_claim": false
+      },
+      "interpretation": "Backpropagation and optimizer mechanics explain what learns. Individual probabilities need not improve at each mixed-request update; complete-game survival is evaluated separately."
     }
   },
   "initial_training_prework": true,
