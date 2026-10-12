@@ -31,12 +31,12 @@
     {id:'clear-key',x:36,y:290,w:302,h:18,size:12,text:'N = games; count genuine level clears only'},
     {id:'efficiency-formula',x:36,y:315,w:302,h:29,size:20,formula:true,...math(['E = 1000 P / n',{sub:'f'}])},
     {id:'efficiency-key',x:36,y:346,w:302,h:18,size:12,...math(['P: pellets; n',{sub:'f'},': active native frames'])},
-    {id:'diagnostics',x:36,y:365,w:648,h:17,size:12,color:C.muted,text:'Inspect life losses, dry spells, loops and power-expiry decisions.'},
-    {id:'archive-caption',x:356,y:356,w:328,h:15,size:10.5,color:C.muted,text:'Recorded v3 / teacher. V4 must be measured.'},
+    {id:'diagnostics',x:36,y:365,w:302,h:17,size:12,color:C.muted,text:'Inspect deaths, dry spells and loops.'},
+    {id:'archive-caption',x:356,y:367,w:328,h:13,size:10.5,color:C.muted,text:'Recorded v3 / teacher. V4 must be measured.'},
     {id:'footer',x:36,y:383,w:632,h:14,size:9,color:C.muted,text:'Reference suite, not blind test. Open rollout controls.'},
     {id:'number',x:678,y:383,w:20,h:14,size:9,color:C.muted,text:'13'}
   ];
-  const table={x:356,y:259,w:328,h:96,widths:[174,76,78],rowHeight:24};
+  const table={x:356,y:248,w:328,h:115.2,widths:[174,76,78],rowHeight:28.8};
   function tableRows(name='native-v3'){
     const s=evidence.controllers[name],t=evidence.controllers.teacher;
     return [['Metric',name==='native-v3'?'Native-v3':'Native-v2','Teacher'],
@@ -54,7 +54,7 @@
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
   function rich(v){let p=0,s='';for(const [a,b] of v.subs||[]){s+=esc(v.text.slice(p,a))+`<tspan baseline-shift="sub" font-size="${v.size*.7}">${esc(v.text.slice(a,b))}</tspan>`;p=b;}return s+esc(v.text.slice(p));}
   function highlight(r,t,c=C.orange){return `<rect x="${r.x-3}" y="${r.y-3}" width="${r.w+6}" height="${r.h+6}" rx="3" fill="none" stroke="${c}" stroke-width="${1.2+Math.sin(t*Math.PI)*1.4}"/>`;}
-  function overlay(stage,t){return [()=>highlight({x:33,y:105,w:653,h:19},t),()=>highlight(rects[0],t,C.teal),()=>highlight(rects[1],t),()=>highlight(rects[2],t,C.teal),()=>highlight({x:33,y:255,w:653,h:104},t)][stage]();}
+  function overlay(stage,t){return [()=>highlight({x:33,y:108,w:653,h:17},t),()=>highlight(rects[0],t,C.teal),()=>highlight(rects[1],t),()=>highlight(rects[2],t,C.teal),()=>highlight({x:33,y:245,w:653,h:129},t)][stage]();}
   function diagram(name='native-v3'){
     return rects.map(r=>`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.fill}" stroke="${r.stroke}" stroke-width=".6"/>`).join('')+
       lines.map(([x1,y1,x2,y2,c,arrow])=>{const d=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/d,uy=(y2-y1)/d,bx=x2-ux*4,by=y2-uy*4;return `<path d="M${x1} ${y1}L${x2} ${y2}" fill="none" stroke="${c}" stroke-width="1.2"/>${arrow?`<polygon points="${x2},${y2} ${bx-uy*2},${by+ux*2} ${bx+uy*2},${by-ux*2}" fill="${c}"/>`:''}`;}).join('')+
